@@ -2,7 +2,8 @@
 // schema sai do stdout do export_openapi.py e chega aqui em memória.
 //
 // O hook `transform` é o que faz todo campo marcado com `format: "decimal"` no
-// backend chegar aqui como DecimalString em vez de string solta.
+// backend chegar aqui como DecimalString em vez de string solta, e todo upload
+// (`contentMediaType` binário) chegar como Blob, que é o que o FormData recebe.
 import { execFileSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -23,10 +24,12 @@ const schema = JSON.parse(
 );
 
 const decimalType = ts.factory.createTypeReferenceNode("DecimalString");
+const blobType = ts.factory.createTypeReferenceNode("Blob");
 
 const ast = await openapiTS(schema, {
   transform(schemaObject) {
     if (schemaObject.format === "decimal") return decimalType;
+    if (schemaObject.contentMediaType === "application/octet-stream") return blobType;
   },
 });
 

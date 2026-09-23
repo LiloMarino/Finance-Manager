@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   ArrowLeftRight,
+  Boxes,
   Coins,
   LineChart,
   PieChart,
@@ -28,6 +29,7 @@ import { Toaster } from "@/shared/components/ui/sonner";
 const navItems = [
   { to: "/", label: "Carteira", icon: PieChart },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
+  { to: "/assets", label: "Ativos", icon: Boxes },
   { to: "/market", label: "Mercado", icon: LineChart },
   { to: "/income", label: "Proventos", icon: Coins },
   { to: "/tax", label: "Fiscal", icon: Receipt },

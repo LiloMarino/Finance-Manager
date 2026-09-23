@@ -2,14 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 
 import { PricesTable } from "@/features/market/prices-table";
-import { pricesQueryKey, useRefreshPrices } from "@/features/market/use-refresh-prices";
+import { useRefreshPrices } from "@/features/market/use-refresh-prices";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { get, getApiErrorMessage } from "@/shared/lib/api";
+import { queryKeys } from "@/shared/lib/query-keys";
 
 export function MarketPage() {
   const { data, isPending, error } = useQuery({
-    queryKey: pricesQueryKey,
+    queryKey: queryKeys.prices,
     queryFn: () => get("/api/market/prices"),
   });
   const refresh = useRefreshPrices();

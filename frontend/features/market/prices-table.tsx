@@ -7,23 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { formatDate } from "@/shared/lib/format";
+import { assetClassLabels } from "@/shared/lib/labels";
 import { formatBRL } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
 type AssetPrice = components["schemas"]["AssetPriceDTO"];
-
-const assetClassLabels: Record<AssetPrice["asset_class"], string> = {
-  stock: "Ação",
-  fii: "FII",
-  etf: "ETF",
-  bdr: "BDR",
-  fixed_income: "Renda fixa",
-};
-
-// A data chega como "AAAA-MM-DD", que o Date lê em UTC
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("pt-BR", { timeZone: "UTC" });
-}
 
 interface PricesTableProps {
   prices: AssetPrice[];

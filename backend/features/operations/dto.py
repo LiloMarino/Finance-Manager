@@ -6,7 +6,7 @@ from typing import Self
 
 from pydantic import model_validator
 
-from backend.core.dto import BaseDTO, DecimalStrIn
+from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
 from backend.core.enum import AssetClass, ImportSource, ImportStatus, OperationType
 
 TRADES = (OperationType.BUY, OperationType.SELL)
@@ -30,6 +30,52 @@ def check_quantity_and_price(
         raise ValueError("Bonificação, desdobro e grupamento não têm preço.")
     if operation_type in TRANSFERS and unit_price < 0:
         raise ValueError("O preço da transferência não pode ser negativo.")
+
+
+class OperationDTO(BaseDTO):
+    id: int
+    asset_id: int
+    ticker: str
+    asset_class: AssetClass
+    operation_date: date
+    operation_type: OperationType
+    quantity: DecimalStr
+    unit_price: DecimalStr
+
+
+class OperationInDTO(BaseDTO):
+    """Compra, venda e evento corporativo; a transferência tem endpoint próprio,
+    porque o preço dela é o PM da origem."""
+
+    asset_id: int
+    operation_date: date
+    operation_type: OperationType
+    quantity: DecimalStrIn
+    unit_price: DecimalStrIn
+
+    @model_validator(mode="after")
+    def _valid_for_type(self) -> Self:
+        if self.operation_type in TRANSFERS:
+            raise ValueError(
+                "Transferência se registra pelo formulário de transferência."
+            )
+        check_quantity_and_price(self.operation_type, self.quantity, self.unit_price)
+        return self
+
+
+class TransferInDTO(BaseDTO):
+    from_asset_id: int
+    to_asset_id: int
+    operation_date: date
+    quantity: DecimalStrIn
+
+    @model_validator(mode="after")
+    def _distinct_assets(self) -> Self:
+        if self.from_asset_id == self.to_asset_id:
+            raise ValueError("Origem e destino da transferência devem ser diferentes.")
+        if self.quantity <= 0:
+            raise ValueError("A quantidade deve ser maior que zero.")
+        return self
 
 
 class ImportedOperationDTO(BaseDTO):

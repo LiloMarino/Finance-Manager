@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** F6 concluída: importação de notas da Nubank e do relatório da B3 com preview e idempotente, reproduzindo o oráculo fora os ajustes manuais.
+> **Última mudança (2026-09-23):** F9 concluída: telas de operações, ativos, posição e importação com preview. M1 fechado.
 
 ## Glossário
 
@@ -24,7 +24,6 @@
 | **N6** | Rebalancear sem planilha | F24 | — |
 | **N7** | Subcarteiras | F25 | — |
 | **N8** | Análises extras: risco × retorno, correlação entre dois ativos | F10, F26, F27 | — |
-| **F9** | Telas de operações, ativos e posição atual | — | ⏳ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | — | ⏳ |
 | **F14** | Série diária de patrimônio e fluxos | — | ⏳ |
@@ -48,7 +47,7 @@
 | **F32** | Liquidez em três camadas | — | 🔍 |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (19 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (20 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -69,6 +68,7 @@
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ✅ |
 | **F7** | Migração dos dados do IR-Helper | — | ✅ |
 | **F8** | Engine de posição e preço médio + paridade | — | ✅ |
+| **F9** | Telas de operações, ativos e posição atual | — | ✅ |
 | **F10** | Provider de dados de mercado + cache de preços | — | ✅ |
 | **F13** | Caixa e reserva | — | 🚫 |
 
@@ -82,7 +82,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F9** | Telas de operações, ativos e posição atual | M1 | 14 | ⏳ |
+| **F11** | Carteira: patrimônio total, por categoria e posição | M2 | 13 | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | M2 | 10 | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | 2 | ⏳ |
@@ -99,13 +99,13 @@
 >
 > **Serve:** N3
 >
-> **Progresso:** 8/9 concluídas
+> **Progresso:** 9/9 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F9** | Telas de operações, ativos e posição atual | F8 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (8 itens)</summary>
+<details><summary>Concluído (9 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -117,6 +117,7 @@
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | F5 | ✅ |
 | **F7** | Migração dos dados do IR-Helper | F5 | ✅ |
 | **F8** | Engine de posição e preço médio + paridade | F7 | ✅ |
+| **F9** | Telas de operações, ativos e posição atual | F8 | ✅ |
 
 </details>
 
@@ -225,7 +226,7 @@
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F7** | Migração dos dados do IR-Helper | N3 | D8 | M1 | F5 | Baixo | Médio | Alto | Excelente | ✅ Concluído |
 | **F8** | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 | F7 | Médio | Alto | Alto | Excelente | ✅ Concluído |
-| **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F11** | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 | F9, F10 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ⏳ Pendente |
@@ -306,8 +307,13 @@ Testes com dado fictício cobrem compra, venda parcial e total, bonificação fr
 
 **Aceite verificado:** o motor sobre as operações do `irpf_helper.db` reproduz a abertura e o fechamento (quantidade e PM, com as 6 casas com que o IR-Helper grava) de todos os `MonthlySnapshot`, em todos os meses: **0 divergências**. No sentido inverso, nenhuma posição aberta do motor fica sem snapshot no oráculo.
 
-**F9 — Telas do core.** Operações: lista com filtros (ticker, tipo, período), criar/editar/excluir, importar arquivo. Ativos: lista + detalhe com as operações do ativo. Posição atual: quantidade, PM e custo total por ativo. shadcn + TanStack Query.
-**Aceite:** o usuário consegue fazer no app tudo o que fazia no IR-Helper pra manter as operações em dia, sem abrir o IR-Helper.
+**F9 — Telas do core.** Backend: `assets` (CRUD; apagar ativo com operação volta 409 com o motivo, ticker normalizado e único), `operations` (lista filtrada por ativo, tipo e período; criar, editar e apagar compra, venda e evento, com as regras de preço por tipo validadas no DTO; transferência em endpoint próprio, gravando o par com o PM que a origem tinha no fim do dia e recusando quantidade maior que a posição) e `portfolio/positions` (quantidade, PM e custo total por ativo com posição, recalculados pelo motor de F8). Toda escrita termina na checagem de posição negativa. O acesso às operações que mais de um domínio lê mora em `backend/repository/operations.py`.
+
+Front: Carteira com as posições; Operações com filtros, formulário de criação e edição (a operação em edição chega pronta do pai), transferência e apagar; Ativos com lista, formulário e detalhe (posição e operações do ativo); Importar com área de soltar arquivos, preview linha a linha com a classe dos ativos novos escolhida ali, e confirmar ou cancelar. Transferência não se edita: apagam-se as duas pontas. As chaves do TanStack Query ficam juntas em `shared/lib/query-keys.ts`, porque toda escrita invalida posição, listas e ativos a cotar. O `api.ts` ganhou path, query e upload tipados (ver D11).
+
+**Aceite verificado** no app de pé, sobre uma cópia do banco migrado, dirigido por navegador: criar e editar operação num ativo fictício, venda maior que a posição recusada com o toast do 422, transferência movendo a posição com o PM, detalhe do ativo com a posição recalculada, 409 ao apagar ativo com operação, e o lote real de notas e xlsx no preview sem nenhuma linha nova, com cancelar sem gravar nada.
+
+**Limitações residuais:** o preço no preview e nas tabelas sai com 2 casas, então a terceira casa que separa um leilão de fração da versão arredondada à mão não aparece. Dois refreshes de cotação simultâneos (o StrictMode dispara dois ao abrir o app em dev) ainda podem colidir na gravação do SQLite; a busca na rede já acontece fora da transação.
 
 **F10 — MarketDataProvider.** Interface `MarketDataProvider` (Protocol em `backend/domain/market_data.py`, com `get_history`) implementada pelo yfinance (`TICKER.SA`, `auto_adjust=False`) em `backend/adapters/`. Tabela `price_history` (ativo, data, fechamento em `DecimalText`, CHECK `> 0`), com FK em CASCADE porque é cache descartável (D2). O refresh busca só os dias que faltam: parte da última data em cache, inclusive (o fechamento parcial de um pregão em andamento é regravado), ou da primeira operação, e cobre ações/FII/ETF/BDR com operação. Quem dispara é o front, ao abrir o app e pelo botão da tela Mercado (`POST /api/market/prices/refresh`); o `create_app` segue sem tocar no banco. Offline não é erro: o ticker vai para `failed`, um toast avisa, e `GET /api/market/prices` devolve o último fechamento com a data dele — é esse o "preço atual" do plano. O fechamento é quantizado em centavos, porque a B3 cota em centavos e o resto do float é ruído.
 

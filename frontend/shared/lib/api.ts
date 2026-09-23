@@ -19,14 +19,41 @@ type SuccessJson<O> = O extends {
     ? T
     : void;
 
-type JsonBody<O> = O extends {
-  requestBody: { content: { "application/json": infer B } };
-}
-  ? B
-  : never;
+// Path param obrigatório (`/{operation_id}`) aparece como `path: {...}`; sem ele,
+// o gerador escreve `path?: never`, que não casa aqui.
+type PathOption<O> = O extends { parameters: { path: infer Path } }
+  ? { path: Path }
+  : { path?: never };
 
-/** O body é argumento só quando o endpoint declara um. */
-type BodyArgs<O> = [JsonBody<O>] extends [never] ? [] : [body: JsonBody<O>];
+type QueryOption<O> = O extends { parameters: { query?: infer Query } }
+  ? [NonNullable<Query>] extends [never]
+    ? { query?: never }
+    : { query?: NonNullable<Query> }
+  : { query?: never };
+
+// JSON vai em `body`; upload (multipart) vai em `form`, e cada Blob vira um campo
+// do FormData.
+type BodyOption<O> = O extends {
+  requestBody: { content: { "application/json": infer Body } };
+}
+  ? { body: Body; form?: never }
+  : O extends { requestBody: { content: { "multipart/form-data": infer Form } } }
+    ? { form: Form; body?: never }
+    : { body?: never; form?: never };
+
+type Options<O> = PathOption<O> & QueryOption<O> & BodyOption<O>;
+
+/** As opções são argumento obrigatório só quando o endpoint exige path ou body. */
+type OptionsArgs<O> = object extends Options<O>
+  ? [options?: Options<O>]
+  : [options: Options<O>];
+
+interface RawOptions {
+  path?: Record<string, unknown>;
+  query?: Record<string, unknown>;
+  body?: unknown;
+  form?: Record<string, unknown>;
+}
 
 export interface ApiError extends Error {
   status: number;
@@ -52,22 +79,54 @@ export function getApiErrorMessage(error: unknown): string {
   return "Erro inesperado.";
 }
 
+/** Path e query só carregam primitivos; vazio é parâmetro ausente. */
+function toParam(value: unknown): string | null {
+  if (typeof value === "string") return value || null;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return null;
+}
+
+function buildUrl(url: string, { path, query }: RawOptions): string {
+  const resolved = url.replace(/\{(\w+)\}/g, (_, name: string) =>
+    encodeURIComponent(toParam(path?.[name]) ?? ""),
+  );
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(query ?? {})) {
+    const param = toParam(value);
+    if (param !== null) {
+      search.append(key, param);
+    }
+  }
+  const queryString = search.toString();
+  return `${BASE_URL}${resolved}${queryString ? `?${queryString}` : ""}`;
+}
+
+function toFormData(form: Record<string, unknown>): FormData {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(form)) {
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const field = item instanceof Blob ? item : toParam(item);
+      if (field !== null) data.append(key, field);
+    }
+  }
+  return data;
+}
+
 async function request<T>(
   method: Method,
   url: string,
-  body?: unknown,
+  options: RawOptions = {},
 ): Promise<T> {
-  const isFormData = body instanceof FormData;
+  const init: RequestInit = { method: method.toUpperCase() };
+  if (options.form) {
+    // O navegador escreve o Content-Type com o boundary do multipart
+    init.body = toFormData(options.form);
+  } else if (options.body !== undefined) {
+    init.headers = { "Content-Type": "application/json" };
+    init.body = JSON.stringify(options.body);
+  }
 
-  const response = await fetch(`${BASE_URL}${url}`, {
-    method: method.toUpperCase(),
-    headers:
-      isFormData || body === undefined
-        ? undefined
-        : { "Content-Type": "application/json" },
-    body: isFormData ? body : body === undefined ? undefined : JSON.stringify(body),
-  });
-
+  const response = await fetch(buildUrl(url, options), init);
   const raw = response.status === 204 ? "" : await response.text();
   const payload: unknown = raw === "" ? null : JSON.parse(raw);
 
@@ -85,24 +144,28 @@ async function request<T>(
 
 export function get<P extends PathsWith<"get">>(
   url: P,
+  ...[options]: OptionsArgs<paths[P]["get"]>
 ): Promise<SuccessJson<paths[P]["get"]>> {
-  return request("get", url);
+  return request("get", url, options as RawOptions | undefined);
 }
 
 export function post<P extends PathsWith<"post">>(
   url: P,
-  ...[body]: BodyArgs<paths[P]["post"]>
+  ...[options]: OptionsArgs<paths[P]["post"]>
 ): Promise<SuccessJson<paths[P]["post"]>> {
-  return request("post", url, body);
+  return request("post", url, options as RawOptions | undefined);
 }
 
 export function put<P extends PathsWith<"put">>(
   url: P,
-  ...[body]: BodyArgs<paths[P]["put"]>
+  ...[options]: OptionsArgs<paths[P]["put"]>
 ): Promise<SuccessJson<paths[P]["put"]>> {
-  return request("put", url, body);
+  return request("put", url, options as RawOptions | undefined);
 }
 
-export function del<P extends PathsWith<"delete">>(url: P): Promise<void> {
-  return request("delete", url);
+export function del<P extends PathsWith<"delete">>(
+  url: P,
+  ...[options]: OptionsArgs<paths[P]["delete"]>
+): Promise<void> {
+  return request("delete", url, options as RawOptions | undefined);
 }

@@ -34,3 +34,20 @@ export function formatQuantity(value: DecimalString): string {
 export function toDecimalString(value: string): DecimalString {
   return value as DecimalString;
 }
+
+const DECIMAL_INPUT = /^\d{1,3}(\.\d{3})*(,\d+)?$|^\d+([.,]\d+)?$/;
+
+/**
+ * Texto digitado em pt-BR ("1.234,56") ou com ponto ("1234.56") para Decimal; `null`
+ * quando não é número positivo bem formado.
+ */
+export function parseDecimalInput(value: string): DecimalString | null {
+  const text = value.trim();
+  if (!DECIMAL_INPUT.test(text)) {
+    return null;
+  }
+  const normalized = text.includes(",")
+    ? text.replaceAll(".", "").replace(",", ".")
+    : text;
+  return toDecimalString(normalized);
+}
