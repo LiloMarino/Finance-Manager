@@ -2,19 +2,19 @@ import { useParams } from "react-router-dom";
 
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
-import { usePositions } from "@/features/portfolio/use-positions";
+import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAsset } from "@/shared/hooks/use-assets";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { assetClassLabels } from "@/shared/lib/labels";
-import { formatBRL, formatQuantity } from "@/types/decimal";
+import { formatBRL, formatQuantity, formatSignedBRL } from "@/types/decimal";
 
 export function AssetDetailPage() {
   const assetId = Number(useParams().assetId);
   const asset = useAsset(assetId);
-  const positions = usePositions();
+  const portfolio = usePortfolio();
   const operations = useOperations({ asset_id: assetId });
 
   if (asset.error) {
@@ -24,7 +24,7 @@ export function AssetDetailPage() {
     return <Skeleton className="h-40 w-full" />;
   }
 
-  const position = positions.data?.find((item) => item.asset_id === assetId);
+  const position = portfolio.data?.positions.find((item) => item.asset_id === assetId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +38,7 @@ export function AssetDetailPage() {
           <CardTitle>Posição atual</CardTitle>
         </CardHeader>
         <CardContent>
-          {positions.isPending ? (
+          {portfolio.isPending ? (
             <Skeleton className="h-16 w-full" />
           ) : position ? (
             <dl className="grid grid-cols-3 gap-4 text-sm">
@@ -53,6 +53,20 @@ export function AssetDetailPage() {
               <div>
                 <dt className="text-muted-foreground">Custo total</dt>
                 <dd className="tabular-nums">{formatBRL(position.total_cost)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Preço atual</dt>
+                <dd className="tabular-nums">
+                  {position.price ? formatBRL(position.price) : "sem cotação"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Valor</dt>
+                <dd className="tabular-nums">{formatBRL(position.market_value)}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Resultado</dt>
+                <dd className="tabular-nums">{formatSignedBRL(position.unrealized_result)}</dd>
               </div>
             </dl>
           ) : (

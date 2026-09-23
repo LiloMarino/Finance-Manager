@@ -10,7 +10,11 @@ export function useRefreshIndexes() {
   return useMutation({
     mutationFn: () => post("/api/market/indexes/refresh"),
     onSuccess: ({ failed }) => {
-      void invalidateKeys(queryClient, [queryKeys.indexes, queryKeys.fixedIncome]);
+      void invalidateKeys(queryClient, [
+        queryKeys.indexes,
+        queryKeys.fixedIncome,
+        queryKeys.portfolio,
+      ]);
       if (failed.length > 0) {
         toast.warning(
           `Sem dado novo do BCB para ${failed.join(", ")}: a renda fixa usa o último valor conhecido.`,

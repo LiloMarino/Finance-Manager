@@ -1,26 +1,62 @@
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter
 
 from backend.core.database.session import SessionDep
 from backend.core.dto import BaseDTO, DecimalStr
-from backend.core.enum import AssetClass
-from backend.features.portfolio.service import open_positions
+from backend.core.enum import AssetClass, Indexer, PortfolioCategory
+from backend.features.portfolio.service import portfolio
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
 
 class PositionDTO(BaseDTO):
+    """`price` nulo é ativo sem cotação em cache, valorado pelo custo."""
+
     asset_id: int
     ticker: str
     asset_class: AssetClass
     quantity: DecimalStr
     average_price: DecimalStr
     total_cost: DecimalStr
+    price: DecimalStr | None
+    price_date: date | None
+    market_value: DecimalStr
+    share: DecimalStr
+    unrealized_result: DecimalStr
+    unrealized_return: DecimalStr | None
 
 
-@router.get("/positions")
-def positions(session: SessionDep) -> list[PositionDTO]:
-    return [
-        PositionDTO.model_validate(position) for position in open_positions(session)
-    ]
+class FixedIncomeHoldingDTO(BaseDTO):
+    investment_id: int
+    label: str
+    indexer: Indexer
+    rate: DecimalStr
+    invested: DecimalStr
+    gross_value: DecimalStr
+    estimated_tax: DecimalStr
+    net_value: DecimalStr
+    share: DecimalStr
+    as_of: date
+
+
+class CategoryAllocationDTO(BaseDTO):
+    category: PortfolioCategory
+    value: DecimalStr
+    share: DecimalStr
+
+
+class PortfolioDTO(BaseDTO):
+    """Frações (`share`, `unrealized_return`) vão de 0 a 1."""
+
+    total: DecimalStr
+    categories: list[CategoryAllocationDTO]
+    positions: list[PositionDTO]
+    fixed_income: list[FixedIncomeHoldingDTO]
+
+
+@router.get("")
+def get_portfolio(session: SessionDep) -> PortfolioDTO:
+    return PortfolioDTO.model_validate(portfolio(session, date.today()))

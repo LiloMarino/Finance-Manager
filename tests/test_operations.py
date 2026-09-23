@@ -38,7 +38,7 @@ def _operation(
 def _positions(api: TestClient) -> list[tuple[str, str, str, str]]:
     return [
         (p["ticker"], p["quantity"], p["average_price"], p["total_cost"])
-        for p in api.get("/api/portfolio/positions").json()
+        for p in api.get("/api/portfolio").json()["positions"]
     ]
 
 

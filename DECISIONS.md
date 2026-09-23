@@ -4,9 +4,9 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-23):** **F6, F7, F8 e F9 executadas.** D11 mediu o `openapi-fetch` no gatilho que ela mesma previa, em F9, e o recusou: a versão atual desmonta o `DecimalString` do front. O `api.ts` ganhou path, query e upload tipados à mão.
+> **Última mudança (2026-09-23):** **F11 e F12 executadas.** D2 ganhou as movimentações de renda fixa como dado primário, em tabelas próprias; D6 ganhou o provider das séries do BCB; D4 registra que a carteira não precisou de conta no front.
 >
-> **Mudança anterior (2026-09-23):** **F10 executada e caixa fora do escopo.** D6 perdeu o brapi, que é pago: o app opera só com fonte gratuita. O Contexto, N2 e D2 perderam o caixa, porque o app cobre só o financeiro de investimentos.
+> **Mudança anterior (2026-09-23):** **F6, F7, F8 e F9 executadas.** D11 mediu o `openapi-fetch` no gatilho que ela mesma previa, em F9, e o recusou: a versão atual desmonta o `DecimalString` do front. O `api.ts` ganhou path, query e upload tipados à mão.
 
 ---
 
@@ -118,6 +118,8 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 **Por quê:** é o que permite corrigir uma operação antiga e ter todos os números consistentes de novo; é o desenho que já funciona no IR-Helper.
 **Consequências:** qualquer tabela derivada precisa de um caminho de reconstrução; nunca editar um derivado à mão.
 
+**Atualização (2026-09-23, F12):** as aplicações e os resgates de renda fixa são dado primário em `fixed_income_movements`, ao lado de `operations` e não dentro dela: a operação é quantidade × preço lida pelo motor de posição, e a movimentação de renda fixa é um fluxo de dinheiro. O título mora em `fixed_income_investments`, e a classe `fixed_income` saiu de `assets`. O valor marcado é derivado, recalculado a cada consulta das movimentações e das séries em cache.
+
 ### D3 — Um único banco SQLite, organizado por domínio
 **Status:** ✅ Decidida
 
@@ -154,6 +156,8 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 - **Formatar não precisa de lib.** `Intl.NumberFormat` aceita string desde o ES2023 (overload `StringNumericLiteral`), então o valor vai do JSON até a tela sem passar por `float`. Por isso `DecimalString` é `` `${number}` & brand `` e não `string & brand`: é o que o torna aceitável pelo `Intl` sem cast.
 - **Quando o front precisar de conta de verdade (F11, F15, F18, F26), a lib é `decimal.js` — não `bignumber.js`.** As duas são do mesmo autor, mas `decimal.js` trabalha com **dígitos significativos** (`Decimal.set({ precision: 28 })`), que é o modelo do `decimal` do Python (`context.prec`), enquanto `bignumber.js` trabalha com `DECIMAL_PLACES`. E foi `decimal.js` que a Sonda P mediu: 0 divergências contra o oráculo, incluindo as dízimas de 28 dígitos. Trocar de lib jogaria essa verificação fora. *(Ponto não medido, a conferir em F15: `decimal.js` tem `pow` com expoente fracionário, `ln` e `exp`; `bignumber.js` não.)*
 
+**Atualização (2026-09-23, F11):** a carteira não precisou de `decimal.js`. Valor a mercado, fração da carteira e resultado saem prontos do backend, e o front só formata. A única conversão de Decimal para número é `toChartNumber`, para a geometria do donut, onde a precisão acaba no pixel.
+
 ### D5 — Rentabilidade principal por cota (TWR)
 **Status:** ✅ Decidida
 
@@ -170,6 +174,10 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 - **O brapi saiu.** Era o fallback previsto, mas é pago, e o app opera só com o que é gratuito. Sem fallback, a interface ficou com um provider só. Se o yfinance quebrar, a alternativa gratuita é o arquivo de cotações históricas da B3 (COTAHIST), que entra atrás da mesma interface.
 - **O refresh parte do front**, ao abrir o app e pelo botão da tela Mercado. O `create_app` segue sem tocar no banco.
 - **O fechamento é o que o yfinance entrega:** ajustado por desdobramento e grupamento, não por provento. A série histórica de F14 converte a quantidade pelos eventos de `operations`, e isso se confere contra a carteira real.
+
+**Consequências (2026-09-23, F12):**
+- **As séries do BCB têm interface própria**, `IndexSeriesProvider`, e cache em `index_history`. O provider do SGS usa `urllib` da stdlib, sem dependência nova, e lê o `valor` como string: a taxa não passa por float.
+- **O calendário de dias úteis é o do CDI publicado.** Depois do último dado, a marcação repete o último valor e a tela diz até quando o dado é real — é o "último valor conhecido" desta decisão, aplicado às séries.
 
 ### D8 — IR-Helper absorvido e aposentado: `irpf_helper.db` como oráculo de paridade
 **Status:** ✅ Decidida

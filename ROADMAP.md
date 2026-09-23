@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** F9 concluída: telas de operações, ativos, posição e importação com preview. M1 fechado.
+> **Última mudança (2026-09-23):** F11 e F12 concluídas: carteira com patrimônio por categoria e renda fixa marcada pelas séries do BCB.
 
 ## Glossário
 
@@ -24,8 +24,6 @@
 | **N6** | Rebalancear sem planilha | F24 | — |
 | **N7** | Subcarteiras | F25 | — |
 | **N8** | Análises extras: risco × retorno, correlação entre dois ativos | F10, F26, F27 | — |
-| **F11** | Carteira: patrimônio total, por categoria e posição | — | ⏳ |
-| **F12** | Renda fixa: cadastro e marcação por indexador | — | ⏳ |
 | **F14** | Série diária de patrimônio e fluxos | — | ⏳ |
 | **F15** | Rentabilidade por cota (TWR) | — | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | — | ⏳ |
@@ -47,7 +45,7 @@
 | **F32** | Liquidez em três camadas | — | 🔍 |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (20 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (22 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -70,6 +68,8 @@
 | **F8** | Engine de posição e preço médio + paridade | — | ✅ |
 | **F9** | Telas de operações, ativos e posição atual | — | ✅ |
 | **F10** | Provider de dados de mercado + cache de preços | — | ✅ |
+| **F11** | Carteira: patrimônio total, por categoria e posição | — | ✅ |
+| **F12** | Renda fixa: cadastro e marcação por indexador | — | ✅ |
 | **F13** | Caixa e reserva | — | 🚫 |
 
 </details>
@@ -82,12 +82,13 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F11** | Carteira: patrimônio total, por categoria e posição | M2 | 13 | ⏳ |
-| **F12** | Renda fixa: cadastro e marcação por indexador | M2 | 10 | ⏳ |
+| **F14** | Série diária de patrimônio e fluxos | M3 | 8 | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | 2 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
+| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
+| **F32** | Liquidez em três camadas | M6 | 0 | 🔍 |
 
 ---
 
@@ -127,18 +128,19 @@
 >
 > **Serve:** N2
 >
-> **Progresso:** 1/3 concluídas
+> **Progresso:** 3/3 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F11** | Carteira: patrimônio total, por categoria e posição | F9, F10 | ⏳ |
-| **F12** | Renda fixa: cadastro e marcação por indexador | F10 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (1 item)</summary>
+<details><summary>Concluído (3 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F10** | Provider de dados de mercado + cache de preços | F5 | ✅ |
+| **F11** | Carteira: patrimônio total, por categoria e posição | F9, F10 | ✅ |
+| **F12** | Renda fixa: cadastro e marcação por indexador | F10 | ✅ |
 
 </details>
 
@@ -228,8 +230,8 @@
 | **F8** | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 | F7 | Médio | Alto | Alto | Excelente | ✅ Concluído |
 | **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
-| **F11** | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 | F9, F10 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ⏳ Pendente |
+| **F11** | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 | F9, F10 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
+| **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ✅ Concluído |
 | **F14** | Série diária de patrimônio e fluxos | N1, N4 | D2, D5 | M3 | F11, F12 | Alto | Alto | Alto | Bom | ⏳ Pendente |
 | **F15** | Rentabilidade por cota (TWR) | N1 | D5 | M3 | F14 | Médio | Médio | Alto | Excelente | ⏳ Pendente |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
@@ -321,11 +323,30 @@ Decisões tomadas durante: **sem brapi**, que é pago — o app opera só com fo
 
 **Limitações residuais:** ativo sem cotação (ticker trocado ou deslistado) cai em `failed` a cada abertura; quando F8 existir, o refresh passa a parar na data em que a posição zerou. O pregão do dia pode demorar a aparecer no yfinance.
 
-**F11 — Carteira.** Página inicial: patrimônio total; donut + tabela por categoria (ações/FII/ETF/BDR/RF); posição na carteira por ativo (quantidade, PM, preço atual, valor, % da carteira, lucro/prejuízo não realizado). Serve N2.
-**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF numa data de conferência, e o usuário para de abrir o Status Invest pra ver "quanto tenho".
+**F11 — Carteira.** `GET /api/portfolio` substitui o `/positions`: total, categorias (`PortfolioCategory`, as classes da B3 mais a renda fixa) e posições com preço atual, valor a mercado, fração da carteira e resultado não realizado, mais a renda fixa pelo valor bruto marcado de F12. Toda conta é Decimal no Python; o front só formata, e o `toChartNumber` é a única saída de Decimal para número, para a geometria do gráfico. O que tem mais de um consumidor foi para `backend/repository/` (`market.py` com os últimos preços e as séries; `fixed_income.py` com os títulos marcados). Front: card do patrimônio, donut por categoria com a tabela de valores como legenda, tabela de renda variável e tabela de renda fixa; o detalhe do ativo ganhou preço atual, valor e resultado.
 
-**F12 — Renda fixa.** Cadastro da aplicação (valor, data, indexador CDI/Selic/IPCA/pré, taxa, vencimento, liquidez, isenta ou não) e resgates. Marcação diária pelas séries do BCB SGS (CDI 12, Selic 11, IPCA 433), buscadas atrás de uma interface própria no molde do provider de F10, com cache local (D6), e IR regressivo estimado. Reaproveitar ideias de `SimuladorFinanceiro/backend/features/fixed_income` e do `Comparador Renda Fixa`. Serve N2.
-**Aceite:** o valor bruto calculado de cada título fica a menos de 0,5% do extrato da corretora/B3 na mesma data.
+Decisões tomadas durante:
+- **A renda fixa entra no patrimônio pelo valor bruto**, com o IR estimado na tabela ao lado.
+- **Ativo sem cotação em cache vale o custo**, com "sem cotação" na tela.
+- **Os tokens `--chart-1..5` ganharam uma paleta categórica validada** (lightness, croma, separação para daltonismo e para visão normal, nos dois temas); os cinzas do preset reprovavam como categórica. A cor segue a categoria, não a posição dela no donut.
+- Resultado com sinal e percentual, sem cor de alta e baixa: essa cor é decisão de F30.
+
+**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF numa data de conferência, e o usuário para de abrir o Status Invest pra ver "quanto tenho". Verificado na cópia do banco migrado: a soma das categorias é o total, e o total é renda variável a mercado mais a renda fixa bruta. A conferência contra a B3 fica com o usuário.
+
+**F12 — Renda fixa.** Tabelas próprias: `fixed_income_investments` (nome único, indexador, taxa, vencimento opcional, liquidez diária, isenção) e `fixed_income_movements` (aplicação e resgate, os dois pelo valor bruto), com CHECK de taxa e valor positivos. A classe `fixed_income` saiu do `AssetClass`: título de renda fixa não é ativo da B3, e o schema deixa de admitir operação de bolsa nele. As séries do BCB SGS (CDI 12, Selic 11, IPCA 433) ficam atrás do `IndexSeriesProvider` (`backend/domain/index_series.py`), implementado em `backend/adapters/bcb_sgs_provider.py` com `urllib` da stdlib; o `valor` chega como string no JSON e vira Decimal direto. Cache em `index_history`, refresh em `POST /api/market/indexes/refresh` disparado junto com o de cotações, começando no dia 1 do mês da última data em cache (ou da primeira movimentação), em janelas de até 10 anos, que é o limite do SGS. A tela Mercado mostra o último valor de cada série.
+
+A marcação é `backend/domain/fixed_income.py`, pura: o fator acumulado é o mesmo para todos os fluxos do título, então o saldo bruto é linear (aplicações corrigidas menos resgates corrigidos); os lotes por FIFO existem só para o IR regressivo por idade de cada aplicação. Fator diário: CDI e Selic a `1 + taxa × %`, pré a `(1 + taxa)^(1/252)`, IPCA pró-rata por dia corrido no mês vezes a taxa real por dia útil. Telas: lista com aplicado, bruto, IR estimado e líquido; detalhe com as movimentações.
+
+Decisões tomadas durante:
+- **Dia útil é dia com CDI publicado**, e depois do último CDI, dia de semana. Sem biblioteca de feriados.
+- **Depois do último dado publicado, o último valor se repete**, e a tela diz até que data o dado é real.
+- **Resgate maior que o saldo estimado zera o título**: a diferença é o erro da estimativa, e registrar o resgate total do extrato não depende de a curva bater ao centavo.
+- **A primeira movimentação do título é uma aplicação** (422 no resgate antes dela e ao apagar a aplicação que abre o título).
+- Taxa de CDI e Selic como percentual do indexador; IPCA e pré como taxa anual.
+
+**Aceite:** o valor bruto calculado de cada título fica a menos de 0,5% do extrato da corretora/B3 na mesma data. Verificado num título fictício de 100% do CDI: o bruto bate ao centavo com o CDI acumulado direto da série do SGS. A comparação com o extrato real fica com o usuário.
+
+**Limitações residuais:** IOF de menos de 30 dias fora da estimativa de IR. IPCA+ pela curva, pró-rata por dia corrido no mês civil, sem o aniversário do dia 15 do Tesouro nem a marcação a mercado. Tesouro Selic sem o ágio/deságio de compra.
 
 **F14 — Série diária.** Tabela materializada (data, patrimônio por categoria, aportes/resgates do dia) calculada de operações + `price_history` + RF marcada; reconstruível do zero (D2) e atualizada incrementalmente a partir da última data válida quando entra operação retroativa. É infra, mas serve duas necessidades diretamente através de quem depende dela: N1 (F15–F18 leem a série pra rentabilidade e comparações) e N4 (F20 usa a série como fluxo de caixa pro retorno total dos proventos).
 
@@ -400,9 +421,9 @@ Decisões tomadas durante: **sem brapi**, que é pago — o app opera só com fo
 
 **F30 — Identidade visual própria.** O que falta definir: o app hoje usa o preset `nova` do shadcn (base `radix`, Lucide, fonte Geist, baseColor neutral) — funcional, mas é o "padrãozão" que qualquer projeto shadcn tem. Decidir uma paleta e uma tipografia que digam *este* app: dashboard financeiro, leitura de tabela densa e muito gráfico.
 
-Pontos concretos que a decisão precisa cobrir, porque já existem como token no `index.css`: as cinco cores de série (`--chart-1` a `--chart-5`), que aparecem no donut de F11 e nas linhas de F15/F16; uma cor de alta e uma de baixa que não sejam só verde/vermelho puro (daltonismo, e o vermelho do `destructive` já significa "erro"); e contraste suficiente para tabela densa no claro e no escuro.
+Pontos concretos que a decisão precisa cobrir, porque já existem como token no `index.css`: as cinco cores de série (`--chart-1` a `--chart-5`), que desde F11 carregam uma paleta categórica validada (claro e escuro) e podem ser trocadas por uma da marca, desde que passem na mesma validação de daltonismo e contraste, com a ordem dos slots escolhida entre as que passam; uma cor de alta e uma de baixa que não sejam só verde/vermelho puro (daltonismo, e o vermelho do `destructive` já significa "erro"), que hoje o resultado da carteira não usa; e contraste suficiente para tabela densa no claro e no escuro.
 
-Os outros presets do shadcn (`vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) são ponto de partida barato — trocar preset é um comando. Vale olhar quando houver tela de verdade para julgar (a partir de F9/F11), não antes: é decisão que se toma vendo dado real na tela.
+Os outros presets do shadcn (`vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) são ponto de partida barato — trocar preset é um comando. Vale olhar agora que há tela de verdade para julgar, com dado real.
 
 **F31 — Hot-reload do backend.** O que falta definir: por que o worker não reinicia. Medido em F2, e o diagnóstico já está estreitado.
 

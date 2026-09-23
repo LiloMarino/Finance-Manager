@@ -3,7 +3,7 @@ import type { QueryClient, QueryKey } from "@tanstack/react-query";
 export const queryKeys = {
   assets: ["assets"] as const,
   operations: ["operations"] as const,
-  positions: ["portfolio", "positions"] as const,
+  portfolio: ["portfolio"] as const,
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   fixedIncome: ["fixed-income"] as const,
@@ -20,12 +20,12 @@ export function invalidateKeys(
   });
 }
 
-/** Toda escrita em ativo ou operação muda posição, listas e os ativos a cotar. */
+/** Toda escrita em ativo ou operação muda a carteira, as listas e os ativos a cotar. */
 export function invalidatePortfolioData(queryClient: QueryClient): Promise<void> {
   return invalidateKeys(queryClient, [
     queryKeys.assets,
     queryKeys.operations,
-    queryKeys.positions,
+    queryKeys.portfolio,
     queryKeys.prices,
   ]);
 }

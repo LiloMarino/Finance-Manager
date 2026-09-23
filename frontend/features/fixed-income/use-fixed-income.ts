@@ -34,7 +34,7 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
     mutationFn: write,
     onSuccess: () => {
       toast.success(success);
-      return invalidateKeys(queryClient, [queryKeys.fixedIncome]);
+      return invalidateKeys(queryClient, [queryKeys.fixedIncome, queryKeys.portfolio]);
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   });

@@ -219,15 +219,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/portfolio/positions": {
+    "/api/portfolio": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Positions */
-        get: operations["positions_api_portfolio_positions_get"];
+        /** Get Portfolio */
+        get: operations["get_portfolio_api_portfolio_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -355,6 +355,20 @@ export interface components {
             /** Files */
             files: Blob[];
         };
+        /** CategoryAllocationDTO */
+        CategoryAllocationDTO: {
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+        };
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -459,6 +473,49 @@ export interface components {
             series_date: string | null;
             /** Movements */
             movements: components["schemas"]["MovementDTO"][];
+        };
+        /** FixedIncomeHoldingDTO */
+        FixedIncomeHoldingDTO: {
+            /** Investment Id */
+            investment_id: number;
+            /** Label */
+            label: string;
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Estimated Tax
+             * Format: decimal
+             */
+            estimated_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
         };
         /** FixedIncomeInDTO */
         FixedIncomeInDTO: {
@@ -692,7 +749,34 @@ export interface components {
          * @enum {string}
          */
         OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split" | "transfer_in" | "transfer_out";
-        /** PositionDTO */
+        /**
+         * PortfolioCategory
+         * @description Categoria da carteira: as classes de ativo da B3, com o mesmo valor do
+         *     `AssetClass`, mais a renda fixa.
+         * @enum {string}
+         */
+        PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income";
+        /**
+         * PortfolioDTO
+         * @description Frações (`share`, `unrealized_return`) vão de 0 a 1.
+         */
+        PortfolioDTO: {
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Categories */
+            categories: components["schemas"]["CategoryAllocationDTO"][];
+            /** Positions */
+            positions: components["schemas"]["PositionDTO"][];
+            /** Fixed Income */
+            fixed_income: components["schemas"]["FixedIncomeHoldingDTO"][];
+        };
+        /**
+         * PositionDTO
+         * @description `price` nulo é ativo sem cotação em cache, valorado pelo custo.
+         */
         PositionDTO: {
             /** Asset Id */
             asset_id: number;
@@ -714,6 +798,27 @@ export interface components {
              * Format: decimal
              */
             total_cost: DecimalString;
+            /** Price */
+            price: DecimalString | null;
+            /** Price Date */
+            price_date: string | null;
+            /**
+             * Market Value
+             * Format: decimal
+             */
+            market_value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+            /**
+             * Unrealized Result
+             * Format: decimal
+             */
+            unrealized_result: DecimalString;
+            /** Unrealized Return */
+            unrealized_return: DecimalString | null;
         };
         /** PreviewRowDTO */
         PreviewRowDTO: {
@@ -1457,7 +1562,7 @@ export interface operations {
             };
         };
     };
-    positions_api_portfolio_positions_get: {
+    get_portfolio_api_portfolio_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1472,7 +1577,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PositionDTO"][];
+                    "application/json": components["schemas"]["PortfolioDTO"];
                 };
             };
             /** @description Unprocessable Content */

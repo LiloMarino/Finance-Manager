@@ -4,11 +4,11 @@ import { get } from "@/shared/lib/api";
 import { queryKeys } from "@/shared/lib/query-keys";
 import type { components } from "@/types/openapi.generated";
 
-export type Position = components["schemas"]["PositionDTO"];
+export type Portfolio = components["schemas"]["PortfolioDTO"];
 
-export function usePositions() {
+export function usePortfolio() {
   return useQuery({
-    queryKey: queryKeys.positions,
-    queryFn: () => get("/api/portfolio/positions"),
+    queryKey: queryKeys.portfolio,
+    queryFn: () => get("/api/portfolio"),
   });
 }

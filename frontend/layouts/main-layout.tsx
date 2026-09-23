@@ -78,7 +78,7 @@ export function MainLayout() {
         </SidebarContent>
       </Sidebar>
 
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <header className="flex h-14 items-center gap-2 border-b px-4">
           <SidebarTrigger />
         </header>
