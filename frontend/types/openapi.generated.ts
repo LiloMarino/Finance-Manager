@@ -307,6 +307,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tax/months": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All Months */
+        get: operations["list_all_months_api_tax_months_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/period": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Period */
+        get: operations["get_period_api_tax_period_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/darf/{year}/{month}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Payment */
+        put: operations["put_payment_api_tax_darf__year___month__payment_put"];
+        post?: never;
+        /** Remove Payment */
+        delete: operations["remove_payment_api_tax_darf__year___month__payment_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -369,6 +421,59 @@ export interface components {
              */
             share: DecimalString;
         };
+        /**
+         * CategoryResultDTO
+         * @description `exempt` marca o ganho comum com ações que a isenção do mês tirou da base.
+         */
+        CategoryResultDTO: {
+            asset_class: components["schemas"]["AssetClass"];
+            trade_type: components["schemas"]["TradeType"];
+            pool: components["schemas"]["LossPool"];
+            /**
+             * Result
+             * Format: decimal
+             */
+            result: DecimalString;
+            /**
+             * Sales
+             * Format: decimal
+             */
+            sales: DecimalString;
+            /** Exempt */
+            exempt: boolean;
+        };
+        /** DarfPaymentDTO */
+        DarfPaymentDTO: {
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /** DarfPaymentInDTO */
+        DarfPaymentInDTO: {
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /**
+         * DarfStatus
+         * @description A situação do mês apurado, do ponto de vista do DARF.
+         * @enum {string}
+         */
+        DarfStatus: "paid" | "due" | "overdue" | "carried" | "exempt" | "compensated" | "none";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -652,6 +757,74 @@ export interface components {
             /** Rate Date */
             rate_date: string | null;
         };
+        /**
+         * LossPool
+         * @description Conjunto de operações cujos prejuízos se compensam entre si: as comuns de
+         *     ações, ETF e BDR; o day trade delas; e o FII, à parte.
+         * @enum {string}
+         */
+        LossPool: "common" | "day_trade" | "fii";
+        /**
+         * MonthlyTaxDTO
+         * @description A apuração do mês. `darf_amount` e `due_date` existem quando o imposto,
+         *     somado ao que vinha carregado, chega ao mínimo do DARF.
+         */
+        MonthlyTaxDTO: {
+            /** Year */
+            year: number;
+            /** Month */
+            month: number;
+            /** Categories */
+            categories: components["schemas"]["CategoryResultDTO"][];
+            /**
+             * Stock Sales
+             * Format: decimal
+             */
+            stock_sales: DecimalString;
+            /**
+             * Exempt Profit
+             * Format: decimal
+             */
+            exempt_profit: DecimalString;
+            /** Pools */
+            pools: components["schemas"]["PoolResultDTO"][];
+            /**
+             * Gross Result
+             * Format: decimal
+             */
+            gross_result: DecimalString;
+            /**
+             * Compensated
+             * Format: decimal
+             */
+            compensated: DecimalString;
+            /**
+             * Taxable
+             * Format: decimal
+             */
+            taxable: DecimalString;
+            /**
+             * Tax
+             * Format: decimal
+             */
+            tax: DecimalString;
+            /**
+             * Carried Before
+             * Format: decimal
+             */
+            carried_before: DecimalString;
+            /**
+             * Carried After
+             * Format: decimal
+             */
+            carried_after: DecimalString;
+            /** Darf Amount */
+            darf_amount: DecimalString | null;
+            /** Due Date */
+            due_date: string | null;
+            payment: components["schemas"]["DarfPaymentDTO"] | null;
+            status: components["schemas"]["DarfStatus"];
+        };
         /** MovementDTO */
         MovementDTO: {
             /** Id */
@@ -749,6 +922,98 @@ export interface components {
          * @enum {string}
          */
         OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split" | "transfer_in" | "transfer_out";
+        /**
+         * PeriodPositionDTO
+         * @description Posição num limite do período, pelo custo fiscal.
+         */
+        PeriodPositionDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            asset_class: components["schemas"]["AssetClass"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /**
+             * Average Price
+             * Format: decimal
+             */
+            average_price: DecimalString;
+            /**
+             * Total Cost
+             * Format: decimal
+             */
+            total_cost: DecimalString;
+        };
+        /**
+         * PeriodReportDTO
+         * @description Um mês ou um ano: as posições na abertura (fim do dia anterior a `start`) e
+         *     no fechamento (fim de `end`), e a apuração de cada mês do recorte.
+         */
+        PeriodReportDTO: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Opening */
+            opening: components["schemas"]["PeriodPositionDTO"][];
+            /** Closing */
+            closing: components["schemas"]["PeriodPositionDTO"][];
+            /** Months */
+            months: components["schemas"]["MonthlyTaxDTO"][];
+        };
+        /**
+         * PoolResultDTO
+         * @description Um conjunto de compensação no mês: o líquido, o prejuízo que ele consumiu ou
+         *     somou, e o imposto. `rate` vai de 0 a 1.
+         */
+        PoolResultDTO: {
+            pool: components["schemas"]["LossPool"];
+            /**
+             * Net
+             * Format: decimal
+             */
+            net: DecimalString;
+            /**
+             * Loss Before
+             * Format: decimal
+             */
+            loss_before: DecimalString;
+            /**
+             * Compensated
+             * Format: decimal
+             */
+            compensated: DecimalString;
+            /**
+             * Taxable
+             * Format: decimal
+             */
+            taxable: DecimalString;
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /**
+             * Tax
+             * Format: decimal
+             */
+            tax: DecimalString;
+            /**
+             * Loss After
+             * Format: decimal
+             */
+            loss_after: DecimalString;
+        };
         /**
          * PortfolioCategory
          * @description Categoria da carteira: as classes de ativo da B3, com o mesmo valor do
@@ -851,6 +1116,12 @@ export interface components {
             /** Failed */
             failed: string[];
         };
+        /**
+         * TradeType
+         * @description Operação comum (a posição atravessa o dia) ou day trade.
+         * @enum {string}
+         */
+        TradeType: "swing" | "day_trade";
         /** TransferInDTO */
         TransferInDTO: {
             /** From Asset Id */
@@ -1852,6 +2123,169 @@ export interface operations {
             header?: never;
             path: {
                 movement_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_all_months_api_tax_months_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyTaxDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_period_api_tax_period_get: {
+        parameters: {
+            query: {
+                year: number;
+                month?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodReportDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    put_payment_api_tax_darf__year___month__payment_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                year: number;
+                month: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DarfPaymentInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyTaxDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remove_payment_api_tax_darf__year___month__payment_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                year: number;
+                month: number;
             };
             cookie?: never;
         };

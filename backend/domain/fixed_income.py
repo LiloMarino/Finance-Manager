@@ -16,6 +16,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from backend.core.enum import FixedIncomeMovementType, Indexer, IndexSeries
+from backend.domain.business_days import BusinessCalendar
 from backend.domain.index_series import DailyRate
 
 ZERO = Decimal(0)
@@ -98,25 +99,6 @@ class _Series:
         return self._dates[-1] if self._dates else None
 
 
-class _BusinessCalendar:
-    """Dia útil é dia com CDI publicado. Fora do trecho coberto pela série, vale
-    dia de semana."""
-
-    def __init__(self, cdi: Sequence[DailyRate]) -> None:
-        self._days = {rate.rate_date for rate in cdi}
-        self._first = cdi[0].rate_date if cdi else None
-        self._last = cdi[-1].rate_date if cdi else None
-
-    def is_business_day(self, day: date) -> bool:
-        if (
-            self._first is not None
-            and self._last is not None
-            and (self._first <= day <= self._last)
-        ):
-            return day in self._days
-        return day.weekday() < 5
-
-
 def tax_rate(days: int) -> Decimal:
     for limit, rate in TAX_BRACKETS:
         if days <= limit:
@@ -130,7 +112,7 @@ def _daily_factor(
 ) -> Callable[[date], Decimal]:
     """O quanto o título rende do dia `d` para o dia seguinte. Um dia útil carrega
     a taxa de um dia útil; o IPCA rende por dia corrido, pró-rata no mês."""
-    business = _BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
     share = terms.rate / HUNDRED
 
     match terms.indexer:

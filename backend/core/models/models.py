@@ -13,6 +13,7 @@ from sqlalchemy import (
     MetaData,
     String,
     TypeDecorator,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
@@ -202,3 +203,21 @@ class IndexHistory(Base):
     )
     rate_date: Mapped[date] = mapped_column(primary_key=True)
     value: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class DarfPayment(Base):
+    """O DARF que o usuário pagou, pelo mês de apuração a que ele se refere. O valor
+    devido é recalculado das operações; aqui fica o que foi pago de fato."""
+
+    __tablename__ = "darf_payments"
+    __table_args__ = (
+        UniqueConstraint("year", "month"),
+        CheckConstraint("month BETWEEN 1 AND 12", name="month_valid"),
+        CheckConstraint("CAST(amount AS REAL) > 0", name="amount_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    year: Mapped[int]
+    month: Mapped[int]
+    paid_on: Mapped[date]
+    amount: Mapped[Decimal] = mapped_column(DecimalText)

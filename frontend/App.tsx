@@ -12,6 +12,7 @@ import { ImportOperationsPage } from "@/pages/import-operations";
 import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
 import { PlaceholderPage } from "@/pages/placeholder";
+import { TaxPage } from "@/pages/tax";
 import { queryClient } from "@/shared/lib/query-client";
 
 export default function App() {
@@ -32,10 +33,7 @@ export default function App() {
               path="income"
               element={<PlaceholderPage title="Proventos" />}
             />
-            <Route
-              path="tax"
-              element={<PlaceholderPage title="Fiscal" />}
-            />
+            <Route path="tax" element={<TaxPage />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>
         </Routes>

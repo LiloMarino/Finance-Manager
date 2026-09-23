@@ -14,6 +14,7 @@ from backend.domain.position import (
     check_non_negative,
     current_positions,
     position_at,
+    settle_day_trades,
 )
 
 _ids = count(1)
@@ -53,7 +54,7 @@ def test_buys_weight_the_average_price() -> None:
 
 def test_partial_sell_keeps_average_price_and_full_sell_resets_it() -> None:
     """Venda parcial mantém o PM; zerar a posição zera o PM."""
-    buy = _op(OperationType.BUY, "10", "10")
+    buy = _op(OperationType.BUY, "10", "10", day=date(2024, 2, 1))
 
     assert _position(buy, _op(OperationType.SELL, "4", "50")) == Position(
         quantity=Decimal(6), average_price=Decimal(10)
@@ -134,3 +135,44 @@ def test_negative_position_is_refused() -> None:
 
     with pytest.raises(NegativePositionError, match="ABCD11 ficaria negativa em 05/02"):
         check_non_negative(operations)
+
+
+def test_day_trade_legs_leave_the_average_price_untouched() -> None:
+    """Compra e venda pareadas no mesmo dia são day trade: a posição que já existia
+    segue com o PM dela."""
+    position = _position(
+        _op(OperationType.BUY, "100", "10", day=date(2024, 2, 5)),
+        _op(OperationType.BUY, "100", "20", day=date(2024, 2, 6)),
+        _op(OperationType.SELL, "100", "25", day=date(2024, 2, 6)),
+    )
+
+    assert position == Position(quantity=Decimal(100), average_price=Decimal(10))
+
+
+def test_selling_before_buying_on_the_same_day_is_accepted() -> None:
+    """Vender e recomprar no mesmo dia sem posição é um day trade, não uma posição
+    negativa."""
+    operations = [
+        _op(OperationType.SELL, "10", "20", day=date(2024, 2, 5)),
+        _op(OperationType.BUY, "10", "18", day=date(2024, 2, 5)),
+    ]
+
+    check_non_negative(operations)
+    assert current_positions(operations) == {}
+
+
+def test_day_trade_pairs_first_buy_with_first_sell() -> None:
+    """O pareamento segue a ordem das execuções, e só o que sobra move a posição."""
+    settled, [trade] = settle_day_trades(
+        [
+            _op(OperationType.BUY, "10", "10", day=date(2024, 2, 5)),
+            _op(OperationType.BUY, "10", "12", day=date(2024, 2, 5)),
+            _op(OperationType.SELL, "15", "13", day=date(2024, 2, 5)),
+        ]
+    )
+
+    assert trade.quantity == Decimal(15)
+    assert trade.cost == Decimal(160)
+    assert trade.proceeds == Decimal(195)
+    [remaining] = settled
+    assert (remaining.quantity, remaining.unit_price) == (Decimal(5), Decimal(12))

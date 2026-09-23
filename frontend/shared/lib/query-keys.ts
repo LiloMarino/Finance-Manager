@@ -7,6 +7,7 @@ export const queryKeys = {
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   fixedIncome: ["fixed-income"] as const,
+  tax: ["tax"] as const,
 };
 
 /** Invalida toda query cuja chave começa por uma das `keys`. */
@@ -20,12 +21,14 @@ export function invalidateKeys(
   });
 }
 
-/** Toda escrita em ativo ou operação muda a carteira, as listas e os ativos a cotar. */
+/** Toda escrita em ativo ou operação muda a carteira, as listas, os ativos a cotar
+e a apuração fiscal. */
 export function invalidatePortfolioData(queryClient: QueryClient): Promise<void> {
   return invalidateKeys(queryClient, [
     queryKeys.assets,
     queryKeys.operations,
     queryKeys.portfolio,
     queryKeys.prices,
+    queryKeys.tax,
   ]);
 }
