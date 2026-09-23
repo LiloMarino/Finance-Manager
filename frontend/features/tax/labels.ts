@@ -64,10 +64,11 @@ export function describeStatus(month: MonthlyTax): string {
   }
 }
 
-/** "setembro de 2026" */
+/** "Setembro de 2026" */
 export function formatMonth(year: number, month: number): string {
-  return new Date(year, month - 1).toLocaleDateString("pt-BR", {
+  const text = new Date(year, month - 1).toLocaleDateString("pt-BR", {
     month: "long",
     year: "numeric",
   });
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

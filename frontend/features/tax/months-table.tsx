@@ -41,11 +41,11 @@ export function MonthsTable({ months, onSelect }: MonthsTableProps) {
       <TableBody>
         {months.map((month) => (
           <TableRow key={`${month.year}-${month.month}`}>
-            <TableCell className="font-medium capitalize">
+            <TableCell className="font-medium">
               {onSelect ? (
                 <button
                   type="button"
-                  className="capitalize hover:underline"
+                  className="hover:underline"
                   onClick={() => onSelect(month)}
                 >
                   {formatMonth(month.year, month.month)}

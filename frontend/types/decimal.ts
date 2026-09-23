@@ -68,6 +68,11 @@ export function formatQuantity(value: DecimalString): string {
   return quantityFormatter.format(value);
 }
 
+/** Zero em qualquer escala: "0", "0.00", "-0". */
+export function isZero(value: DecimalString): boolean {
+  return /^-?0*(\.0*)?$/.test(value);
+}
+
 /** Única porta de entrada: use ao criar um Decimal no front (formulário, teste). */
 export function toDecimalString(value: string): DecimalString {
   return value as DecimalString;
