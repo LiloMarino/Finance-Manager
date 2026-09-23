@@ -1,8 +1,8 @@
 # Finance Manager
 
 Dashboard pessoal de investimentos, **local-first**: roda em 127.0.0.1, sem
-autenticação e sem nuvem, com os dados num SQLite na própria máquina. Substitui o
-Status Invest e as planilhas de controle, e absorve o IR-Helper.
+autenticação e sem nuvem, com os dados num SQLite na própria máquina. Reúne
+carteira, rentabilidade, proventos e imposto de renda num lugar só.
 
 O que construir, em que ordem e por quê está em [ROADMAP.md](ROADMAP.md) e
 [DECISIONS.md](DECISIONS.md).

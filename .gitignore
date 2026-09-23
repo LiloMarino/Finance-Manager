@@ -13,8 +13,8 @@ node_modules/
 dist/
 *.tsbuildinfo
 
-# Saída derivada do oráculo (irpf_helper.db) ou de notas de corretagem: traz nome,
-# CPF, endereço e preços reais, e é reprodutível a partir do oráculo.
+# Texto extraído de notas de corretagem e saídas de conferência: trazem nome, CPF,
+# endereço e preços reais.
 spikes/
 **/out/
 **/ref/

@@ -1,9 +1,8 @@
 """Posição e preço médio, recalculados das operações a cada consulta.
 
 Funções puras sobre `OperationRecord`: servem as telas, a transferência, a checagem
-de posição negativa e a apuração fiscal. As regras de cada tipo e a ordem das contas
-reproduzem as do IR-Helper, então o PM bate dígito a dígito no contexto Decimal
-padrão (28 dígitos).
+de posição negativa e a apuração fiscal. A ordem das contas faz parte do resultado:
+no contexto Decimal padrão (28 dígitos), outra ordem muda o último dígito do PM.
 
 O PM é o custo fiscal: compra e venda do mesmo ativo no mesmo dia se pareiam como day
 trade (Perguntas e Respostas IRPF 2026, pergunta 705) e só as sobras movem a posição.

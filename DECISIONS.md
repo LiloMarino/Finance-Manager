@@ -12,7 +12,7 @@
 
 ## Contexto
 
-Dashboard pessoal de investimentos, **local-first**: roda em 127.0.0.1, sem autenticação, sem nuvem, sem multiusuário — os dados ficam num SQLite na própria máquina. Privacidade dos dados financeiros é parte do motivo do projeto; auth e cloud seriam complexidade sem uso. Substitui o Status Invest — que desincronizou da B3 e esconde o que importa atrás de plano pago — e as planilhas de controle, e centraliza a vida de investimentos num lugar só.
+Dashboard pessoal de investimentos, **local-first**: roda em 127.0.0.1, sem autenticação, sem nuvem, sem multiusuário — os dados ficam num SQLite na própria máquina. Privacidade dos dados financeiros é parte do motivo do projeto; auth e cloud seriam complexidade sem uso. Substitui os agregadores de carteira — que desincronizam da B3 e escondem o que importa atrás de plano pago — e as planilhas de controle, e centraliza a vida de investimentos num lugar só.
 
 Absorve projetos irmãos que falam do mesmo domínio, pra acabar com a sincronização manual entre eles:
 - **IR-Helper** — FastAPI + SQLAlchemy + SQLite + React/Vite. Já tem a parte mais difícil: operações reconciliadas entre notas de corretagem (PDF) e o portal da B3 (xlsx), preço médio, eventos corporativos, DARF, prejuízo acumulado. É **absorvido e aposentado** (D8): tudo o que ele faz passa a existir aqui (F23).
@@ -28,13 +28,13 @@ Classes de ativo no escopo: **ações/FII/ETF/BDR da B3 e renda fixa/Tesouro**. 
 ## Necessidades
 
 **N1. Medir rentabilidade real ⭐**
-Saber se os investimentos estão de fato rendendo: desempenho de rentabilidade no tempo, patrimônio × rentabilidade, comparação ano a ano. É o que o usuário mais usava no Status Invest e chama de "absurdamente essencial". Implica comparar com referências (CDI, IPCA, IBOV).
+Saber se os investimentos estão de fato rendendo: desempenho de rentabilidade no tempo, patrimônio × rentabilidade, comparação ano a ano. É o que o usuário mais consulta na carteira e chama de "absurdamente essencial". Implica comparar com referências (CDI, IPCA, IBOV).
 
 **N2. Ver o patrimônio consolidado**
 Patrimônio total e por categoria, posição na carteira, ativos por categoria — incluindo renda fixa, não só bolsa.
 
 **N3. Posições e preço médio corretos, numa fonte única**
-Os números têm que bater com a realidade (B3 + notas de corretagem), inclusive nos casos em que o próprio xlsx da B3 é incompleto. E sem ter que sincronizar a mesma informação em dois sistemas (hoje: IR-Helper e Status Invest).
+Os números têm que bater com a realidade (B3 + notas de corretagem), inclusive nos casos em que o próprio xlsx da B3 é incompleto. E sem ter que sincronizar a mesma informação em dois sistemas (hoje: IR-Helper e um agregador de carteira).
 
 **N4. Acompanhar proventos**
 Quanto recebeu de dividendos/JCP/rendimentos ao longo do tempo (desempenho de proventos).
@@ -161,8 +161,8 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 ### D5 — Rentabilidade principal por cota (TWR)
 **Status:** ✅ Decidida
 
-**Decisão:** A rentabilidade da carteira é medida por cota (time-weighted), que neutraliza aportes e resgates — o mesmo conceito do Status Invest. Retorno ponderado por dinheiro (XIRR) pode vir depois como visão complementar.
-**Por quê:** sem neutralizar aportes, um aporte grande "parece" rentabilidade; e bater com o Status Invest é o critério de validação natural de N1.
+**Decisão:** A rentabilidade da carteira é medida por cota (time-weighted), que neutraliza aportes e resgates — o mesmo conceito da cota dos fundos de investimento. Retorno ponderado por dinheiro (XIRR) pode vir depois como visão complementar.
+**Por quê:** sem neutralizar aportes, um aporte grande "parece" rentabilidade; e é a medida que corretoras e agregadores publicam, o que dá a N1 um critério de validação externo.
 
 ### D6 — Dados de mercado atrás de uma interface, com cache local
 **Status:** ✅ Decidida

@@ -14,7 +14,7 @@ Contexto de produto e ordem de construção: [DECISIONS.md](DECISIONS.md) e
 `N#`, `D#`, `F#`, `M#` e os nomes de spike existem só no `ROADMAP.md` e no
 `DECISIONS.md`. Código, comentários, testes, textos de UI, README e commits dizem a
 coisa pelo nome, para quem lê sem abrir o roadmap: "Decimal gravado como TEXT", e
-não "(D4)"; "suítes de paridade com o IR-Helper", e não "F8".
+não "(D4)"; "apuração mensal do imposto", e não "F21".
 
 ## Documentos do roadmap
 
@@ -24,8 +24,8 @@ não "(D4)"; "suítes de paridade com o IR-Helper", e não "F8".
 
 ## Dados
 
-- O `irpf_helper.db` do IR-Helper é oráculo somente leitura. Tudo que sai dele
-  fica fora do git: nota de corretagem em texto traz nome, CPF e endereço.
+- Nota de corretagem e relatório da B3 trazem nome, CPF e endereço: o texto
+  extraído deles fica fora do git.
 - `data/` (banco vivo) e `backups/` (snapshots) são locais e ignorados.
 
 ## Backend

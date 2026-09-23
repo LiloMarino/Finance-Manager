@@ -349,7 +349,7 @@ Decisões tomadas durante:
 - **Os tokens `--chart-1..5` ganharam uma paleta categórica validada** (lightness, croma, separação para daltonismo e para visão normal, nos dois temas); os cinzas do preset reprovavam como categórica. A cor segue a categoria, não a posição dela no donut.
 - Resultado com sinal e percentual, sem cor de alta e baixa: essa cor é decisão de F30.
 
-**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF numa data de conferência, e o usuário para de abrir o Status Invest pra ver "quanto tenho". Verificado na cópia do banco migrado: a soma das categorias é o total, e o total é renda variável a mercado mais a renda fixa bruta. A conferência contra a B3 fica com o usuário.
+**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF numa data de conferência, e o usuário para de abrir outro app pra ver "quanto tenho". Verificado na cópia do banco migrado: a soma das categorias é o total, e o total é renda variável a mercado mais a renda fixa bruta. A conferência contra a B3 fica com o usuário.
 
 **F12 — Renda fixa.** Tabelas próprias: `fixed_income_investments` (nome único, indexador, taxa, vencimento opcional, liquidez diária, isenção) e `fixed_income_movements` (aplicação e resgate, os dois pelo valor bruto), com CHECK de taxa e valor positivos. A classe `fixed_income` saiu do `AssetClass`: título de renda fixa não é ativo da B3, e o schema deixa de admitir operação de bolsa nele. As séries do BCB SGS (CDI 12, Selic 11, IPCA 433) ficam atrás do `IndexSeriesProvider` (`backend/domain/index_series.py`), implementado em `backend/adapters/bcb_sgs_provider.py` com `urllib` da stdlib; o `valor` chega como string no JSON e vira Decimal direto. Cache em `index_history`, refresh em `POST /api/market/indexes/refresh` disparado junto com o de cotações, começando no dia 1 do mês da última data em cache (ou da primeira movimentação), em janelas de até 10 anos, que é o limite do SGS. A tela Mercado mostra o último valor de cada série.
 
@@ -371,7 +371,7 @@ Decisões tomadas durante:
 **A conferir aqui:** o `price_history` guarda o fechamento ajustado por desdobramento e grupamento, que é o que o yfinance entrega. O valor numa data passada precisa então da quantidade convertida para a base atual pelos eventos de split/grupamento de `operations`. Conferir contra a carteira real, já inteira cadastrada, antes de confiar na série anterior a um evento.
 
 **F15 — Rentabilidade por cota.** Cota diária da carteira (e por categoria) a partir de F14, neutralizando aportes e resgates (D5); gráfico de rentabilidade acumulada com seletor de período (mês, ano, 12m, desde o início). Serve N1.
-**Aceite:** a rentabilidade de um período em que o Status Invest ainda estava sincronizado bate com a dele (diferença de até 0,1 p.p.).
+**Aceite:** a rentabilidade de um período conhecido bate com a de uma fonte externa que também mede por cota (diferença de até 0,1 p.p.).
 
 **F16 — Benchmarks.** Séries do CDI e do IPCA (BCB) e do IBOV (`^BVSP`) no mesmo gráfico da rentabilidade, rebaseadas no início do período escolhido; rentabilidade em "% do CDI". Serve N1.
 **Aceite:** o usuário consegue responder "rendi mais que o CDI este ano?" olhando uma tela só.
@@ -379,8 +379,8 @@ Decisões tomadas durante:
 **F17 — Patrimônio × aportes.** Gráfico do patrimônio contra o capital investido acumulado (aportes − resgates), mostrando quanto do crescimento é rendimento e quanto é aporte. Junto, o aporte de cada mês: o fluxo líquido que entrou na carteira (compras e aplicações de RF menos vendas e resgates), derivado das operações (D2), sem lançamento separado. É o histórico que F24 usa pra sugerir como distribuir o próximo aporte. Serve N1.
 **Aceite:** a diferença entre as duas curvas no fim do período bate com o ganho total (realizado + não realizado + proventos, quando M4 existir).
 
-**F18 — Mês × ano.** Tabela estilo Status Invest: linhas = anos, colunas = meses + acumulado do ano, com a rentabilidade da carteira e do CDI lado a lado, colorida por desempenho. Serve N1.
-**Aceite:** o usuário usa essa tabela no lugar da comparação ano a ano que fazia no Status Invest.
+**F18 — Mês × ano.** Tabela de rentabilidade: linhas = anos, colunas = meses + acumulado do ano, com a rentabilidade da carteira e do CDI lado a lado, colorida por desempenho. Serve N1.
+**Aceite:** o usuário usa essa tabela como a comparação ano a ano da carteira.
 
 **F20 — Proventos.** Tabela `income_event` (ativo, tipo, data-com, data de pagamento, valor bruto, IR retido); importação pela fonte decidida em F19 + cadastro manual; gráfico mensal/anual de proventos, yield on cost por ativo; proventos entram como fluxo na série de F14, pro retorno total; e as fichas de proventos do relatório do IRPF de F22 (Rendimentos Isentos cód. 09 para dividendos, Tributação Exclusiva cód. 10 para JCP, por fonte pagadora com CNPJ). Serve N4 e N5.
 **Aceite:** o total de proventos recebidos num ano bate com o informe de rendimentos da corretora.
