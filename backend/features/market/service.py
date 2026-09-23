@@ -75,6 +75,17 @@ def refresh_prices(
         .group_by(Asset.id, Asset.ticker, last_cached.c.last_date)
         .order_by(Asset.ticker)
     ).all()
+    # A rede é consultada fora de transação: enquanto o provider responde, o SQLite
+    # segue livre para as escritas das outras requisições
+    session.commit()
+    fetched = [
+        (
+            asset_id,
+            ticker,
+            _fetch(provider, ticker, last_date or first_operation, today),
+        )
+        for asset_id, ticker, first_operation, last_date in plan
+    ]
 
     upsert = insert(PriceHistory)
     upsert = upsert.on_conflict_do_update(
@@ -84,8 +95,7 @@ def refresh_prices(
 
     updated: list[str] = []
     failed: list[str] = []
-    for asset_id, ticker, first_operation, last_date in plan:
-        closes = _fetch(provider, ticker, last_date or first_operation, today)
+    for asset_id, ticker, closes in fetched:
         if not closes:
             failed.append(ticker)
             continue
