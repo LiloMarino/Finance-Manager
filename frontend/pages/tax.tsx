@@ -3,12 +3,18 @@ import { useState } from "react";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
 import { DarfCard } from "@/features/tax/darf-card";
+import { IrpfReport } from "@/features/tax/irpf-report";
 import { formatMonth } from "@/features/tax/labels";
 import { LossesSection } from "@/features/tax/losses-section";
 import { MonthsTable } from "@/features/tax/months-table";
 import { type Period, PeriodNavigator } from "@/features/tax/period-navigator";
 import { PositionsSection } from "@/features/tax/positions-section";
-import { type MonthlyTax, useTaxMonths, useTaxPeriod } from "@/features/tax/use-tax";
+import {
+  type MonthlyTax,
+  useIrpfReport,
+  useTaxMonths,
+  useTaxPeriod,
+} from "@/features/tax/use-tax";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
@@ -24,6 +30,10 @@ export function TaxPage() {
         <p className="text-muted-foreground">
           Apuração mensal do IR sobre renda variável, pelas regras da Receita, com o DARF
           de cada mês.
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          A apuração ainda não considera o custo atribuído à bonificação, as taxas da nota
+          de corretagem nem o IRRF retido na fonte.
         </p>
       </div>
 
@@ -66,6 +76,7 @@ function TaxTabs({ months }: { months: MonthlyTax[] }) {
         <TabsTrigger value="monthly">Mensal</TabsTrigger>
         <TabsTrigger value="yearly">Anual</TabsTrigger>
         <TabsTrigger value="all">Todos os meses</TabsTrigger>
+        <TabsTrigger value="irpf">IRPF</TabsTrigger>
       </TabsList>
 
       <TabsContent value="monthly" className="flex flex-col gap-6">
@@ -89,6 +100,15 @@ function TaxTabs({ months }: { months: MonthlyTax[] }) {
 
       <TabsContent value="all">
         <MonthsTable months={[...months].reverse()} onSelect={openMonth} />
+      </TabsContent>
+
+      <TabsContent value="irpf" className="flex flex-col gap-6">
+        <PeriodNavigator
+          years={years}
+          year={period.year}
+          onChange={({ year }) => setPeriod({ ...period, year })}
+        />
+        <IrpfView year={period.year} />
       </TabsContent>
     </Tabs>
   );
@@ -173,4 +193,16 @@ function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
       )}
     </div>
   );
+}
+
+function IrpfView({ year }: { year: number }) {
+  const { data, isPending, error } = useIrpfReport(year);
+
+  if (error) {
+    return <span className="text-destructive">{getApiErrorMessage(error)}</span>;
+  }
+  if (isPending) {
+    return <Skeleton className="h-40 w-full" />;
+  }
+  return <IrpfReport report={data} />;
 }

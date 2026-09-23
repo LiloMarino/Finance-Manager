@@ -42,10 +42,14 @@ export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigato
   const hasPrevious = previous.year >= (years.at(0) ?? year);
   const hasNext = next.year <= (years.at(-1) ?? year);
 
-  // ← e → navegam pelo período
+  // ← e → navegam pelo período, exceto quando o foco está num controle que já usa
+  // as setas: campo de texto, abas e select
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLElement && event.target.closest("input, textarea")) {
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest("input, textarea, [role=tablist], [role=combobox]")
+      ) {
         return;
       }
       if (event.key === "ArrowLeft" && hasPrevious) onChange(previous);

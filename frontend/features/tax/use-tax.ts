@@ -7,6 +7,7 @@ import type { components } from "@/types/openapi.generated";
 
 export type MonthlyTax = components["schemas"]["MonthlyTaxDTO"];
 export type PeriodReport = components["schemas"]["PeriodReportDTO"];
+export type IrpfReport = components["schemas"]["IrpfReportDTO"];
 type DarfPaymentInput = components["schemas"]["DarfPaymentInDTO"];
 
 export function useTaxMonths() {
@@ -21,6 +22,13 @@ export function useTaxPeriod(year: number, month?: number) {
   return useQuery({
     queryKey: [...queryKeys.tax, "period", year, month ?? null],
     queryFn: () => get("/api/tax/period", { query: { year, month } }),
+  });
+}
+
+export function useIrpfReport(year: number) {
+  return useQuery({
+    queryKey: [...queryKeys.tax, "irpf", year],
+    queryFn: () => get("/api/tax/irpf/{year}", { path: { year } }),
   });
 }
 

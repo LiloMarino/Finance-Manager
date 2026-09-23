@@ -93,3 +93,52 @@ class DarfPaymentInDTO(BaseDTO):
         if value <= 0:
             raise ValueError("O valor pago deve ser maior que zero.")
         return value
+
+
+class IrpfAssetDTO(BaseDTO):
+    """Um item da ficha Bens e Direitos, pelo custo de aquisição em 31/12."""
+
+    asset_id: int
+    ticker: str
+    asset_class: AssetClass
+    group: str
+    code: str
+    cnpj: str | None
+    description: str
+    previous_value: DecimalStr
+    current_value: DecimalStr
+
+
+class IrpfExemptMonthDTO(BaseDTO):
+    month: int
+    profit: DecimalStr
+
+
+class IrpfVariableIncomeMonthDTO(BaseDTO):
+    """Uma linha do demonstrativo de renda variável: o resultado líquido de cada
+    conjunto no mês, o imposto apurado e o DARF pago de fato."""
+
+    month: int
+    common: DecimalStr
+    day_trade: DecimalStr
+    fii: DecimalStr
+    tax: DecimalStr
+    darf_amount: DecimalStr | None
+    due_date: date | None
+    paid_on: date | None
+    paid_amount: DecimalStr | None
+
+
+class IrpfLossDTO(BaseDTO):
+    pool: LossPool
+    amount: DecimalStr
+
+
+class IrpfReportDTO(BaseDTO):
+    year: int
+    darf_code: str
+    assets: list[IrpfAssetDTO]
+    exempt_months: list[IrpfExemptMonthDTO]
+    exempt_total: DecimalStr
+    variable_income: list[IrpfVariableIncomeMonthDTO]
+    losses: list[IrpfLossDTO]

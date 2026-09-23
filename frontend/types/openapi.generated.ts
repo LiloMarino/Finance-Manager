@@ -359,6 +359,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tax/irpf/{year}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Irpf */
+        get: operations["get_irpf_api_tax_irpf__year__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -749,6 +766,111 @@ export interface components {
          * @enum {string}
          */
         Indexer: "cdi" | "selic" | "ipca" | "prefixed";
+        /**
+         * IrpfAssetDTO
+         * @description Um item da ficha Bens e Direitos, pelo custo de aquisição em 31/12.
+         */
+        IrpfAssetDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            asset_class: components["schemas"]["AssetClass"];
+            /** Group */
+            group: string;
+            /** Code */
+            code: string;
+            /** Cnpj */
+            cnpj: string | null;
+            /** Description */
+            description: string;
+            /**
+             * Previous Value
+             * Format: decimal
+             */
+            previous_value: DecimalString;
+            /**
+             * Current Value
+             * Format: decimal
+             */
+            current_value: DecimalString;
+        };
+        /** IrpfExemptMonthDTO */
+        IrpfExemptMonthDTO: {
+            /** Month */
+            month: number;
+            /**
+             * Profit
+             * Format: decimal
+             */
+            profit: DecimalString;
+        };
+        /** IrpfLossDTO */
+        IrpfLossDTO: {
+            pool: components["schemas"]["LossPool"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /** IrpfReportDTO */
+        IrpfReportDTO: {
+            /** Year */
+            year: number;
+            /** Darf Code */
+            darf_code: string;
+            /** Assets */
+            assets: components["schemas"]["IrpfAssetDTO"][];
+            /** Exempt Months */
+            exempt_months: components["schemas"]["IrpfExemptMonthDTO"][];
+            /**
+             * Exempt Total
+             * Format: decimal
+             */
+            exempt_total: DecimalString;
+            /** Variable Income */
+            variable_income: components["schemas"]["IrpfVariableIncomeMonthDTO"][];
+            /** Losses */
+            losses: components["schemas"]["IrpfLossDTO"][];
+        };
+        /**
+         * IrpfVariableIncomeMonthDTO
+         * @description Uma linha do demonstrativo de renda variável: o resultado líquido de cada
+         *     conjunto no mês, o imposto apurado e o DARF pago de fato.
+         */
+        IrpfVariableIncomeMonthDTO: {
+            /** Month */
+            month: number;
+            /**
+             * Common
+             * Format: decimal
+             */
+            common: DecimalString;
+            /**
+             * Day Trade
+             * Format: decimal
+             */
+            day_trade: DecimalString;
+            /**
+             * Fii
+             * Format: decimal
+             */
+            fii: DecimalString;
+            /**
+             * Tax
+             * Format: decimal
+             */
+            tax: DecimalString;
+            /** Darf Amount */
+            darf_amount: DecimalString | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Paid On */
+            paid_on: string | null;
+            /** Paid Amount */
+            paid_amount: DecimalString | null;
+        };
         /** LatestIndexDTO */
         LatestIndexDTO: {
             series: components["schemas"]["IndexSeries"];
@@ -2297,6 +2419,46 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_irpf_api_tax_irpf__year__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                year: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IrpfReportDTO"];
+                };
             };
             /** @description Unprocessable Content */
             422: {

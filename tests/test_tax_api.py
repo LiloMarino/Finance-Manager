@@ -112,3 +112,46 @@ def test_period_brings_opening_and_closing_positions(
     year = api.get("/api/tax/period", params={"year": 2024}).json()
     assert year["opening"] == []
     assert (year["start"], year["end"]) == ("2024-01-01", "2024-12-31")
+
+
+def test_irpf_report_fills_each_form(api: TestClient, session: Session) -> None:
+    """O relatório do ano-base traz o bem com o código da ficha e o custo nos dois
+    31/12, sem o que foi comprado e vendido dentro do ano; o lucro isento de ações;
+    o resultado mensal por conjunto; e o DARF pago."""
+    _etf_with_gain(session)
+    stock = Asset(ticker="ABCD3", asset_class=AssetClass.STOCK)
+    session.add(stock)
+    session.flush()
+    for day, operation_type, quantity, price in (
+        (date(2023, 12, 1), OperationType.BUY, "1000", "10"),
+        (date(2024, 3, 5), OperationType.SELL, "500", "12"),
+    ):
+        session.add(
+            Operation(
+                asset_id=stock.id,
+                operation_date=day,
+                operation_type=operation_type,
+                quantity=Decimal(quantity),
+                unit_price=Decimal(price),
+            )
+        )
+    session.commit()
+    api.put(
+        "/api/tax/darf/2024/2/payment",
+        json={"paid_on": "2024-03-20", "amount": "750.00"},
+    )
+
+    body = api.get("/api/tax/irpf/2024").json()
+
+    assets = {item["ticker"]: item for item in body["assets"]}
+    assert (assets["ABCD3"]["group"], assets["ABCD3"]["code"]) == ("03", "01")
+    assert assets["ABCD3"]["previous_value"] == "10000.00"
+    assert assets["ABCD3"]["current_value"] == "5000.00"
+    assert assets["ABCD3"]["description"] == "500 ações ABCD3, custo médio de R$ 10,00."
+    assert "IJKL11" not in assets
+
+    assert body["exempt_months"] == [{"month": 3, "profit": "1000"}]
+    february = body["variable_income"][1]
+    assert february["common"] == "5000"
+    assert february["paid_amount"] == "750.00"
+    assert body["darf_code"] == "6015"

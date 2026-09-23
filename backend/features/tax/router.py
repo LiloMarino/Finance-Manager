@@ -6,7 +6,13 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query, status
 
 from backend.core.database.session import SessionDep
-from backend.features.tax.dto import DarfPaymentInDTO, MonthlyTaxDTO, PeriodReportDTO
+from backend.features.tax.dto import (
+    DarfPaymentInDTO,
+    IrpfReportDTO,
+    MonthlyTaxDTO,
+    PeriodReportDTO,
+)
+from backend.features.tax.irpf import irpf_report
 from backend.features.tax.service import (
     delete_payment,
     list_months,
@@ -43,3 +49,8 @@ def put_payment(
 @router.delete("/darf/{year}/{month}/payment", status_code=status.HTTP_204_NO_CONTENT)
 def remove_payment(session: SessionDep, year: int, month: Month) -> None:
     delete_payment(session, year, month)
+
+
+@router.get("/irpf/{year}")
+def get_irpf(session: SessionDep, year: int) -> IrpfReportDTO:
+    return irpf_report(session, year, date.today())
