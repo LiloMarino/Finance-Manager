@@ -4,11 +4,13 @@ import {
   ArrowLeftRight,
   Boxes,
   Coins,
+  Landmark,
   LineChart,
   PieChart,
   Receipt,
 } from "lucide-react";
 
+import { useRefreshIndexes } from "@/features/market/use-refresh-indexes";
 import { useRefreshPrices } from "@/features/market/use-refresh-prices";
 import {
   Sidebar,
@@ -30,6 +32,7 @@ const navItems = [
   { to: "/", label: "Carteira", icon: PieChart },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },
+  { to: "/fixed-income", label: "Renda fixa", icon: Landmark },
   { to: "/market", label: "Mercado", icon: LineChart },
   { to: "/income", label: "Proventos", icon: Coins },
   { to: "/tax", label: "Fiscal", icon: Receipt },
@@ -37,11 +40,13 @@ const navItems = [
 
 export function MainLayout() {
   const { mutate: refreshPrices } = useRefreshPrices();
+  const { mutate: refreshIndexes } = useRefreshIndexes();
 
-  // O cache de cotações recebe os dias que faltam a cada abertura do app
+  // Os caches de cotações e de séries recebem os dias que faltam a cada abertura
   useEffect(() => {
     refreshPrices();
-  }, [refreshPrices]);
+    refreshIndexes();
+  }, [refreshPrices, refreshIndexes]);
 
   return (
     <SidebarProvider>

@@ -1,17 +1,31 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient, QueryKey } from "@tanstack/react-query";
 
 export const queryKeys = {
   assets: ["assets"] as const,
   operations: ["operations"] as const,
   positions: ["portfolio", "positions"] as const,
   prices: ["market", "prices"] as const,
+  indexes: ["market", "indexes"] as const,
+  fixedIncome: ["fixed-income"] as const,
 };
+
+/** Invalida toda query cuja chave começa por uma das `keys`. */
+export function invalidateKeys(
+  queryClient: QueryClient,
+  keys: readonly QueryKey[],
+): Promise<void> {
+  return queryClient.invalidateQueries({
+    predicate: ({ queryKey }) =>
+      keys.some((key) => key.every((part, index) => queryKey[index] === part)),
+  });
+}
 
 /** Toda escrita em ativo ou operação muda posição, listas e os ativos a cotar. */
 export function invalidatePortfolioData(queryClient: QueryClient): Promise<void> {
-  return queryClient.invalidateQueries({
-    predicate: ({ queryKey }) =>
-      [queryKeys.assets, queryKeys.operations, queryKeys.positions, queryKeys.prices]
-        .some((key) => key.every((part, index) => queryKey[index] === part)),
-  });
+  return invalidateKeys(queryClient, [
+    queryKeys.assets,
+    queryKeys.operations,
+    queryKeys.positions,
+    queryKeys.prices,
+  ]);
 }

@@ -17,7 +17,13 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
 from backend.core.decimal_ctx import fmt
-from backend.core.enum import AssetClass, OperationType
+from backend.core.enum import (
+    AssetClass,
+    FixedIncomeMovementType,
+    Indexer,
+    IndexSeries,
+    OperationType,
+)
 
 # Toda constraint nasce com nome. É o nome que o batch do Alembic usa para recriar a
 # tabela no SQLite, e é por ele que o teste de migration confere cada CHECK no DDL.
@@ -75,7 +81,7 @@ class Asset(Base):
     __tablename__ = "assets"
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    # Código de negociação na B3; em renda fixa, o rótulo da aplicação
+    # Código de negociação na B3
     ticker: Mapped[str] = mapped_column(String, unique=True)
     asset_class: Mapped[AssetClass] = mapped_column(
         _enum_column(AssetClass, "asset_class")
@@ -139,3 +145,60 @@ class PriceHistory(Base):
     )
     price_date: Mapped[date] = mapped_column(primary_key=True)
     close: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class FixedIncomeInvestment(Base):
+    """Um título de renda fixa. O valor dele é marcado a partir das movimentações e
+    das séries do indexador.
+
+    O significado de `rate` depende do indexador:
+    - cdi/selic: percentual do indexador (110 = 110% do CDI);
+    - ipca: a taxa real anual somada ao IPCA (6 = IPCA + 6% a.a.);
+    - prefixed: a taxa anual (12 = 12% a.a.).
+    """
+
+    __tablename__ = "fixed_income_investments"
+    __table_args__ = (CheckConstraint("CAST(rate AS REAL) > 0", name="rate_positive"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    label: Mapped[str] = mapped_column(String, unique=True)
+    indexer: Mapped[Indexer] = mapped_column(_enum_column(Indexer, "indexer"))
+    rate: Mapped[Decimal] = mapped_column(DecimalText)
+    maturity_date: Mapped[date | None]
+    daily_liquidity: Mapped[bool]
+    tax_exempt: Mapped[bool]
+
+
+class FixedIncomeMovement(Base):
+    """Dado primário da renda fixa: aplicação e resgate, os dois pelo valor bruto."""
+
+    __tablename__ = "fixed_income_movements"
+    __table_args__ = (
+        CheckConstraint("CAST(amount AS REAL) > 0", name="amount_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    investment_id: Mapped[int] = mapped_column(
+        ForeignKey("fixed_income_investments.id", ondelete="RESTRICT"), index=True
+    )
+    movement_date: Mapped[date]
+    movement_type: Mapped[FixedIncomeMovementType] = mapped_column(
+        _enum_column(FixedIncomeMovementType, "movement_type")
+    )
+    amount: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class IndexHistory(Base):
+    """Cache das séries do BCB, refeito a partir do provider de séries.
+
+    `value` é a taxa em % como o BCB publica: ao dia para CDI e Selic, ao mês para
+    o IPCA, gravado no primeiro dia do mês de referência.
+    """
+
+    __tablename__ = "index_history"
+
+    series: Mapped[IndexSeries] = mapped_column(
+        _enum_column(IndexSeries, "series"), primary_key=True
+    )
+    rate_date: Mapped[date] = mapped_column(primary_key=True)
+    value: Mapped[Decimal] = mapped_column(DecimalText)

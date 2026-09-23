@@ -55,6 +55,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/market/indexes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Indexes */
+        get: operations["list_indexes_api_market_indexes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/market/indexes/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Index Series
+         * @description Sem rede não é erro: a série vai para `failed` e o cache fica como estava.
+         */
+        post: operations["refresh_index_series_api_market_indexes_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/operations": {
         parameters: {
             query?: never;
@@ -199,6 +236,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fixed-income": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All */
+        get: operations["list_all_api_fixed_income_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_fixed_income_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fixed-income/{investment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_fixed_income__investment_id__get"];
+        /** Update */
+        put: operations["update_api_fixed_income__investment_id__put"];
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_fixed_income__investment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fixed-income/{investment_id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Movement */
+        post: operations["create_movement_api_fixed_income__investment_id__movements_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fixed-income/movements/{movement_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Movement */
+        delete: operations["remove_movement_api_fixed_income_movements__movement_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -207,7 +315,7 @@ export interface components {
          * AssetClass
          * @enum {string}
          */
-        AssetClass: "stock" | "fii" | "etf" | "bdr" | "fixed_income";
+        AssetClass: "stock" | "fii" | "etf" | "bdr";
         /** AssetDTO */
         AssetDTO: {
             /** Id */
@@ -255,6 +363,125 @@ export interface components {
             /** Detail */
             detail: string;
         };
+        /**
+         * FixedIncomeDTO
+         * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou.
+         */
+        FixedIncomeDTO: {
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /** Maturity Date */
+            maturity_date: string | null;
+            /** Daily Liquidity */
+            daily_liquidity: boolean;
+            /** Tax Exempt */
+            tax_exempt: boolean;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Estimated Tax
+             * Format: decimal
+             */
+            estimated_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Series Date */
+            series_date: string | null;
+        };
+        /** FixedIncomeDetailDTO */
+        FixedIncomeDetailDTO: {
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /** Maturity Date */
+            maturity_date: string | null;
+            /** Daily Liquidity */
+            daily_liquidity: boolean;
+            /** Tax Exempt */
+            tax_exempt: boolean;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Estimated Tax
+             * Format: decimal
+             */
+            estimated_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Series Date */
+            series_date: string | null;
+            /** Movements */
+            movements: components["schemas"]["MovementDTO"][];
+        };
+        /** FixedIncomeInDTO */
+        FixedIncomeInDTO: {
+            /** Label */
+            label: string;
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /** Maturity Date */
+            maturity_date?: string | null;
+            /** Daily Liquidity */
+            daily_liquidity: boolean;
+            /** Tax Exempt */
+            tax_exempt: boolean;
+        };
+        /**
+         * FixedIncomeMovementType
+         * @enum {string}
+         */
+        FixedIncomeMovementType: "application" | "redemption";
         /** HealthDTO */
         HealthDTO: {
             /** Status */
@@ -349,6 +576,59 @@ export interface components {
              * Format: decimal
              */
             unit_price: DecimalString;
+        };
+        /**
+         * IndexSeries
+         * @enum {string}
+         */
+        IndexSeries: "cdi" | "selic" | "ipca";
+        /**
+         * Indexer
+         * @enum {string}
+         */
+        Indexer: "cdi" | "selic" | "ipca" | "prefixed";
+        /** LatestIndexDTO */
+        LatestIndexDTO: {
+            series: components["schemas"]["IndexSeries"];
+            /** Value */
+            value: DecimalString | null;
+            /** Rate Date */
+            rate_date: string | null;
+        };
+        /** MovementDTO */
+        MovementDTO: {
+            /** Id */
+            id: number;
+            /** Investment Id */
+            investment_id: number;
+            /**
+             * Movement Date
+             * Format: date
+             */
+            movement_date: string;
+            movement_type: components["schemas"]["FixedIncomeMovementType"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /**
+         * MovementInDTO
+         * @description Aplicação ou resgate, pelo valor bruto.
+         */
+        MovementInDTO: {
+            /**
+             * Movement Date
+             * Format: date
+             */
+            movement_date: string;
+            movement_type: components["schemas"]["FixedIncomeMovementType"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
         };
         /** NewAssetDTO */
         NewAssetDTO: {
@@ -569,6 +849,82 @@ export interface operations {
         };
     };
     refresh_api_market_prices_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshReportDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_indexes_api_market_indexes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LatestIndexDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    refresh_index_series_api_market_indexes_refresh_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1118,6 +1474,290 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PositionDTO"][];
                 };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_all_api_fixed_income_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedIncomeDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_api_fixed_income_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedIncomeInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedIncomeDetailDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_api_fixed_income__investment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                investment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedIncomeDetailDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_api_fixed_income__investment_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                investment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedIncomeInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedIncomeDetailDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_api_fixed_income__investment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                investment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_movement_api_fixed_income__investment_id__movements_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                investment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovementInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remove_movement_api_fixed_income_movements__movement_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                movement_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unprocessable Content */
             422: {

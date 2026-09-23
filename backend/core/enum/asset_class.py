@@ -6,4 +6,3 @@ class AssetClass(StrEnum):
     FII = "fii"
     ETF = "etf"
     BDR = "bdr"
-    FIXED_INCOME = "fixed_income"

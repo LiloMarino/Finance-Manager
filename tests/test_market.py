@@ -11,12 +11,28 @@ from sqlalchemy import Engine, delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from backend.adapters.bcb_sgs_provider import to_daily_rates
 from backend.adapters.yfinance_provider import to_daily_closes
 from backend.app import create_app
 from backend.core.database.session import get_session
-from backend.core.enum import AssetClass, OperationType
-from backend.core.models.models import Asset, Operation, PriceHistory
+from backend.core.enum import (
+    AssetClass,
+    FixedIncomeMovementType,
+    Indexer,
+    IndexSeries,
+    OperationType,
+)
+from backend.core.models.models import (
+    Asset,
+    FixedIncomeInvestment,
+    FixedIncomeMovement,
+    IndexHistory,
+    Operation,
+    PriceHistory,
+)
+from backend.domain.index_series import DailyRate
 from backend.domain.market_data import DailyClose, MarketDataProvider
+from backend.features.market.indexes import refresh_indexes
 from backend.features.market.router import get_provider
 from backend.features.market.service import refresh_prices
 
@@ -123,10 +139,9 @@ def test_failed_provider_keeps_cache_untouched(session: Session) -> None:
     assert _cached(session) == {date(2024, 2, 5): Decimal("10.00")}
 
 
-def test_only_listed_assets_with_operations_are_fetched(session: Session) -> None:
-    """Ativo sem operação e renda fixa ficam fora do refresh."""
+def test_assets_without_operations_are_not_fetched(session: Session) -> None:
+    """Ativo sem operação fica fora do refresh."""
     _asset(session, "ABCD3", AssetClass.STOCK, with_operation=False)
-    _asset(session, "CDB XYZ 2030", AssetClass.FIXED_INCOME)
     provider = FakeProvider("fake")
 
     _refresh(session, provider)
@@ -213,4 +228,128 @@ def test_yfinance_close_is_rounded_to_cents() -> None:
 
     assert to_daily_closes(rows) == [
         DailyClose(price_date=date(2024, 2, 7), close=Decimal("10.53"))
+    ]
+
+
+@dataclass
+class FakeIndexProvider:
+    name: str
+    rates: dict[IndexSeries, dict[date, str]] = field(
+        default_factory=dict[IndexSeries, dict[date, str]]
+    )
+    offline: bool = False
+    calls: list[tuple[IndexSeries, date, date]] = field(
+        default_factory=list[tuple[IndexSeries, date, date]]
+    )
+
+    def get_series(
+        self, series: IndexSeries, start: date, end: date
+    ) -> list[DailyRate]:
+        self.calls.append((series, start, end))
+        if self.offline:
+            raise ConnectionError("sem rede")
+        return [
+            DailyRate(rate_date=day, value=Decimal(value))
+            for day, value in sorted(self.rates.get(series, {}).items())
+            if start <= day <= end
+        ]
+
+
+def _fixed_income(session: Session, first_movement: date) -> None:
+    investment = FixedIncomeInvestment(
+        label="CDB XYZ 2030",
+        indexer=Indexer.CDI,
+        rate=Decimal(100),
+        maturity_date=None,
+        daily_liquidity=True,
+        tax_exempt=False,
+    )
+    session.add(investment)
+    session.flush()
+    session.add(
+        FixedIncomeMovement(
+            investment_id=investment.id,
+            movement_date=first_movement,
+            movement_type=FixedIncomeMovementType.APPLICATION,
+            amount=Decimal(1000),
+        )
+    )
+    session.commit()
+
+
+def _cached_rates(session: Session) -> dict[tuple[IndexSeries, date], Decimal]:
+    return {
+        (row.series, row.rate_date): row.value
+        for row in session.scalars(select(IndexHistory))
+    }
+
+
+def test_index_refresh_starts_at_month_of_first_movement(session: Session) -> None:
+    """Sem cache, cada série é pedida do dia 1 do mês da primeira movimentação de
+    renda fixa, o que traz o IPCA do mês, datado nesse dia."""
+    _fixed_income(session, FIRST_OPERATION)
+    provider = FakeIndexProvider(
+        "fake",
+        {
+            IndexSeries.CDI: {date(2024, 2, 5): "0.043739"},
+            IndexSeries.SELIC: {date(2024, 2, 5): "0.043739"},
+            IndexSeries.IPCA: {date(2024, 2, 1): "0.83"},
+        },
+    )
+
+    report = refresh_indexes(session, provider, TODAY)
+
+    assert report.failed == ()
+    assert {call[1] for call in provider.calls} == {date(2024, 2, 1)}
+    assert _cached_rates(session)[(IndexSeries.IPCA, date(2024, 2, 1))] == Decimal(
+        "0.83"
+    )
+
+
+def test_index_refresh_resumes_from_month_of_last_cached_day(session: Session) -> None:
+    """Com cache, a série é pedida do dia 1 do mês do último valor gravado."""
+    _fixed_income(session, date(2023, 11, 6))
+    provider = FakeIndexProvider(
+        "fake", {IndexSeries.CDI: {date(2024, 2, 5): "0.043739"}}
+    )
+    refresh_indexes(session, provider, TODAY)
+
+    refresh_indexes(session, provider, TODAY)
+
+    cdi_calls = [call for call in provider.calls if call[0] is IndexSeries.CDI]
+    assert cdi_calls[-1] == (IndexSeries.CDI, date(2024, 2, 1), TODAY)
+
+
+def test_offline_index_refresh_keeps_cache(session: Session) -> None:
+    """Provider fora do ar deixa as séries em `failed` e o cache como estava."""
+    _fixed_income(session, FIRST_OPERATION)
+    provider = FakeIndexProvider(
+        "fake", {IndexSeries.CDI: {date(2024, 2, 5): "0.043739"}}
+    )
+    refresh_indexes(session, provider, TODAY)
+    provider.offline = True
+
+    report = refresh_indexes(session, provider, TODAY)
+
+    assert report.failed == ("CDI", "SELIC", "IPCA")
+    assert _cached_rates(session) == {
+        (IndexSeries.CDI, date(2024, 2, 5)): Decimal("0.043739")
+    }
+
+
+def test_index_refresh_without_fixed_income_fetches_nothing(session: Session) -> None:
+    """Sem renda fixa e sem cache, não há de onde partir: nada é pedido."""
+    provider = FakeIndexProvider("fake")
+
+    refresh_indexes(session, provider, TODAY)
+
+    assert provider.calls == []
+
+
+def test_sgs_value_keeps_all_digits() -> None:
+    """O `valor` do SGS chega como string e vira Decimal com todos os dígitos."""
+    body = b'[{"data":"05/02/2024","valor":"0.043739"}]'
+
+    assert to_daily_rates(body) == [
+        DailyRate(rate_date=date(2024, 2, 5), value=Decimal("0.043739"))
     ]

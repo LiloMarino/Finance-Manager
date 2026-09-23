@@ -5,12 +5,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from backend.adapters.bcb_sgs_provider import BcbSgsProvider
 from backend.adapters.yfinance_provider import YFinanceProvider
 from backend.core.database.session import SessionDep
 from backend.core.dto import BaseDTO, DecimalStr
-from backend.core.enum import AssetClass
+from backend.core.enum import AssetClass, IndexSeries
+from backend.domain.index_series import IndexSeriesProvider
 from backend.domain.market_data import MarketDataProvider
-from backend.features.market.service import latest_prices, refresh_prices
+from backend.features.market.indexes import latest_indexes, refresh_indexes
+from backend.features.market.service import refresh_prices
+from backend.repository.market import latest_prices
 
 router = APIRouter(prefix="/api/market", tags=["market"])
 
@@ -23,6 +27,12 @@ class AssetPriceDTO(BaseDTO):
     price_date: date | None
 
 
+class LatestIndexDTO(BaseDTO):
+    series: IndexSeries
+    value: DecimalStr | None
+    rate_date: date | None
+
+
 class RefreshReportDTO(BaseDTO):
     updated: list[str]
     failed: list[str]
@@ -32,7 +42,12 @@ def get_provider() -> MarketDataProvider:
     return YFinanceProvider()
 
 
+def get_index_provider() -> IndexSeriesProvider:
+    return BcbSgsProvider()
+
+
 ProviderDep = Annotated[MarketDataProvider, Depends(get_provider)]
+IndexProviderDep = Annotated[IndexSeriesProvider, Depends(get_index_provider)]
 
 
 @router.get("/prices")
@@ -44,4 +59,18 @@ def list_prices(session: SessionDep) -> list[AssetPriceDTO]:
 def refresh(session: SessionDep, provider: ProviderDep) -> RefreshReportDTO:
     """Sem rede não é erro: o ticker vai para `failed` e o cache fica como estava."""
     report = refresh_prices(session, provider, date.today())
+    return RefreshReportDTO.model_validate(report)
+
+
+@router.get("/indexes")
+def list_indexes(session: SessionDep) -> list[LatestIndexDTO]:
+    return [LatestIndexDTO.model_validate(index) for index in latest_indexes(session)]
+
+
+@router.post("/indexes/refresh")
+def refresh_index_series(
+    session: SessionDep, provider: IndexProviderDep
+) -> RefreshReportDTO:
+    """Sem rede não é erro: a série vai para `failed` e o cache fica como estava."""
+    report = refresh_indexes(session, provider, date.today())
     return RefreshReportDTO.model_validate(report)
