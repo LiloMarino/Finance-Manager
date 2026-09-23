@@ -15,7 +15,7 @@
 Dashboard pessoal de investimentos, **local-first**: roda em 127.0.0.1, sem autenticação, sem nuvem, sem multiusuário — os dados ficam num SQLite na própria máquina. Privacidade dos dados financeiros é parte do motivo do projeto; auth e cloud seriam complexidade sem uso. Substitui o Status Invest — que desincronizou da B3 e esconde o que importa atrás de plano pago — e as planilhas de controle, e centraliza a vida de investimentos num lugar só.
 
 Absorve projetos irmãos que falam do mesmo domínio, pra acabar com a sincronização manual entre eles:
-- **IR-Helper** — FastAPI + SQLAlchemy + SQLite + React/Vite. Já tem a parte mais difícil: operações reconciliadas entre notas de corretagem (PDF) e o portal da B3 (xlsx), preço médio, eventos corporativos, DARF, prejuízo acumulado. Será **absorvido e aposentado** (D8) depois da paridade fiscal (F23).
+- **IR-Helper** — FastAPI + SQLAlchemy + SQLite + React/Vite. Já tem a parte mais difícil: operações reconciliadas entre notas de corretagem (PDF) e o portal da B3 (xlsx), preço médio, eventos corporativos, DARF, prejuízo acumulado. É **absorvido e aposentado** (D8): tudo o que ele faz passa a existir aqui (F23).
 - **Script de rebalanceamento** — yfinance + arquivo de metas + alerta agendado no sistema. Vira feature no marco de inteligência.
 - Ideias reaproveitáveis (não absorvidos): marcação de renda fixa do [SimuladorFinanceiro](https://github.com/LiloMarino/SimuladorFinanceiro) e do [Comparador-Renda-Fixa](https://github.com/LiloMarino/Comparador-Renda-Fixa).
 
@@ -180,10 +180,17 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 - **O calendário de dias úteis é o do CDI publicado.** Depois do último dado, a marcação repete o último valor e a tela diz até quando o dado é real — é o "último valor conhecido" desta decisão, aplicado às séries.
 
 ### D8 — IR-Helper absorvido e aposentado: `irpf_helper.db` como oráculo de paridade
-**Status:** ✅ Decidida
+**Status:** 🔁 Revista
 
-**Decisão:** O `irpf_helper.db` fica **intocado** e serve de oráculo: os testes de paridade comparam posição, PM e depois DARF contra ele. O IR-Helper só é aposentado (F23) depois da paridade fiscal (F21) e de uma declaração feita só com o relatório novo (F22). Até lá o IR-Helper segue sendo a ferramenta fiscal.
+**Decisão:** O `irpf_helper.db` fica **intocado** e serve de oráculo: posição e PM são comparados contra ele campo a campo. No fiscal ele é conferência, e não gabarito: o motor fiscal segue as regras da Receita, e cada diferença com o IR-Helper precisa ser explicada por uma regra. Aposentar o IR-Helper (F23) é paridade funcional: tudo o que ele faz existe aqui, e o usuário para de usá-lo. O repositório dele não é editado nem arquivado.
 **Por quê:** portar com teste de paridade é o que garante que a fonte única (N3) não piora nenhum número. A ordem em que os módulos são portados (core → patrimônio → fiscal) já está expressa nos marcos M1→M5 do ROADMAP; não precisa estar aqui também.
+
+**Revista em 2026-09-23, na implementação de F21.** Em três pontos o motor do IR-Helper diverge da Receita (Perguntas e Respostas IRPF 2026, perguntas 704, 705 e 709; IN RFB 1.585/2015, art. 37):
+- compensa o prejuízo venda a venda, e não pelo resultado do mês;
+- mantém um prejuízo por classe, quando ações, ETF e BDR em operação comum se compensam entre si (com FII e day trade à parte);
+- calcula o day trade pelo PM da carteira, e não pareando as compras e vendas do dia.
+
+Como o app é a referência para saber se e quando emitir DARF, a paridade fiscal centavo a centavo deixou de ser o critério. O gate "uma declaração feita só com o relatório novo" também saiu, porque aposentar passou a significar poder usar só este app.
 
 ### D10 — Roteamento: React Router 7
 **Status:** ✅ Decidida

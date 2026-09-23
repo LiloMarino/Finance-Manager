@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** F11 e F12 concluídas: carteira com patrimônio por categoria e renda fixa marcada pelas séries do BCB.
+> **Última mudança (2026-09-23):** F21, F22 e F23 concluídas: o motor fiscal segue as regras da Receita, com o relatório do IRPF e as visões mensal e anual do IR-Helper; D8 revista.
 
 ## Glossário
 
@@ -18,9 +18,9 @@
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (desempenho, patrimônio × rentabilidade, ano a ano) | F14, F15, F16, F17, F18 | — |
 | **N2** | Ver o patrimônio consolidado (total, por categoria, posição, inclui RF) | F10, F11, F12 | — |
-| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9 | — |
+| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34 | — |
 | **N4** | Acompanhar proventos | F14, F20 | — |
-| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F21, F22, F23 | — |
+| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35 | — |
 | **N6** | Rebalancear sem planilha | F24 | — |
 | **N7** | Subcarteiras | F25 | — |
 | **N8** | Análises extras: risco × retorno, correlação entre dois ativos | F10, F26, F27 | — |
@@ -31,9 +31,6 @@
 | **F18** | Tabela mês × ano e comparação ano a ano | — | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | — | 🔍 |
 | **F20** | Proventos: registro, desempenho e retorno total | — | ⏳ |
-| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ⏳ |
-| **F22** | Relatório anual do IRPF | — | ⏳ |
-| **F23** | Aposentar o IR-Helper | — | ⏳ |
 | **F24** | Rebalanceamento | — | 💤 |
 | **F25** | Subcarteiras | — | 💤 |
 | **F26** | Risco × retorno | — | 💤 |
@@ -43,9 +40,12 @@
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
 | **F32** | Liquidez em três camadas | — | 🔍 |
+| **F33** | Custo da bonificação | — | ⏳ |
+| **F34** | Taxas da nota no resultado | — | ⏳ |
+| **F35** | IRRF abatido do DARF | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (22 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (25 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5 | ✅ |
 | **D5** | Rentabilidade principal por cota (TWR) | F14, F15 | ✅ |
 | **D6** | Dados de mercado atrás de interface de provider, com cache local | F10, F12, F16 | ✅ |
-| **D8** | IR-Helper absorvido e aposentado: irpf_helper.db como oráculo de paridade | F1, F7, F8, F21, F23 | ✅ |
+| **D8** | IR-Helper absorvido e aposentado: irpf_helper.db como oráculo de paridade | F1, F7, F8, F21, F23 | 🔁 |
 | **D10** | Roteamento: React Router 7 | F2 | ✅ |
 | **D11** | Tipagem do backend: Pydantic nas bordas, dataclass no domínio, pyright strict | F3 | ✅ |
 | **F1** | Spike de stack (resolve D1) | — | ✅ |
@@ -71,6 +71,9 @@
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ✅ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | — | ✅ |
 | **F13** | Caixa e reserva | — | 🚫 |
+| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
+| **F22** | Relatório anual do IRPF | — | ✅ |
+| **F23** | Paridade funcional com o IR-Helper | — | ✅ |
 
 </details>
 
@@ -82,13 +85,15 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F14** | Série diária de patrimônio e fluxos | M3 | 8 | ⏳ |
-| **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
-| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | 2 | ⏳ |
+| **F14** | Série diária de patrimônio e fluxos | M3 | 6 | ⏳ |
+| **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 1 | 🔍 |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 | **F32** | Liquidez em três camadas | M6 | 0 | 🔍 |
+| **F33** | Custo da bonificação | M5 | 0 | ⏳ |
+| **F34** | Taxas da nota no resultado | M5 | 0 | ⏳ |
+| **F35** | IRRF abatido do DARF | M5 | 0 | ⏳ |
 
 ---
 
@@ -179,13 +184,23 @@
 >
 > **Serve:** N5
 >
-> **Progresso:** 0/3 concluídas
+> **Progresso:** 3/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | F8 | ⏳ |
-| **F22** | Relatório anual do IRPF | F20, F21 | ⏳ |
-| **F23** | Aposentar o IR-Helper | F21, F22 | ⏳ |
+| **F33** | Custo da bonificação | F21 | ⏳ |
+| **F34** | Taxas da nota no resultado | F21 | ⏳ |
+| **F35** | IRRF abatido do DARF | F21 | ⏳ |
+
+<details><summary>Concluído (3 itens)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | F8 | ✅ |
+| **F22** | Relatório anual do IRPF | F21 | ✅ |
+| **F23** | Paridade funcional com o IR-Helper | F21, F22 | ✅ |
+
+</details>
 
 ### M6 — Inteligência
 
@@ -237,14 +252,17 @@
 | **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F17** | Patrimônio × aportes | N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F18** | Tabela mês × ano e comparação ano a ano | N1 | — | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F20** | Proventos: registro, desempenho e retorno total | N4 | D2 | M4 | F14, F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
-| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ⏳ Pendente |
-| **F22** | Relatório anual do IRPF | N5 | — | M5 | F20, F21 | Médio | Médio | Alto | Bom | ⏳ Pendente |
-| **F23** | Aposentar o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F20** | Proventos: registro, desempenho e retorno total | N4, N5 | D2 | M4 | F14, F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
+| **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
+| **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F24** | Rebalanceamento | N6 | — | M6 | F11 | Médio | Baixo | Alto | Bom | 💤 Registrado, sem prioridade |
 | **F25** | Subcarteiras | N7 | — | M6 | F15 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F26** | Risco × retorno | N8 | — | M6 | F10 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F27** | Correlação entre dois ativos | N8 | — | M6 | F10 | Baixo | Baixo | Baixo | Médio | 💤 Registrado, sem prioridade |
+| **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
+| **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | ⏳ Pendente |
+| **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | ⏳ Pendente |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -364,16 +382,48 @@ Decisões tomadas durante:
 **F18 — Mês × ano.** Tabela estilo Status Invest: linhas = anos, colunas = meses + acumulado do ano, com a rentabilidade da carteira e do CDI lado a lado, colorida por desempenho. Serve N1.
 **Aceite:** o usuário usa essa tabela no lugar da comparação ano a ano que fazia no Status Invest.
 
-**F20 — Proventos.** Tabela `income_event` (ativo, tipo, data-com, data de pagamento, valor bruto, IR retido); importação pela fonte decidida em F19 + cadastro manual; gráfico mensal/anual de proventos, yield on cost por ativo; proventos entram como fluxo na série de F14, pro retorno total. Serve N4.
+**F20 — Proventos.** Tabela `income_event` (ativo, tipo, data-com, data de pagamento, valor bruto, IR retido); importação pela fonte decidida em F19 + cadastro manual; gráfico mensal/anual de proventos, yield on cost por ativo; proventos entram como fluxo na série de F14, pro retorno total; e as fichas de proventos do relatório do IRPF de F22 (Rendimentos Isentos cód. 09 para dividendos, Tributação Exclusiva cód. 10 para JCP, por fonte pagadora com CNPJ). Serve N4 e N5.
 **Aceite:** o total de proventos recebidos num ano bate com o informe de rendimentos da corretora.
 
-**F21 — Motor fiscal.** Portar `tax_calculator.py` e a parte fiscal de `consolidation.py`: apuração mensal por tipo de ativo e de operação (comum/day trade), isenção de R$ 20 mil em ações, compensação de prejuízo acumulado, DARF a pagar. Suíte de paridade contra os `DARFEvent`/`AccumulatedLoss` do IR-Helper (D8). Serve N5.
-**Aceite:** DARF e prejuízo acumulado de todos os meses batem centavo por centavo com o IR-Helper.
+**F21 — Motor fiscal.** `backend/domain/tax.py`, puro: `assess` apura todos os meses da primeira operação até o mês corrente, e o prejuízo e o saldo abaixo do mínimo atravessam de um mês para o outro. Em vez de portar o motor do IR-Helper, as regras seguem a Receita, conferidas no Perguntas e Respostas IRPF 2026 (perguntas 704 a 731) e na IN RFB 1.585/2015, art. 37:
+- ganho líquido é o resultado do conjunto do mês, e não venda a venda;
+- três conjuntos de compensação: operações comuns de ações, ETF e BDR a 15%, day trade a 20% e FII a 20%;
+- isenção de ações com até R$ 20 mil vendidos em ações no mês, fora ETF, BDR e day trade;
+- DARF 6015 no último dia útil do mês seguinte, e imposto abaixo de R$ 10 somado ao período seguinte.
 
-**F22 — Relatório IRPF.** Relatório do ano-base com o que vai em cada ficha: Bens e Direitos (código, discriminação, situação em 31/12 dos dois anos), Rendimentos Isentos (cód. 09 dividendos, cód. 20 vendas até 20 mil), Tributação Exclusiva (cód. 10 JCP), Renda Variável (lucro mensal, DARF pago, prejuízo). Segue o algoritmo do README do IR-Helper. Serve N5.
-**Aceite:** a declaração do próximo ano é preenchida só com este relatório, sem abrir o IR-Helper.
+Os números que a lei pode mudar ficam em `TaxRules`, escolhida por vigência (`rules_for`). Mudança de lei entra como uma entrada nova, e os meses anteriores seguem apurados pela regra deles.
 
-**F23 — Aposentar o IR-Helper.** Depois da paridade fiscal (F21) e de uma declaração feita com F22: README do IR-Helper apontando pra cá, repositório marcado como arquivado, `irpf_helper.db` guardado como backup somente leitura. Serve N5 diretamente — é o critério de fechamento da necessidade: as obrigações fiscais deixam de precisar do app antigo.
+Decisões tomadas durante:
+- **O day trade mudou o motor de posição (F8).** `settle_day_trades` pareia a 1ª compra com a 1ª venda do mesmo ativo no mesmo dia, e as pernas pareadas não tocam a posição. O PM da Carteira passa a ser o custo fiscal, o mesmo da ficha Bens e Direitos. Vender e recomprar no mesmo dia sem posição é day trade, não posição negativa.
+- **DARF pago é registro próprio.** A tabela `darf_payments` guarda o pagamento por mês de apuração. O valor devido segue recalculado das operações, e o pago vale para qualquer mês, inclusive um DARF pago que a regra correta não pede.
+- **Dia útil do vencimento** é o calendário da renda fixa, agora em `backend/domain/business_days.py`: dia com CDI publicado, e dia de semana fora da série.
+
+Tela Fiscal com a tabela de todos os meses, o status do DARF (pago, a pagar, vencido, acumulando, isento, compensado) e o registro do pagamento.
+
+**Aceite verificado:** conferência de uso único contra o `irpf_helper.db`, sobre uma cópia do banco migrado. O resultado bruto de cada (mês, classe) bate com o oráculo em todos os meses: 0 divergências, inclusive no mês de day trade. O imposto diverge onde a regra diverge. Num mês, o prejuízo acumulado de ações compensa o ganho com ETF, que o IR-Helper tributava inteiro. No outro, o imposto do mês é o mesmo, e o DARF muda só pelo saldo carregado menor.
+
+**Limitações residuais:** custo atribuído à bonificação (F33), taxas da nota (F34) e IRRF (F35) ficam fora, e a tela avisa. FII em day trade entra no conjunto do FII. ETF de renda fixa, que tem tributação própria, não é distinguido do ETF de renda variável. O total vendido de ações que decide a isenção conta também a venda de day trade.
+
+**F22 — Relatório IRPF.** `GET /api/tax/irpf/{ano}` e a aba IRPF da tela Fiscal, por ano-base:
+- **Bens e Direitos:** um item por ativo com posição em algum dos dois 31/12, pelo custo (quantidade × PM fiscal) em centavos, com grupo e código (ação 03/01, BDR 04/04, FII 07/03, ETF 07/09), CNPJ do ativo (sem CNPJ, o item é sinalizado) e discriminação gerada.
+- **Rendimentos isentos, código 20:** lucro isento de ações, por mês e no total.
+- **Renda Variável:** o resultado líquido de operações comuns, day trade e FII de cada mês, o imposto apurado e o DARF pago de fato. DARF devido sem pagamento registrado aparece em destaque.
+- **Prejuízo a compensar** em 31/12, por conjunto.
+
+Decisões tomadas durante:
+- **Sem depender de F20.** Dividendos (09) e JCP (10) ficam com F20. Até lá, a aba remete ao informe de rendimentos da corretora.
+- **Ativo comprado e vendido dentro do ano não entra em Bens e Direitos**, e ativo zerado no ano entra com a situação atual 0.
+- Os códigos da ficha vêm da tabela em vigor desde a declaração de 2023, conferida em guias (Portal Tributário, Genial, Infomoney) e não no programa da Receita.
+
+**Aceite:** a declaração do próximo ano é preenchida só com este relatório (mais o informe de rendimentos para proventos), sem abrir o IR-Helper.
+
+**F23 — Paridade funcional com o IR-Helper.** "Aposentar" é poder parar de usar o IR-Helper: tudo o que ele faz existe aqui. O repositório dele fica como está, e o `irpf_helper.db` segue como oráculo de conferência. O levantamento das telas e endpoints do IR-Helper mostrou que só faltavam os relatórios:
+- a aba **Mensal** da tela Fiscal, com navegação por mês (‹ ›, selects de mês e ano, ← e → no teclado), posições na abertura e no fechamento agrupadas por classe, operações do mês, card do DARF (status com o motivo, resultado, tributável, imposto, saldo carregado, resultado por categoria, apuração por conjunto e registro do pagamento) e prejuízo a compensar;
+- a aba **Anual**, com as mesmas seções entre 1/1 e 31/12 e o resumo de DARFs do ano.
+
+O endpoint é `GET /api/tax/period?year=&month=`. O botão "Apurar resultados" do IR-Helper não tem par, porque aqui tudo é recalculado a cada consulta (D2). Cadastro de ativos e operações, transferência e importação já existiam desde F6 e F9.
+
+**Aceite:** o usuário faz aqui tudo o que fazia no IR-Helper e para de abri-lo.
 
 **F24 — Rebalanceamento.** Metas de alocação (% por categoria e, opcionalmente, por ativo) guardadas no banco, no lugar do arquivo de metas do script de rebalanceamento atual; dado um valor de aporte, sugerir quanto comprar de cada ativo pra se aproximar das metas (e, com opção ativada, quanto vender), usando a posição de F11. Mostrar o desvio atual de cada meta. Quando F32 definir as camadas de liquidez, a sugestão passa a distribuir o aporte também entre elas. Serve N6.
 **Aceite:** o usuário faz um aporte inteiro guiado pela sugestão, sem abrir a planilha de rebalanceamento.
@@ -386,6 +436,38 @@ Decisões tomadas durante:
 
 **F27 — Correlação.** Página que recebe dois ativos (ou ativo × benchmark) e mostra a correlação dos retornos diários numa janela configurável, com o gráfico das duas séries rebaseadas e a correlação móvel. Serve N8.
 **Aceite:** o usuário usa pelo menos uma vez pra decidir algo concreto (ex.: se dois ativos se sobrepõem na carteira).
+
+**F33 — Custo da bonificação.** Pela Receita (Perguntas e Respostas IRPF, pergunta 721), a ação recebida em bonificação tem custo: o valor do lucro ou da reserva capitalizado por ação, que a empresa informa no fato relevante. Hoje o CHECK `unit_price_by_type` obriga preço 0 na bonificação, e o motor só dilui o PM.
+
+Plano:
+- migration trocando o CHECK para preço `>= 0` na bonificação (desdobro e grupamento seguem com 0);
+- DTO e formulário aceitando o valor por ação;
+- `apply` somando `quantidade × preço` ao custo total na bonificação;
+- teste de paridade do PM ajustado.
+
+O importador da B3 segue gravando 0, e o usuário edita a bonificação com o valor informado pela empresa.
+
+Gatilho: antes de declarar um ano com bonificação.
+
+**F34 — Taxas da nota no resultado.** Corretagem, emolumentos e taxa de liquidação somam ao custo da compra e abatem do valor da venda (Perguntas e Respostas IRPF, pergunta 708). Hoje nada disso é gravado.
+
+Plano:
+- coluna `fees` (`DecimalText`, `>= 0`) em `operations`;
+- o parser da nota rateia as taxas de cada nota pelas operações dela, proporcional ao valor;
+- o motor de posição entra com as taxas no custo da compra, e o fiscal as abate do valor da venda;
+- cadastro manual com o campo opcional.
+
+Gatilho: quando a diferença das taxas passar a mudar DARF ou isenção de algum mês.
+
+**F35 — IRRF abatido do DARF.** O 0,005% retido na venda (quando passa de R$ 1) e o 1% do day trade são antecipação do imposto do mês. O saldo de 1% não usado compensa nos meses seguintes até dezembro (Perguntas e Respostas IRPF, perguntas 706, 714 e 715).
+
+Plano:
+- ler o "IRRF s/ operações" de cada nota no parser;
+- gravar o IRRF por nota numa tabela própria;
+- abater do imposto de cada mês na apuração, carregando o saldo do day trade até dezembro;
+- mostrar o IRRF no card do DARF e no demonstrativo do IRPF.
+
+Gatilho: o primeiro mês em que o IRRF retido mudar o DARF.
 
 ---
 ## 2. Nice-to-have
