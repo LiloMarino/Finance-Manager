@@ -75,7 +75,7 @@ class Asset(Base):
     __tablename__ = "assets"
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    # Código de negociação na B3; em renda fixa e caixa, o rótulo da aplicação/conta
+    # Código de negociação na B3; em renda fixa, o rótulo da aplicação
     ticker: Mapped[str] = mapped_column(String, unique=True)
     asset_class: Mapped[AssetClass] = mapped_column(
         _enum_column(AssetClass, "asset_class")

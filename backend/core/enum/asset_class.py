@@ -7,4 +7,3 @@ class AssetClass(StrEnum):
     ETF = "etf"
     BDR = "bdr"
     FIXED_INCOME = "fixed_income"
-    CASH = "cash"
