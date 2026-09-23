@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { MainLayout } from "@/layouts/main-layout";
 import { ErrorPage } from "@/pages/error";
 import { HomePage } from "@/pages/home";
+import { MarketPage } from "@/pages/market";
 import { PlaceholderPage } from "@/pages/placeholder";
 import { queryClient } from "@/shared/lib/query-client";
 
@@ -18,10 +19,7 @@ export default function App() {
               path="operations"
               element={<PlaceholderPage title="Operações" />}
             />
-            <Route
-              path="market"
-              element={<PlaceholderPage title="Mercado" />}
-            />
+            <Route path="market" element={<MarketPage />} />
             <Route
               path="income"
               element={<PlaceholderPage title="Proventos" />}

@@ -8,6 +8,7 @@
     {
       "root": "backend/adapters",
       "extraPaths": ["."],
+      "reportMissingTypeStubs": "none",
       "reportUnknownMemberType": "none",
       "reportUnknownVariableType": "none",
       "reportUnknownArgumentType": "none",

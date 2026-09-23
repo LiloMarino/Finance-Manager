@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   ArrowLeftRight,
@@ -7,6 +8,7 @@ import {
   Receipt,
 } from "lucide-react";
 
+import { useRefreshPrices } from "@/features/market/use-refresh-prices";
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +34,13 @@ const navItems = [
 ];
 
 export function MainLayout() {
+  const { mutate: refreshPrices } = useRefreshPrices();
+
+  // O cache de cotações recebe os dias que faltam a cada abertura do app
+  useEffect(() => {
+    refreshPrices();
+  }, [refreshPrices]);
+
   return (
     <SidebarProvider>
       <Sidebar>

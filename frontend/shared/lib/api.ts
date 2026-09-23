@@ -25,6 +25,9 @@ type JsonBody<O> = O extends {
   ? B
   : never;
 
+/** O body é argumento só quando o endpoint declara um. */
+type BodyArgs<O> = [JsonBody<O>] extends [never] ? [] : [body: JsonBody<O>];
+
 export interface ApiError extends Error {
   status: number;
   detail: string;
@@ -88,14 +91,14 @@ export function get<P extends PathsWith<"get">>(
 
 export function post<P extends PathsWith<"post">>(
   url: P,
-  body: JsonBody<paths[P]["post"]>,
+  ...[body]: BodyArgs<paths[P]["post"]>
 ): Promise<SuccessJson<paths[P]["post"]>> {
   return request("post", url, body);
 }
 
 export function put<P extends PathsWith<"put">>(
   url: P,
-  body: JsonBody<paths[P]["put"]>,
+  ...[body]: BodyArgs<paths[P]["put"]>
 ): Promise<SuccessJson<paths[P]["put"]>> {
   return request("put", url, body);
 }

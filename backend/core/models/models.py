@@ -119,3 +119,23 @@ class Operation(Base):
     )
     quantity: Mapped[Decimal] = mapped_column(DecimalText)
     unit_price: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class PriceHistory(Base):
+    """Cache de fechamentos diários, refeito a partir dos providers de mercado.
+
+    O fechamento é o que o provider entrega: ajustado por desdobramento e grupamento,
+    não por provento.
+    """
+
+    __tablename__ = "price_history"
+    __table_args__ = (
+        CheckConstraint("CAST(close AS REAL) > 0", name="close_positive"),
+    )
+
+    # CASCADE porque o cache é descartável: some junto com o ativo
+    asset_id: Mapped[int] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"), primary_key=True
+    )
+    price_date: Mapped[date] = mapped_column(primary_key=True)
+    close: Mapped[Decimal] = mapped_column(DecimalText)

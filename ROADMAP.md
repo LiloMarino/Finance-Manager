@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** Texto dos cards revisto: as medições feitas em dado real ficam como resultado, sem os números da carteira.
+> **Última mudança (2026-09-23):** F10 concluída só com o yfinance, fonte gratuita, sem o brapi pago. F13 descartada: o app cobre só o financeiro de investimentos, e a liquidez virou o card F32.
 
 ## Glossário
 
@@ -17,7 +17,7 @@
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (desempenho, patrimônio × rentabilidade, ano a ano) | F14, F15, F16, F17, F18 | — |
-| **N2** | Ver o patrimônio consolidado (total, por categoria, posição, inclui RF e caixa) | F10, F11, F12, F13 | — |
+| **N2** | Ver o patrimônio consolidado (total, por categoria, posição, inclui RF) | F10, F11, F12 | — |
 | **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9 | — |
 | **N4** | Acompanhar proventos | F14, F20 | — |
 | **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F21, F22, F23 | — |
@@ -28,10 +28,8 @@
 | **F7** | Migração dos dados do IR-Helper | — | ⏳ |
 | **F8** | Engine de posição e preço médio + paridade | — | ⏳ |
 | **F9** | Telas de operações, ativos e posição atual | — | ⏳ |
-| **F10** | Provider de dados de mercado + cache de preços | — | ⏳ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | — | ⏳ |
-| **F13** | Caixa e reserva | — | ⏳ |
 | **F14** | Série diária de patrimônio e fluxos | — | ⏳ |
 | **F15** | Rentabilidade por cota (TWR) | — | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | — | ⏳ |
@@ -50,14 +48,15 @@
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
+| **F32** | Liquidez em três camadas | — | 🔍 |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (14 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (16 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **D1** | Stack: FastAPI + Vite (decidida pelas sondas de F1) | F1, F2 | ✅ |
-| **D2** | Operation é a fonte da verdade; derivados recalculáveis | F5, F8, F14, F20 | ✅ |
+| **D2** | Operation é a fonte da verdade; derivados recalculáveis | F5, F8, F14, F17, F20 | ✅ |
 | **D3** | Um único SQLite, organizado por domínio | F4 | ✅ |
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5 | ✅ |
 | **D5** | Rentabilidade principal por cota (TWR) | F14, F15 | ✅ |
@@ -70,6 +69,8 @@
 | **F3** | Tipagem ponta a ponta | — | ✅ |
 | **F4** | Migrations + backup automático do banco | — | ✅ |
 | **F5** | Modelo de domínio: ativos, operações e eventos | — | ✅ |
+| **F10** | Provider de dados de mercado + cache de preços | — | ✅ |
+| **F13** | Caixa e reserva | — | 🚫 |
 
 </details>
 
@@ -81,9 +82,8 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F7** | Migração dos dados do IR-Helper | M1 | 16 | ⏳ |
-| **F10** | Provider de dados de mercado + cache de preços | M2 | 16 | ⏳ |
-| **F13** | Caixa e reserva | M2 | 9 | ⏳ |
+| **F7** | Migração dos dados do IR-Helper | M1 | 17 | ⏳ |
+| **F12** | Renda fixa: cadastro e marcação por indexador | M2 | 10 | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | M1 | 0 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
@@ -122,18 +122,24 @@
 
 ### M2 — Patrimônio atual
 
-> **Objetivo:** Ver quanto tenho hoje, por categoria, incluindo renda fixa e caixa.
+> **Objetivo:** Ver quanto tenho hoje, por categoria, incluindo renda fixa.
 >
 > **Serve:** N2
 >
-> **Progresso:** 0/4 concluídas
+> **Progresso:** 1/3 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F10** | Provider de dados de mercado + cache de preços | F5 | ⏳ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | F9, F10 | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | F10 | ⏳ |
-| **F13** | Caixa e reserva | F5 | ⏳ |
+
+<details><summary>Concluído (1 item)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F10** | Provider de dados de mercado + cache de preços | F5 | ✅ |
+
+</details>
 
 ### M3 — Rentabilidade
 
@@ -145,7 +151,7 @@
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F14** | Série diária de patrimônio e fluxos | F11, F12, F13 | ⏳ |
+| **F14** | Série diária de patrimônio e fluxos | F11, F12 | ⏳ |
 | **F15** | Rentabilidade por cota (TWR) | F14 | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | F15 | ⏳ |
 | **F17** | Patrimônio × aportes | F14 | ⏳ |
@@ -184,7 +190,7 @@
 >
 > **Serve:** N6, N7, N8
 >
-> **Progresso:** 0/5 concluídas
+> **Progresso:** 0/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -193,6 +199,7 @@
 | **F26** | Risco × retorno | F10 | 💤 |
 | **F27** | Correlação entre dois ativos | F10 | 💤 |
 | **F28** | Alerta de rebalanceamento com o app fechado | F24 | 🔍 |
+| **F32** | Liquidez em três camadas | F11, F12 | 🔍 |
 
 ### Sem marco
 
@@ -219,14 +226,13 @@
 | **F7** | Migração dos dados do IR-Helper | N3 | D8 | M1 | F5 | Baixo | Médio | Alto | Excelente | ⏳ Pendente |
 | **F8** | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 | F7 | Médio | Alto | Alto | Excelente | ⏳ Pendente |
 | **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
-| **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F11** | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 | F9, F10 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ⏳ Pendente |
-| **F13** | Caixa e reserva | N2 | — | M2 | F5 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
-| **F14** | Série diária de patrimônio e fluxos | N1, N4 | D2, D5 | M3 | F11, F12, F13 | Alto | Alto | Alto | Bom | ⏳ Pendente |
+| **F14** | Série diária de patrimônio e fluxos | N1, N4 | D2, D5 | M3 | F11, F12 | Alto | Alto | Alto | Bom | ⏳ Pendente |
 | **F15** | Rentabilidade por cota (TWR) | N1 | D5 | M3 | F14 | Médio | Médio | Alto | Excelente | ⏳ Pendente |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F17** | Patrimônio × aportes | N1 | — | M3 | F14 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F17** | Patrimônio × aportes | N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F18** | Tabela mês × ano e comparação ano a ano | N1 | — | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F20** | Proventos: registro, desempenho e retorno total | N4 | D2 | M4 | F14, F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ⏳ Pendente |
@@ -284,18 +290,21 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 **F9 — Telas do core.** Operações: lista com filtros (ticker, tipo, período), criar/editar/excluir, importar arquivo. Ativos: lista + detalhe com as operações do ativo. Posição atual: quantidade, PM e custo total por ativo. shadcn + TanStack Query.
 **Aceite:** o usuário consegue fazer no app tudo o que fazia no IR-Helper pra manter as operações em dia, sem abrir o IR-Helper.
 
-**F10 — MarketDataProvider.** Interface (`get_price`, `get_history`) com yfinance (`TICKER.SA`) primário e brapi de fallback; tabela `price_history` (ativo, data, fechamento) preenchida sob demanda e na abertura do app, só com os dias que faltam. Offline, usa o último preço conhecido e mostra a data dele (D6). É infra, mas serve duas necessidades diretamente através de quem depende dela: N2 (F11 mostra o valor atual da posição, F12 marca a renda fixa) e N8 (F26/F27 usam `price_history` pro cálculo de risco e correlação).
+**F10 — MarketDataProvider.** Interface `MarketDataProvider` (Protocol em `backend/domain/market_data.py`, com `get_history`) implementada pelo yfinance (`TICKER.SA`, `auto_adjust=False`) em `backend/adapters/`. Tabela `price_history` (ativo, data, fechamento em `DecimalText`, CHECK `> 0`), com FK em CASCADE porque é cache descartável (D2). O refresh busca só os dias que faltam: parte da última data em cache, inclusive (o fechamento parcial de um pregão em andamento é regravado), ou da primeira operação, e cobre ações/FII/ETF/BDR com operação. Quem dispara é o front, ao abrir o app e pelo botão da tela Mercado (`POST /api/market/prices/refresh`); o `create_app` segue sem tocar no banco. Offline não é erro: o ticker vai para `failed`, um toast avisa, e `GET /api/market/prices` devolve o último fechamento com a data dele — é esse o "preço atual" do plano. O fechamento é quantizado em centavos, porque a B3 cota em centavos e o resto do float é ruído.
 
-**F11 — Carteira.** Página inicial: patrimônio total; donut + tabela por categoria (ações/FII/ETF/BDR/RF/caixa); posição na carteira por ativo (quantidade, PM, preço atual, valor, % da carteira, lucro/prejuízo não realizado). Serve N2.
-**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF e caixa numa data de conferência, e o usuário para de abrir o Status Invest pra ver "quanto tenho".
+Decisões tomadas durante: **sem brapi**, que é pago — o app opera só com fonte gratuita. Sem fallback, a interface fica com um provider só; se o yfinance quebrar, a alternativa gratuita é o arquivo de cotações históricas da B3 (COTAHIST). O fechamento é o que o yfinance entrega, ajustado por desdobramento e grupamento, não por provento (a conferência ficou em F14). As séries do BCB ficaram para quem as consome (F12, F16).
 
-**F12 — Renda fixa.** Cadastro da aplicação (valor, data, indexador CDI/Selic/IPCA/pré, taxa, vencimento, liquidez, isenta ou não) e resgates. Marcação diária pelas séries do BCB SGS (CDI 12, Selic 11, IPCA 433), via o provider de F10, com IR regressivo estimado. Reaproveitar ideias de `SimuladorFinanceiro/backend/features/fixed_income` e do `Comparador Renda Fixa`. Serve N2.
+**Limitações residuais:** ativo sem cotação (ticker trocado ou deslistado) cai em `failed` a cada abertura; quando F8 existir, o refresh passa a parar na data em que a posição zerou. O pregão do dia pode demorar a aparecer no yfinance.
+
+**F11 — Carteira.** Página inicial: patrimônio total; donut + tabela por categoria (ações/FII/ETF/BDR/RF); posição na carteira por ativo (quantidade, PM, preço atual, valor, % da carteira, lucro/prejuízo não realizado). Serve N2.
+**Aceite:** o patrimônio total bate com a soma da posição da B3 + saldos de RF numa data de conferência, e o usuário para de abrir o Status Invest pra ver "quanto tenho".
+
+**F12 — Renda fixa.** Cadastro da aplicação (valor, data, indexador CDI/Selic/IPCA/pré, taxa, vencimento, liquidez, isenta ou não) e resgates. Marcação diária pelas séries do BCB SGS (CDI 12, Selic 11, IPCA 433), buscadas atrás de uma interface própria no molde do provider de F10, com cache local (D6), e IR regressivo estimado. Reaproveitar ideias de `SimuladorFinanceiro/backend/features/fixed_income` e do `Comparador Renda Fixa`. Serve N2.
 **Aceite:** o valor bruto calculado de cada título fica a menos de 0,5% do extrato da corretora/B3 na mesma data.
 
-**F13 — Caixa/reserva.** Contas de caixa com saldos manuais datados (ex.: saldo na corretora, reserva de emergência), entrando no patrimônio total e na categoria "caixa". Serve N2.
-**Aceite:** o patrimônio total bate com a soma manual de todos os saldos (bolsa, renda fixa e caixa) numa data de conferência.
+**F14 — Série diária.** Tabela materializada (data, patrimônio por categoria, aportes/resgates do dia) calculada de operações + `price_history` + RF marcada; reconstruível do zero (D2) e atualizada incrementalmente a partir da última data válida quando entra operação retroativa. É infra, mas serve duas necessidades diretamente através de quem depende dela: N1 (F15–F18 leem a série pra rentabilidade e comparações) e N4 (F20 usa a série como fluxo de caixa pro retorno total dos proventos).
 
-**F14 — Série diária.** Tabela materializada (data, patrimônio por categoria, aportes/resgates do dia) calculada de operações + `price_history` + RF marcada + caixa; reconstruível do zero (D2) e atualizada incrementalmente a partir da última data válida quando entra operação retroativa. É infra, mas serve duas necessidades diretamente através de quem depende dela: N1 (F15–F18 leem a série pra rentabilidade e comparações) e N4 (F20 usa a série como fluxo de caixa pro retorno total dos proventos).
+**A conferir aqui:** o `price_history` guarda o fechamento ajustado por desdobramento e grupamento, que é o que o yfinance entrega. O valor numa data passada precisa então da quantidade convertida para a base atual pelos eventos de split/grupamento de `operations`. Conferir contra a carteira real, já inteira cadastrada, antes de confiar na série anterior a um evento.
 
 **F15 — Rentabilidade por cota.** Cota diária da carteira (e por categoria) a partir de F14, neutralizando aportes e resgates (D5); gráfico de rentabilidade acumulada com seletor de período (mês, ano, 12m, desde o início). Serve N1.
 **Aceite:** a rentabilidade de um período em que o Status Invest ainda estava sincronizado bate com a dele (diferença de até 0,1 p.p.).
@@ -303,7 +312,7 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 **F16 — Benchmarks.** Séries do CDI e do IPCA (BCB) e do IBOV (`^BVSP`) no mesmo gráfico da rentabilidade, rebaseadas no início do período escolhido; rentabilidade em "% do CDI". Serve N1.
 **Aceite:** o usuário consegue responder "rendi mais que o CDI este ano?" olhando uma tela só.
 
-**F17 — Patrimônio × aportes.** Gráfico do patrimônio contra o capital investido acumulado (aportes − resgates), mostrando quanto do crescimento é rendimento e quanto é aporte. Serve N1.
+**F17 — Patrimônio × aportes.** Gráfico do patrimônio contra o capital investido acumulado (aportes − resgates), mostrando quanto do crescimento é rendimento e quanto é aporte. Junto, o aporte de cada mês: o fluxo líquido que entrou na carteira (compras e aplicações de RF menos vendas e resgates), derivado das operações (D2), sem lançamento separado. É o histórico que F24 usa pra sugerir como distribuir o próximo aporte. Serve N1.
 **Aceite:** a diferença entre as duas curvas no fim do período bate com o ganho total (realizado + não realizado + proventos, quando M4 existir).
 
 **F18 — Mês × ano.** Tabela estilo Status Invest: linhas = anos, colunas = meses + acumulado do ano, com a rentabilidade da carteira e do CDI lado a lado, colorida por desempenho. Serve N1.
@@ -320,7 +329,7 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 
 **F23 — Aposentar o IR-Helper.** Depois da paridade fiscal (F21) e de uma declaração feita com F22: README do IR-Helper apontando pra cá, repositório marcado como arquivado, `irpf_helper.db` guardado como backup somente leitura. Serve N5 diretamente — é o critério de fechamento da necessidade: as obrigações fiscais deixam de precisar do app antigo.
 
-**F24 — Rebalanceamento.** Metas de alocação (% por categoria e, opcionalmente, por ativo) guardadas no banco, no lugar do arquivo de metas do script de rebalanceamento atual; dado um valor de aporte, sugerir quanto comprar de cada ativo pra se aproximar das metas (e, com opção ativada, quanto vender), usando a posição de F11. Mostrar o desvio atual de cada meta. Serve N6.
+**F24 — Rebalanceamento.** Metas de alocação (% por categoria e, opcionalmente, por ativo) guardadas no banco, no lugar do arquivo de metas do script de rebalanceamento atual; dado um valor de aporte, sugerir quanto comprar de cada ativo pra se aproximar das metas (e, com opção ativada, quanto vender), usando a posição de F11. Mostrar o desvio atual de cada meta. Quando F32 definir as camadas de liquidez, a sugestão passa a distribuir o aporte também entre elas. Serve N6.
 **Aceite:** o usuário faz um aporte inteiro guiado pela sugestão, sem abrir a planilha de rebalanceamento.
 
 **F25 — Subcarteiras.** Grupos nomeados de ativos (um ativo pode estar em mais de um), cada um com a mesma visão de patrimônio e rentabilidade da carteira inteira, filtrando posições e fluxos de F14. Serve N7.
@@ -340,7 +349,11 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 ---
 ## 3. Descartada
 
-> Nenhum item nesta categoria atualmente.
+| ID | Resumo | N# | Status |
+| --- | --- | --- | --- |
+| **F13** | Caixa e reserva | N2 | 🚫 Descartado |
+
+**F13 — Descartado.** 🚫 O app cobre só o financeiro de investimentos, separado dos gastos pessoais: saldo em conta não entra. O dinheiro de investimento que fica parado é renda fixa de liquidez diária (F12); o tamanho do aporte sai das operações (F17); e a liquidez virou o card F32. A classe de ativo `cash` saiu do schema.
 
 ---
 ## 4. Incerta / exploratória
@@ -352,8 +365,9 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 | **F29** | Empacotamento desktop | Nenhuma N# direta — conforto de uso | — | F2 | 🔍 Em avaliação |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | Nenhuma N# direta — qualidade de uso das telas de N1/N2 | — | F11 | 🔍 Em avaliação |
 | **F31** | Hot-reload do backend não reinicia o worker | Nenhuma N# direta — atrito de desenvolvimento | — | F2 | 🔍 Em avaliação |
+| **F32** | Liquidez em três camadas | N2 e N6 — distribuição do patrimônio por liquidez e planejamento do aporte | M6 | F11, F12 | 🔍 Em avaliação |
 
-**F19 — Spike de proventos na B3.** O que falta definir: se o xlsx de movimentação da B3, exportado **sem filtro**, traz Dividendo / Rendimento / Juros Sobre Capital Próprio / Amortização com valor e data suficientes pra ser a fonte principal (o xlsx que alimenta o IR-Helper foi exportado filtrado e não traz nenhum). Exportar um período conhecido, conferir contra o extrato da corretora e decidir a fonte de F20 (B3, manual, ou brapi como complemento).
+**F19 — Spike de proventos na B3.** O que falta definir: se o xlsx de movimentação da B3, exportado **sem filtro**, traz Dividendo / Rendimento / Juros Sobre Capital Próprio / Amortização com valor e data suficientes pra ser a fonte principal (o xlsx que alimenta o IR-Helper foi exportado filtrado e não traz nenhum). Exportar um período conhecido, conferir contra o extrato da corretora e decidir a fonte de F20: B3 ou cadastro manual. Fonte paga fica fora, como em F10.
 
 **F28 — Alerta fora do app.** O que falta definir: o mecanismo — o app não fica aberto o tempo todo, e hoje o alerta de rebalanceamento vem de um script agendado no sistema. Opções: uma tarefa agendada chamando um comando do próprio app, um ícone na bandeja, ou só mostrar o alerta ao abrir. Depende de F24 existir e de o usuário sentir falta do alerta.
 
@@ -371,6 +385,10 @@ O que **não** é a causa (todos testados isoladamente): não é `reload=False` 
 
 O que acontece: o WatchFiles **detecta** a mudança e loga `Reloading...`, o worker **nunca** reinicia, e o watcher não dispara uma segunda vez. Aponta para a fase de shutdown do worker no Windows, nesta combinação de uvicorn/watchfiles. Próximos passos: testar com `--reload-delay`, com `WATCHFILES_FORCE_POLLING=1`, e com um app mínimo (sem o `create_app` do projeto) para separar ambiente de aplicação.
 
+**F32 — Liquidez em três camadas.** Classificar o patrimônio pelo prazo em que ele vira dinheiro: **mexível** (RF de liquidez diária), **intermediária** (renda variável: sai em D+2, mas vender gera DARF, e girar à toa é o que se quer evitar) e **travada** (RF com carência ou vencimento). Métricas candidatas: a distribuição do patrimônio pelas três camadas e a escada de vencimentos (quanto destrava em cada mês ou ano). O risco que elas medem é precisar do dinheiro antes da hora e sair com perda — Tesouro prefixado ou IPCA marcado a mercado abaixo do custo, ou ação vendida em baixa gerando DARF. Uso previsto em F24: distribuir o aporte do mês entre as camadas.
+
+O que falta definir: se a camada é derivada (liquidez e vencimento da RF de F12, classe do ativo na RV) ou marcada pelo usuário por aplicação; se existe meta por camada (ex.: X% mexível) e como ela convive com as metas de alocação de F24; e qual das métricas seria de fato consultada. Vale olhar com F11 e F12 de pé, com dado real.
+
 ## Fora do roadmap
 
-Multiusuário, autenticação, sincronização em nuvem e app mobile — fora do escopo local-only do produto (ver Contexto em DECISIONS.md), não são features adiadas.
+Multiusuário, autenticação, sincronização em nuvem e app mobile — fora do escopo local-only do produto (ver Contexto em DECISIONS.md), não são features adiadas. Saldo em conta corrente e gastos pessoais também ficam fora: o app cobre só o financeiro de investimentos.

@@ -4,9 +4,9 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-22):** **F4 e F5 executadas.** D3 ganhou o desenho real dos três guardas. O de dado não ficou no `make check`, como o texto previa: roda no start, num dry run sobre uma cópia do banco, que é onde o dado existe. D11 ganhou o codegen sem arquivo intermediário.
+> **Última mudança (2026-09-23):** **F10 executada e caixa fora do escopo.** D6 perdeu o brapi, que é pago: o app opera só com fonte gratuita. O Contexto, N2 e D2 perderam o caixa, porque o app cobre só o financeiro de investimentos.
 >
-> **Mudança anterior (2026-09-21):** **D1 fechada em FastAPI + Vite**, pelas quatro sondas de DX de F1. Quatro premissas antigas de D1 foram corrigidas com medição (o motor é 591 linhas, não 2,8k; precisão decimal não diferencia as stacks; PDF é portável mas não trivial; drizzle-kit ganha do Alembic em migrations). D3, D4 e D11 ganharam consequências verificadas — backup por `VACUUM INTO`, Decimal como TEXT, `MappedAsDataclass`.
+> **Mudança anterior (2026-09-22):** **F4 e F5 executadas.** D3 ganhou o desenho real dos três guardas. O de dado não ficou no `make check`, como o texto previa: roda no start, num dry run sobre uma cópia do banco, que é onde o dado existe. D11 ganhou o codegen sem arquivo intermediário.
 
 ---
 
@@ -19,7 +19,9 @@ Absorve projetos irmãos que falam do mesmo domínio, pra acabar com a sincroniz
 - **Script de rebalanceamento** — yfinance + arquivo de metas + alerta agendado no sistema. Vira feature no marco de inteligência.
 - Ideias reaproveitáveis (não absorvidos): marcação de renda fixa do [SimuladorFinanceiro](https://github.com/LiloMarino/SimuladorFinanceiro) e do [Comparador-Renda-Fixa](https://github.com/LiloMarino/Comparador-Renda-Fixa).
 
-Classes de ativo no escopo: **ações/FII/ETF/BDR da B3, renda fixa/Tesouro, caixa/reserva**. Ativos no exterior e cripto ficam de fora: exigiriam câmbio e outra regra fiscal inteira, e ficam fora do escopo até haver uso real para eles. Notícias e indicadores fundamentalistas também não entram: o app é de acompanhamento da própria carteira, não de análise pra escolher ativo.
+O app cobre **só o financeiro de investimentos**, separado dos gastos pessoais: saldo em conta corrente não entra. O dinheiro de investimento que fica parado mora em renda fixa de liquidez diária.
+
+Classes de ativo no escopo: **ações/FII/ETF/BDR da B3 e renda fixa/Tesouro**. Ativos no exterior e cripto ficam de fora: exigiriam câmbio e outra regra fiscal inteira, e ficam fora do escopo até haver uso real para eles. Notícias e indicadores fundamentalistas também não entram: o app é de acompanhamento da própria carteira, não de análise pra escolher ativo.
 
 ---
 
@@ -29,7 +31,7 @@ Classes de ativo no escopo: **ações/FII/ETF/BDR da B3, renda fixa/Tesouro, cai
 Saber se os investimentos estão de fato rendendo: desempenho de rentabilidade no tempo, patrimônio × rentabilidade, comparação ano a ano. É o que o usuário mais usava no Status Invest e chama de "absurdamente essencial". Implica comparar com referências (CDI, IPCA, IBOV).
 
 **N2. Ver o patrimônio consolidado**
-Patrimônio total e por categoria, posição na carteira, ativos por categoria — incluindo renda fixa e caixa, não só bolsa.
+Patrimônio total e por categoria, posição na carteira, ativos por categoria — incluindo renda fixa, não só bolsa.
 
 **N3. Posições e preço médio corretos, numa fonte única**
 Os números têm que bater com a realidade (B3 + notas de corretagem), inclusive nos casos em que o próprio xlsx da B3 é incompleto. E sem ter que sincronizar a mesma informação em dois sistemas (hoje: IR-Helper e Status Invest).
@@ -112,7 +114,7 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 **Status:** ✅ Decidida
 
 **Contexto:** Posição, preço médio, patrimônio, rentabilidade, proventos e fiscal são todos funções das operações.
-**Decisão:** Operações (compra, venda, eventos corporativos, transferências, aplicações/resgates de RF, movimentos de caixa) são o único dado primário. Todo o resto é derivado e **recalculável do zero**; snapshots/séries materializadas são cache descartável.
+**Decisão:** Operações (compra, venda, eventos corporativos, transferências, aplicações/resgates de RF) são o único dado primário. Todo o resto é derivado e **recalculável do zero**; snapshots/séries materializadas são cache descartável.
 **Por quê:** é o que permite corrigir uma operação antiga e ter todos os números consistentes de novo; é o desenho que já funciona no IR-Helper.
 **Consequências:** qualquer tabela derivada precisa de um caminho de reconstrução; nunca editar um derivado à mão.
 
@@ -161,8 +163,13 @@ Medido: `new Decimal(20000) >= new Decimal(3000)` devolve `false` (coerção lex
 ### D6 — Dados de mercado atrás de uma interface, com cache local
 **Status:** ✅ Decidida
 
-**Decisão:** Cotações e séries (yfinance `.SA` como primário, brapi como fallback; séries CDI/Selic/IPCA do BCB SGS) passam por uma interface de provider e são gravadas em cache diário local. O app funciona offline com o último valor conhecido.
-**Por quê:** fontes gratuitas mudam e quebram; trocar de fonte não pode quebrar o core, yfinance/brapi cobrem cotações e o BCB cobre CDI/Selic/IPCA.
+**Decisão:** Cotações e séries (yfinance `.SA` para cotação; séries CDI/Selic/IPCA do BCB SGS) passam por uma interface de provider e são gravadas em cache diário local. O app funciona offline com o último valor conhecido. **Só fonte gratuita.**
+**Por quê:** fontes gratuitas mudam e quebram; trocar de fonte não pode quebrar o core. O yfinance cobre as cotações da B3 e o BCB cobre CDI/Selic/IPCA.
+
+**Consequências (2026-09-23, F10):**
+- **O brapi saiu.** Era o fallback previsto, mas é pago, e o app opera só com o que é gratuito. Sem fallback, a interface ficou com um provider só. Se o yfinance quebrar, a alternativa gratuita é o arquivo de cotações históricas da B3 (COTAHIST), que entra atrás da mesma interface.
+- **O refresh parte do front**, ao abrir o app e pelo botão da tela Mercado. O `create_app` segue sem tocar no banco.
+- **O fechamento é o que o yfinance entrega:** ajustado por desdobramento e grupamento, não por provento. A série histórica de F14 converte a quantidade pelos eventos de `operations`, e isso se confere contra a carteira real.
 
 ### D8 — IR-Helper absorvido e aposentado: `irpf_helper.db` como oráculo de paridade
 **Status:** ✅ Decidida
