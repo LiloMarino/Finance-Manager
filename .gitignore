@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Saída derivada do oráculo (irpf_helper.db) ou de notas de corretagem: traz nome,
+# CPF, endereço e preços reais, e é reprodutível a partir do oráculo.
+spikes/
+**/out/
+**/ref/
+*.jsonl
+
+# Dados locais (nunca versionar dados financeiros reais)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+backups/
+logs/
+relatorios/
+
+# Config local
+.env
+config.toml
+
+# Build desktop
+build/
+*.spec.bak
+
+# Editor / SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build do front servido pelo backend
+backend/static/

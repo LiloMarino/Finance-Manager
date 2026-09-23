@@ -1,0 +1,18 @@
+# Copie para config.toml (que não é versionado) e ajuste o que precisar.
+# Variável de ambiente tem precedência: FM_SERVER__PORT=9000
+
+[server]
+host = "127.0.0.1"
+port = 8000
+
+[logging]
+level = "INFO"
+
+[database]
+path = "data/finance.db"
+
+# Snapshot do banco a cada start e antes de toda migration. Pode apontar para uma
+# pasta do Google Drive Desktop: o que sincroniza é o snapshot, nunca o banco vivo.
+[backup]
+dir = "backups"
+keep = 10

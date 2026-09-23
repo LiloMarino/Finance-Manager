@@ -1,0 +1,21 @@
+{
+  "name": "finance-manager",
+  "private": true,
+  "scripts": {
+    "setup": "uv sync --dev && cd frontend && pnpm install",
+    "openapi": "cd frontend && pnpm run types:generate",
+    "db:revision": "uv run alembic revision --autogenerate -m",
+    "backend": "uv run python main.py",
+    "frontend": "cd frontend && pnpm run dev",
+    "dev": "pnpm run openapi && concurrently --kill-others -n backend,frontend -c cyan,yellow \"pnpm run backend\" \"pnpm run frontend\"",
+    "lint": "uv run ruff check",
+    "format": "uv run ruff format",
+    "typecheck": "uv run pyright",
+    "test": "uv run pytest",
+    "front:check": "cd frontend && pnpm run check",
+    "check": "pnpm run openapi && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run front:check"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -1,0 +1,76 @@
+import { NavLink, Outlet } from "react-router-dom";
+import {
+  ArrowLeftRight,
+  Coins,
+  LineChart,
+  PieChart,
+  Receipt,
+} from "lucide-react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/shared/components/ui/sidebar";
+import { Toaster } from "@/shared/components/ui/sonner";
+
+// Paths em inglês acompanham o código; o rótulo é o que aparece pro usuário.
+const navItems = [
+  { to: "/", label: "Carteira", icon: PieChart },
+  { to: "/operations", label: "Operações", icon: ArrowLeftRight },
+  { to: "/market", label: "Mercado", icon: LineChart },
+  { to: "/income", label: "Proventos", icon: Coins },
+  { to: "/tax", label: "Fiscal", icon: Receipt },
+];
+
+export function MainLayout() {
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader className="px-4 py-3 text-base font-semibold">
+          Finance Manager
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map(({ to, label, icon: Icon }) => (
+                  <SidebarMenuItem key={to}>
+                    <NavLink to={to} end>
+                      {({ isActive }) => (
+                        <SidebarMenuButton asChild isActive={isActive}>
+                          <span>
+                            <Icon />
+                            {label}
+                          </span>
+                        </SidebarMenuButton>
+                      )}
+                    </NavLink>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex h-14 items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+        </header>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </SidebarInset>
+      <Toaster richColors />
+    </SidebarProvider>
+  );
+}
