@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** F10 concluída só com o yfinance, fonte gratuita, sem o brapi pago. F13 descartada: o app cobre só o financeiro de investimentos, e a liquidez virou o card F32.
+> **Última mudança (2026-09-23):** F7 concluída: ativos e operações do IR-Helper migrados para o banco do app, com 0 divergências contra o oráculo.
 
 ## Glossário
 
@@ -25,7 +25,6 @@
 | **N7** | Subcarteiras | F25 | — |
 | **N8** | Análises extras: risco × retorno, correlação entre dois ativos | F10, F26, F27 | — |
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ⏳ |
-| **F7** | Migração dos dados do IR-Helper | — | ⏳ |
 | **F8** | Engine de posição e preço médio + paridade | — | ⏳ |
 | **F9** | Telas de operações, ativos e posição atual | — | ⏳ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ⏳ |
@@ -51,7 +50,7 @@
 | **F32** | Liquidez em três camadas | — | 🔍 |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (16 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (17 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -69,6 +68,7 @@
 | **F3** | Tipagem ponta a ponta | — | ✅ |
 | **F4** | Migrations + backup automático do banco | — | ✅ |
 | **F5** | Modelo de domínio: ativos, operações e eventos | — | ✅ |
+| **F7** | Migração dos dados do IR-Helper | — | ✅ |
 | **F10** | Provider de dados de mercado + cache de preços | — | ✅ |
 | **F13** | Caixa e reserva | — | 🚫 |
 
@@ -82,7 +82,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F7** | Migração dos dados do IR-Helper | M1 | 17 | ⏳ |
+| **F8** | Engine de posição e preço médio + paridade | M1 | 16 | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | M2 | 10 | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | M1 | 0 | ⏳ |
@@ -99,16 +99,15 @@
 >
 > **Serve:** N3
 >
-> **Progresso:** 5/9 concluídas
+> **Progresso:** 6/9 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | F5 | ⏳ |
-| **F7** | Migração dos dados do IR-Helper | F5 | ⏳ |
 | **F8** | Engine de posição e preço médio + paridade | F7 | ⏳ |
 | **F9** | Telas de operações, ativos e posição atual | F8 | ⏳ |
 
-<details><summary>Concluído (5 itens)</summary>
+<details><summary>Concluído (6 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -117,6 +116,7 @@
 | **F3** | Tipagem ponta a ponta | F2 | ✅ |
 | **F4** | Migrations + backup automático do banco | F2 | ✅ |
 | **F5** | Modelo de domínio: ativos, operações e eventos | F4 | ✅ |
+| **F7** | Migração dos dados do IR-Helper | F5 | ✅ |
 
 </details>
 
@@ -223,7 +223,7 @@
 | **F4** | Migrations + backup automático do banco | N3 | D3 | M1 | F2 | Baixo | Médio | Alto | Bom | ✅ Concluído |
 | **F5** | Modelo de domínio: ativos, operações e eventos | N3 | D2, D4 | M1 | F4 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 | F5 | Médio | Médio | Alto | Bom | ⏳ Pendente |
-| **F7** | Migração dos dados do IR-Helper | N3 | D8 | M1 | F5 | Baixo | Médio | Alto | Excelente | ⏳ Pendente |
+| **F7** | Migração dos dados do IR-Helper | N3 | D8 | M1 | F5 | Baixo | Médio | Alto | Excelente | ✅ Concluído |
 | **F8** | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 | F7 | Médio | Alto | Alto | Excelente | ⏳ Pendente |
 | **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
@@ -281,8 +281,11 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 **F6 — Importadores.** Portar `b3_reader.py` e `pdf_reader.py` + `parsers/nubank.py` do IR-Helper, agora emitindo linhas tipadas (validadas na borda) antes de gravar; importação idempotente (reimportar o mesmo arquivo não duplica) com relatório do que entrou, do que foi ignorado e por quê. Serve N3.
 **Aceite:** reimportar num banco vazio os relatórios da B3 e as notas de corretagem que alimentam o IR-Helper reproduz as mesmas operações que ele tem (fora os ajustes manuais, que vêm pela migração F7).
 
-**F7 — Migração do irpf_helper.db.** Script one-shot que lê o `irpf_helper.db` (somente leitura) e grava ativos + operações no banco novo — incluindo os ajustes manuais feitos lá, que corrigem posições que nem a B3 nem as notas trazem. Gera um relatório de contagens por ativo/tipo. Serve N3; o banco antigo fica intocado como oráculo (D8).
-**Aceite:** contagem e soma de quantidades por ativo e tipo de operação idênticas entre os dois bancos.
+**F7 — Migração do irpf_helper.db.** Feita por um script de uso único, rodado uma vez e mantido fora do repo. O oráculo foi lido numa conexão `mode=ro`, e o banco do app passou antes por `prepare_database` (snapshot + migration até o head). Ativos e operações entraram numa transação só, com os ajustes manuais junto: no oráculo eles são operações como as outras. Os enums chegam pelo nome e saem pelo valor. Os ids do oráculo não atravessam: a operação acha o ativo pelo ticker, e a ordem de inserção se mantém.
+
+Decisão tomada durante: o `NUMERIC(18,6)` do oráculo está gravado como REAL no SQLite, e o IR-Helper o lê com 6 casas. O valor migrado é esse, sem os zeros à direita (`10.5`, não `10.500000`), então o ruído de float some aqui do mesmo jeito que some lá.
+
+**Aceite verificado:** contagem e soma de quantidades por ativo e tipo de operação, relidas do TEXT gravado, idênticas às do oráculo: **0 divergências**. O hash do `irpf_helper.db` é o mesmo antes e depois.
 
 **F8 — Posição e PM.** Portar o cálculo de posição/PM de `consolidation.py`/`position.py` como funções puras sobre as operações (D2), com eventos corporativos. Suíte de paridade: para cada ativo e cada mês, comparar quantidade e PM com os `MonthlySnapshot` do IR-Helper (oráculo, D8). Serve N3.
 **Aceite:** posição e PM de todos os ativos batem com o IR-Helper em todos os meses.
