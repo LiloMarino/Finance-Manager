@@ -39,9 +39,9 @@ backend/
 │   ├── enum/         # enums do domínio
 │   └── models/       # models.py: Base, DecimalText e todas as tabelas
 ├── migrations/       # Alembic: env.py e versions/
-├── adapters/         # fronteira de pandas/yfinance (regras de pyright relaxadas)
+├── adapters/         # fronteira de pandas, yfinance, openpyxl e pdfplumber (pyright relaxado)
 ├── domain/           # dataclasses e funções puras
-├── repository/       # acesso a dados; devolve DTO, nunca Row
+├── repository/       # acesso a dados compartilhado; devolve dataclass, nunca Row
 └── features/<dominio>/router.py
 
 frontend/

@@ -76,12 +76,6 @@ def _refresh(session: Session, provider: MarketDataProvider) -> tuple[str, ...]:
     return refresh_prices(session, provider, TODAY).failed
 
 
-@pytest.fixture
-def session(engine: Engine) -> Iterator[Session]:
-    with Session(engine) as session:
-        yield session
-
-
 def test_first_refresh_starts_at_first_operation(session: Session) -> None:
     """Sem cache, o refresh pede da primeira operação até hoje e grava o que vier."""
     _asset(session)

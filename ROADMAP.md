@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-23):** F8 concluída: posição e preço médio recalculados das operações, com 0 divergências contra os snapshots mensais do IR-Helper.
+> **Última mudança (2026-09-23):** F6 concluída: importação de notas da Nubank e do relatório da B3 com preview e idempotente, reproduzindo o oráculo fora os ajustes manuais.
 
 ## Glossário
 
@@ -24,7 +24,6 @@
 | **N6** | Rebalancear sem planilha | F24 | — |
 | **N7** | Subcarteiras | F25 | — |
 | **N8** | Análises extras: risco × retorno, correlação entre dois ativos | F10, F26, F27 | — |
-| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ⏳ |
 | **F9** | Telas de operações, ativos e posição atual | — | ⏳ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ⏳ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | — | ⏳ |
@@ -49,7 +48,7 @@
 | **F32** | Liquidez em três camadas | — | 🔍 |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (18 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (19 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -67,6 +66,7 @@
 | **F3** | Tipagem ponta a ponta | — | ✅ |
 | **F4** | Migrations + backup automático do banco | — | ✅ |
 | **F5** | Modelo de domínio: ativos, operações e eventos | — | ✅ |
+| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ✅ |
 | **F7** | Migração dos dados do IR-Helper | — | ✅ |
 | **F8** | Engine de posição e preço médio + paridade | — | ✅ |
 | **F10** | Provider de dados de mercado + cache de preços | — | ✅ |
@@ -86,7 +86,6 @@
 | **F12** | Renda fixa: cadastro e marcação por indexador | M2 | 10 | ⏳ |
 | **F19** | Spike: proventos no xlsx de movimentação da B3 | M4 | 3 | 🔍 |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | 2 | ⏳ |
-| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | M1 | 0 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 
@@ -100,14 +99,13 @@
 >
 > **Serve:** N3
 >
-> **Progresso:** 7/9 concluídas
+> **Progresso:** 8/9 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | F5 | ⏳ |
 | **F9** | Telas de operações, ativos e posição atual | F8 | ⏳ |
 
-<details><summary>Concluído (7 itens)</summary>
+<details><summary>Concluído (8 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -116,6 +114,7 @@
 | **F3** | Tipagem ponta a ponta | F2 | ✅ |
 | **F4** | Migrations + backup automático do banco | F2 | ✅ |
 | **F5** | Modelo de domínio: ativos, operações e eventos | F4 | ✅ |
+| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | F5 | ✅ |
 | **F7** | Migração dos dados do IR-Helper | F5 | ✅ |
 | **F8** | Engine de posição e preço médio + paridade | F7 | ✅ |
 
@@ -223,7 +222,7 @@
 | **F3** | Tipagem ponta a ponta | N3 | D11 | M1 | F2 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F4** | Migrations + backup automático do banco | N3 | D3 | M1 | F2 | Baixo | Médio | Alto | Bom | ✅ Concluído |
 | **F5** | Modelo de domínio: ativos, operações e eventos | N3 | D2, D4 | M1 | F4 | Médio | Médio | Alto | Bom | ✅ Concluído |
-| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 | F5 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F6** | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F7** | Migração dos dados do IR-Helper | N3 | D8 | M1 | F5 | Baixo | Médio | Alto | Excelente | ✅ Concluído |
 | **F8** | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 | F7 | Médio | Alto | Alto | Excelente | ✅ Concluído |
 | **F9** | Telas de operações, ativos e posição atual | N3 | — | M1 | F8 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
@@ -279,8 +278,19 @@ Os três guardas de D3 existem: (1) `compare_metadata` e (2) todo `CheckConstrai
 
 **Aceite verificado:** todos os ativos e operações do `irpf_helper.db` (lido com `mode=ro`) gravados num banco no head e relidos: **0 divergências campo a campo, nenhuma rejeição de CHECK**. Um preço médio com dízima de 28 dígitos atravessa o SQLite intacto, e `"10.10"` mantém a escala. Verificação one-shot, sem artefato versionado; a paridade permanente é de F7.
 
-**F6 — Importadores.** Portar `b3_reader.py` e `pdf_reader.py` + `parsers/nubank.py` do IR-Helper, agora emitindo linhas tipadas (validadas na borda) antes de gravar; importação idempotente (reimportar o mesmo arquivo não duplica) com relatório do que entrou, do que foi ignorado e por quê. Serve N3.
-**Aceite:** reimportar num banco vazio os relatórios da B3 e as notas de corretagem que alimentam o IR-Helper reproduz as mesmas operações que ele tem (fora os ajustes manuais, que vêm pela migração F7).
+**F6 — Importadores.** Nota de corretagem da Nubank (PDF, via `pdfplumber`) e relatório de movimentação da B3 (xlsx, via `openpyxl`), os dois lidos em `adapters/` e convertidos em linhas Pydantic validadas na borda. A importação é em dois passos: `POST /api/operations/import/preview` lê um lote de arquivos misturados e classifica cada linha contra o banco sem gravar nada, e `POST /api/operations/import/confirm` grava as linhas escolhidas. O servidor não guarda estado entre os dois.
+
+Decisões tomadas durante, a partir do cruzamento das fontes com o oráculo:
+- **Cada tipo de operação tem uma fonte só.** Compra e venda vêm da nota, que traz o pregão e cada execução. Do xlsx da B3 vêm os eventos (bonificação, desdobro, grupamento) e o `Leilão de Fração`, que é `Credito` no relatório mas é a **venda** da fração. A `Transferência - Liquidação` do xlsx é a mesma negociação da nota, em D+2 e agregada por dia, e fica de fora com o motivo, como `Fração em Ativos`, `Atualização` e os direitos de subscrição. É isso que deixa importar as duas fontes, em qualquer ordem, sem dobrar posição.
+- **Idempotência por chave natural com multiplicidade:** `(ticker, data, tipo, quantidade, preço)`, e dessa chave entram só as ocorrências que o banco ainda não tem. No lote, cada arquivo é um retrato completo do que cobre: a chave conta pelo arquivo que a traz mais vezes, então o mesmo arquivo solto duas vezes, ou dois exports sobrepostos, não dobram. Duas execuções idênticas na mesma nota continuam sendo duas. A regra roda no preview e de novo no confirmar.
+- **Possível duplicata:** linha sem par exato num (ativo, dia, tipo) que o banco já tem vem desmarcada. É a mesma execução registrada de outro jeito, como um leilão com o preço arredondado à mão ou duas linhas da nota somadas numa operação só.
+- **O `LINE_PATTERN` aceita a observação `#`**, e a linha que o IR-Helper perdia agora entra.
+- **Ativo novo tem a classe inferida pelo sufixo** (34 é BDR, 11 é FII, o resto é ação) e confirmada pelo usuário no preview, onde se resolve o 11 que é ETF ou unit. Confirmar sem a classe é recusado.
+- Um arquivo ilegível vira erro dele mesmo, e o resto do lote segue. Toda confirmação termina na checagem de posição negativa.
+
+**Aceite verificado:** o xlsx e as notas reais que alimentam o IR-Helper, importados num banco vazio, reproduzem as operações do oráculo. As diferenças são só os ajustes manuais: o par de transferência, a venda de uma fração sem leilão, os leilões com o preço arredondado e duas linhas de uma nota que no oráculo são uma operação. Confirmar o mesmo lote de novo grava 0. O preview do mesmo lote sobre o banco migrado não traz nenhuma linha nova: são todas `já existe` ou possível duplicata.
+
+**Limitações residuais:** só a Nubank tem parser de nota. No grupamento, a Quantidade do relatório entra como o fator; o único caso real tinha posição de 1 ação, que não distingue fator de quantidade resultante.
 
 **F7 — Migração do irpf_helper.db.** Feita por um script de uso único, rodado uma vez e mantido fora do repo. O oráculo foi lido numa conexão `mode=ro`, e o banco do app passou antes por `prepare_database` (snapshot + migration até o head). Ativos e operações entraram numa transação só, com os ajustes manuais junto: no oráculo eles são operações como as outras. Os enums chegam pelo nome e saem pelo valor. Os ids do oráculo não atravessam: a operação acha o ativo pelo ticker, e a ordem de inserção se mantém.
 
