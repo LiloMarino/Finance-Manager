@@ -4,7 +4,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-24):** D12 decidida: cada ativo em no máximo uma subcarteira, a meta é da subcarteira, e a operação marcada por subcarteira fica registrada como expansão futura.
+> **Última mudança (2026-09-24):** D6 ganhou o cache em três camadas, idempotente com o cache em dia; D13 põe o estado da tela na URL; N9 separa as ferramentas de decisão (comparador de renda fixa, correlação de ativo novo, simulação de parcelamento) das análises da carteira; as séries do BCB ficam inteiras no cache.
 
 ---
 
@@ -19,7 +19,7 @@ Absorve projetos irmãos que falam do mesmo domínio, pra acabar com a sincroniz
 
 O app cobre **só o financeiro de investimentos**, separado dos gastos pessoais: saldo em conta corrente não entra. O dinheiro de investimento que fica parado mora em renda fixa de liquidez diária.
 
-Classes de ativo no escopo: **ações/FII/ETF/BDR da B3 e renda fixa/Tesouro**. Ativos no exterior e cripto ficam de fora: exigiriam câmbio e outra regra fiscal inteira, e ficam fora do escopo até haver uso real para eles. O app acompanha a própria carteira: notícias e indicadores fundamentalistas não entram, e para um ativo que ainda não está na carteira ele oferece só o que sai do preço histórico, como a correlação com outro ativo.
+Classes de ativo no escopo: **ações/FII/ETF/BDR da B3 e renda fixa/Tesouro**. Ativos no exterior e cripto ficam de fora: exigiriam câmbio e outra regra fiscal inteira, e ficam fora do escopo até haver uso real para eles. O app acompanha a própria carteira: notícias e indicadores fundamentalistas não entram, e para uma decisão que ainda não foi tomada ele oferece ferramentas de simulação sobre os dados que já tem: a correlação pelo preço histórico, e a comparação de renda fixa e a simulação de parcelamento pelas séries do BCB. A simulação não grava gasto nenhum: é conta sobre valores digitados na hora.
 
 ---
 
@@ -47,7 +47,10 @@ Definir a meta da carteira, ver o desvio de cada item, saber onde pôr cada real
 Separar investimentos que não quero misturar, como estratégias diferentes, e ver cada grupo em todas as visões da carteira, com meta própria.
 
 **N8. Análises extras**
-Risco × retorno dos ativos e da carteira, a correlação entre os ativos da carteira, e uma ferramenta de correlação entre quaisquer dois ativos para avaliar um ativo novo.
+Risco × retorno dos ativos e da carteira, e a correlação entre os ativos da carteira.
+
+**N9. Avaliar uma decisão financeira antes de tomá-la**
+Comparar opções de renda fixa pelo que rendem de fato, líquido de IR; ver como um ativo que ainda não tenho anda junto com outro; e saber se compensa pagar à vista, parcelar deixando o dinheiro investido, ou adiantar parcelas com desconto. Cada ferramenta mostra o resultado em gráfico, além dos números.
 
 ---
 
@@ -145,8 +148,12 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 
 **Por quê:** fonte gratuita muda e quebra, e trocar de fonte fica restrito a `adapters/`.
 
+**O cache tem três camadas: tela → banco → fonte externa.** A tela lê só o banco. O front pede o refresh ao abrir o app e pelo botão da tela Mercado, e quem decide se vai à rede é o backend: a fonte só é consultada quando falta um dado que já devia existir (o último pregão fechado, a última publicação do BCB), dentro do período em que ele é necessário, e no máximo uma vez por intervalo. Para cotação, o período necessário são os dias em que houve posição no ativo: a renda variável tem milhares de tickers, e o cache guarda só os da carteira. As três séries do BCB (CDI, Selic, IPCA) ficam inteiras no cache, desde o início de cada uma, porque servem toda a renda fixa, os benchmarks e as ferramentas. Com o cache em dia, o refresh é idempotente e não sai da máquina, por mais vezes que seja chamado.
+
 **Consequências:**
-- O refresh parte do front, ao abrir o app e pelo botão da tela Mercado; o `create_app` não toca no banco. Busca só os dias que faltam, e o fechamento do pregão em andamento é regravado.
+- O `create_app` não toca no banco: o refresh é uma chamada como as outras.
+- Ativo vendido deixa de ser consultado assim que o cache cobre o período em que houve posição, então um ticker que sai da bolsa depois da venda não gera aviso.
+- Falta de dado só vira aviso quando cai dentro de um período necessário.
 - O fechamento é ajustado por desdobramento e grupamento, não por provento: a série histórica converte a quantidade pelos eventos de `operations`.
 - Dia útil é dia com CDI publicado; depois do último dado, dia de semana.
 - Se o yfinance quebrar, a alternativa gratuita é o arquivo de cotações históricas da B3 (COTAHIST), atrás da mesma interface.
@@ -189,4 +196,10 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 
 **Por quê:** a soma das subcarteiras nunca passa da carteira geral, nada conta duas vezes, e a meta de rebalanceamento de cada subcarteira se calcula sozinha, sem duas metas puxando o mesmo ativo para lados opostos. Colocar o mesmo ativo inteiro em várias subcarteiras quebraria as duas coisas. Dividir o ativo por quantidade resolve a foto de hoje, mas o histórico precisaria saber de quem era cada cota em cada dia.
 
-**Consequências — a expansão, se a carteira ficar complexa:** o caso que esta decisão não cobre é o mesmo ticker servindo a duas estratégias. A saída é marcar cada operação com a subcarteira: cada subcarteira vira uma conta separada, com posição, PM e rentabilidade próprios, somando a geral. A marcação é opcional (a operação sem subcarteira fica só na geral), então o cadastro comum não muda. O PM da subcarteira passa a diferir do PM fiscal, que é do ativo inteiro.
+**Expansão, se a carteira ficar complexa:** o caso que esta decisão não cobre é o mesmo ticker servindo a duas estratégias. A saída é marcar cada operação com a subcarteira: cada subcarteira vira uma conta separada, com posição, PM e rentabilidade próprios, somando a geral. A marcação é opcional (a operação sem subcarteira fica só na geral), então o cadastro comum não muda. O PM da subcarteira passa a diferir do PM fiscal, que é do ativo inteiro.
+
+### D13 — O estado da tela mora na URL
+**Status:** ✅ Decidida
+
+**Decisão:** o que define o que a tela mostra — período, mês, filtros, aba e a carteira selecionada — fica nos search params da URL, lido e escrito pelo React Router (`useSearchParams`). O estado local do componente guarda só o que é passageiro, como um modal aberto.
+**Por quê:** recarregar a página ou voltar no navegador mantém a tela, um link abre direto no mesmo lugar, e navegar pelas setas muda algo visível: a URL confirma que a navegação aconteceu.

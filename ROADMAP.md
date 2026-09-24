@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-24):** D12 decidida: cada ativo em no máximo uma subcarteira e a meta é da subcarteira; F25 sai de avaliação, F24 passa a depender dela, e o alerta da F28 fica como janela.
+> **Última mudança (2026-09-24):** Simulador de à vista × parcelado × adiantar fatura registrado como ferramenta da N9; séries do BCB inteiras no cache; troca de ticker confirmada, com o IRPF antigo mostrando o ticker da época.
 
 ## Glossário
 
@@ -16,14 +16,15 @@
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
-| **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18 | — |
-| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37 | — |
-| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34 | — |
+| **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
+| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46 | — |
+| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45 | — |
 | **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F20, F38 | — |
-| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35 | — |
+| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48 | — |
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
-| **N8** | Análises extras: risco × retorno, correlação da carteira e entre dois ativos quaisquer | F10, F26, F27, F39 | — |
+| **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
+| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
 | **F14** | Série diária por ativo | — | ⏳ |
 | **F15** | Desempenho de rentabilidade | — | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | — | ⏳ |
@@ -47,9 +48,19 @@
 | **F37** | Setor e segmento cadastrados | — | ⏳ |
 | **F38** | Desempenho e distribuição dos proventos | — | ⏳ |
 | **F39** | Correlação da carteira | — | ⏳ |
+| **F40** | Troca de ticker como renomeação | — | ⏳ |
+| **F41** | Cache de dados externos idempotente | — | ⏳ |
+| **F42** | Painel de saúde dos dados | — | ⏳ |
+| **F43** | Sidebar | — | ⏳ |
+| **F44** | Carteira: gráfico, tooltip e cor | — | ⏳ |
+| **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ⏳ |
+| **F47** | Comparador de renda fixa | — | ⏳ |
+| **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (26 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (27 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -58,11 +69,12 @@
 | **D3** | Um único SQLite, com snapshot e migration testada | F4 | ✅ |
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5, F26, F36 | ✅ |
 | **D5** | Rentabilidade medida por cota (TWR) | F15, F18 | ✅ |
-| **D6** | Dados de mercado atrás de interface, com cache local e só fonte gratuita | F10, F12, F16 | ✅ |
+| **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F16, F41 | ✅ |
 | **D8** | IR-Helper aposentado; o banco dele é oráculo de posição e PM | F1, F7, F8, F21, F23 | ✅ |
 | **D10** | Roteamento: React Router 7 | F2 | ✅ |
 | **D11** | Tipagem: Pydantic nas bordas, dataclass no domínio, pyright strict | F3 | ✅ |
 | **D12** | Subcarteira: seletor em toda visão de carteira, cada ativo em uma só | F24, F25 | ✅ |
+| **D13** | O estado da tela mora na URL | F25, F45, F48 | ✅ |
 | **F1** | Spike de stack (resolve D1) | — | ✅ |
 | **F2** | Scaffold do projeto na stack escolhida | — | ✅ |
 | **F3** | Tipagem ponta a ponta | — | ✅ |
@@ -92,14 +104,21 @@
 | --- | --- | --- | --- | --- |
 | **F14** | Série diária por ativo | M3 | 8 | ⏳ |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | M2 | 2 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
+| **F41** | Cache de dados externos idempotente | M8 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 0 | 🔍 |
+| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 | **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
 | **F33** | Custo da bonificação | M5 | 0 | ⏳ |
 | **F36** | Posição por categoria com variação do dia | M2 | 0 | ⏳ |
 | **F37** | Setor e segmento cadastrados | M2 | 0 | ⏳ |
+| **F40** | Troca de ticker como renomeação | M8 | 0 | ⏳ |
+| **F43** | Sidebar | M9 | 0 | ⏳ |
+| **F44** | Carteira: gráfico, tooltip e cor | M9 | 0 | ⏳ |
+| **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
+| **F48** | Fiscal: navegação por mês na URL | M9 | 0 | ⏳ |
 
 ---
 
@@ -139,12 +158,13 @@
 >
 > **Serve:** N2
 >
-> **Progresso:** 3/5 concluídas
+> **Progresso:** 3/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F36** | Posição por categoria com variação do dia | F11 | ⏳ |
 | **F37** | Setor e segmento cadastrados | F11 | ⏳ |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | F12 | ⏳ |
 
 <details><summary>Concluído (3 itens)</summary>
 
@@ -225,28 +245,59 @@
 | **F28** | Alerta de rebalanceamento com o app fechado | F24 | ⏳ |
 | **F32** | Liquidez em três camadas | F11, F12 | ⏳ |
 
-### M7 — Análises
+### M7 — Análises e ferramentas
 
-> **Objetivo:** Risco × retorno e correlação, da carteira e de ativos novos.
+> **Objetivo:** Risco × retorno e correlação da carteira, e ferramentas de simulação para decidir antes: renda fixa, ativo novo, à vista × parcelado.
 >
-> **Serve:** N8
+> **Serve:** N8, N9
 >
-> **Progresso:** 0/3 concluídas
+> **Progresso:** 0/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F26** | Risco × retorno | F10, F15 | 💤 |
 | **F27** | Ferramenta de correlação entre dois ativos | F10 | ⏳ |
 | **F39** | Correlação da carteira | F27 | ⏳ |
+| **F47** | Comparador de renda fixa | F46 | ⏳ |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ⏳ |
 
-### Sem marco
+### M8 — Qualidade dos dados
 
+> **Objetivo:** Cotações e séries consultadas só quando faltam, troca de ticker sem gambiarra, e os buracos de dado à vista num lugar só.
+>
+> **Serve:** N2, N3
+>
 > **Progresso:** 0/3 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F29** | Empacotamento desktop | F2 | 🔍 |
+| **F40** | Troca de ticker como renomeação | F9 | ⏳ |
+| **F41** | Cache de dados externos idempotente | F10, F12 | ⏳ |
+| **F42** | Painel de saúde dos dados | F41 | ⏳ |
+
+### M9 — Conforto de uso
+
+> **Objetivo:** As telas que já existem confortáveis de usar: navegação, cor com significado, seletores que escalam.
+>
+> **Serve:** N2, N3, N5
+>
+> **Progresso:** 0/5 concluídas
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
+| **F43** | Sidebar | F2 | ⏳ |
+| **F44** | Carteira: gráfico, tooltip e cor | F11 | ⏳ |
+| **F45** | Operações: filtros e seletor de ativo | F9 | ⏳ |
+| **F48** | Fiscal: navegação por mês na URL | F23 | ⏳ |
+
+### Sem marco
+
+> **Progresso:** 0/2 concluídas
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F29** | Empacotamento desktop | F2 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | F2 | 🔍 |
 
 ---
@@ -278,7 +329,7 @@
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
-| **F27** | Ferramenta de correlação entre dois ativos | N8 | — | M7 | F10 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F27** | Ferramenta de correlação entre dois ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
@@ -288,7 +339,16 @@
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
-| **F25** | Subcarteiras | N7 | D12 | M6 | F15 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ⏳ Pendente |
+| **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F44** | Carteira: gráfico, tooltip e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -526,7 +586,7 @@ Plano:
 - o ponto da carteira usa a cota da F15, e a volatilidade da carteira aparece como número no topo, com a mesma explicação;
 - cálculo em float no Python sobre `price_history` (D4).
 
-**F27 — Ferramenta de correlação entre dois ativos.** Para avaliar um ativo novo: escolhem-se dois tickers quaisquer, na carteira ou não, ou um ticker e um benchmark, e o app mostra o quanto eles andam juntos. Serve N8.
+**F27 — Ferramenta de correlação entre dois ativos.** Para avaliar um ativo novo: escolhem-se dois tickers quaisquer, na carteira ou não, ou um ticker e um benchmark, e o app mostra o quanto eles andam juntos. Serve N9.
 
 Plano:
 - a **correlação** é um número de −1 a 1 calculado sobre os retornos diários. Perto de 1, os dois sobem e caem juntos, e um não diversifica o outro. Perto de 0, não há relação. Negativa, quando um sobe o outro tende a cair. Para diversificar, quer-se correlação baixa. A dica da tela traz essa leitura;
@@ -636,10 +696,117 @@ Plano:
 
 Sem histórico de pertença: mover um ativo de subcarteira muda também o passado dela, porque a subcarteira é o conjunto de ativos de hoje.
 
+**F40 — Troca de ticker como renomeação.** Quando um ativo muda de ticker (conversão de BDR, mudança de nome da empresa), ele continua sendo o mesmo ativo: o histórico do ticker antigo é o histórico do novo. A troca é uma renomeação, sem operação, sem mexer em posição, PM ou apuração fiscal. Serve N3 e N2.
+
+Plano:
+- tabela `asset_ticker_history` (ativo, ticker antigo, válido até), ao lado do `ticker` atual de `assets`; nenhum ticker, antigo ou atual, aponta para dois ativos;
+- ação "Trocar ticker" no detalhe do ativo, com o ticker novo e a data. Se o ticker novo já existe como ativo (o caso que a migração trouxe como par de transferência), a ação junta os dois: as operações do antigo passam para o novo, e o par de transferência entre eles naquela data é apagado;
+- troca com proporção diferente de 1:1 é a renomeação mais um desdobro ou grupamento na mesma data, com os eventos que já existem;
+- a cotação vem do ticker atual para o histórico inteiro: o yfinance guarda o histórico anterior à troca sob o ticker novo (conferido no caso real);
+- operações, fiscal (mensal, anual, todos os meses) e IRPF mostram o ticker vigente na data: o IRPF de um ano anterior à troca traz o ticker antigo em Bens e Direitos, como foi declarado. As outras telas mostram o atual, e o detalhe do ativo lista os antigos;
+- os importadores acham o ativo pelo ticker antigo: reimportar uma nota anterior à troca não cria ativo novo;
+- com a renomeação, a transferência entre ativos perde o único uso real: o endpoint, a tela e os tipos `transfer_in`/`transfer_out` saem, numa migration que troca o `CHECK` de tipos.
+
+**Aceite:** posição e PM de todos os meses iguais aos de antes da troca, e o refresh deixa de pedir o ticker antigo.
+
+**F41 — Cache de dados externos idempotente.** O cache em três camadas da D6: a tela lê o banco, e o backend só vai ao yfinance ou ao BCB quando falta um dado que já devia existir. Hoje todo refresh consulta a fonte para todos os ativos com operação e todas as séries, a cada abertura do app. Serve N2 e N1.
+
+Plano:
+- **janela necessária por ativo:** da primeira operação até a data em que a posição zerou, ou até hoje se ainda há posição. Ativo zerado com o cache cobrindo a janela não é mais consultado;
+- **dado esperado:** o último pregão fechado, para cotação; o último dia útil publicado, para CDI e Selic; o mês anterior, para o IPCA. Com o esperado já em cache, nada é consultado;
+- **pregão em andamento e publicação atrasada:** tabela `fetch_log` (ticker ou série, horário da última consulta); o fechamento parcial do dia e o dado esperado que ainda não saiu são reconsultados no máximo a cada intervalo (proposta: 15 minutos com o pregão aberto, 6 horas para o BCB);
+- **séries do BCB inteiras:** CDI, Selic e IPCA desde o início de cada série no SGS, independente de haver título de renda fixa. A primeira carga vem em janelas de 10 anos, o limite do SGS, e depois o cache só recebe a última publicação. Hoje as séries partem da primeira movimentação de renda fixa, e sem título com aplicação a tela Mercado fica sem juros e sem inflação;
+- **uma consulta por vez:** refresh concorrente (o StrictMode dispara dois em dev) espera o que está rodando e lê o cache;
+- o front segue pedindo o refresh ao abrir o app e pelo botão da tela Mercado; com o cache em dia, a resposta volta sem sair da máquina;
+- o aviso de falha só aparece quando o buraco cai dentro de uma janela necessária; a lista fica na F42.
+
+**Aceite:** recarregar a página com o cache em dia não faz nenhuma chamada externa, conferido no log.
+
+**F42 — Painel de saúde dos dados.** Uma tela que lista os problemas de dado que de fato afetam algum número, com o que falta, o que isso afeta e a ação que resolve. Substitui o aviso repetido a cada abertura. Serve N3 e N2.
+
+Plano:
+- os problemas são derivados a cada consulta, sem tabela própria (D2):
+  - cotação faltando dentro da janela necessária de um ativo (F41), com a ação "trocar ticker" (F40) ou "ver ativo";
+  - série do BCB atrasada além do esperado;
+  - título de renda fixa sem aplicação;
+  - ativo sem CNPJ num ano em que ele entra na ficha de Bens e Direitos do IRPF;
+  - ativo sem setor ou segmento (F37);
+- cada item diz o que está faltando, que tela ou número fica errado por causa disso, e leva à correção;
+- contador de problemas no item do painel na sidebar; o toast do refresh aparece só quando surge um problema novo.
+
+Um ativo que saiu da bolsa depois da venda não aparece aqui: a janela dele está coberta, então nada falta. Por isso o painel não precisa de uma ação de desligar a busca de um ativo.
+
+**F44 — Carteira: gráfico, tooltip e cor.** A tela da Carteira é monocromática: resultado positivo e negativo têm a mesma cor, a classe do ativo é texto cinza, e o donut divide a tela com uma tabela esticada. Serve N2.
+
+Plano:
+- gráfico e legenda na proporção do donut do SimuladorFinanceiro (`portfolio-pie-chart`, com legenda e tooltip próprios), que é a referência;
+- tooltip próprio: marcador com a cor da categoria, nome, valor e fração, em fonte proporcional com números `tabular-nums`, e num tamanho legível;
+- tokens semânticos de alta e baixa (`--gain`, `--loss`) no `index.css`, usados em todo resultado com sinal. A F30 ajusta o tom, e o uso já fica certo;
+- **cor da categoria em todo lugar:** cada categoria tem uma cor fixa, a do gráfico, repetida no badge de classe, no cabeçalho das seções da F36 e nas barras de fração. A cor passa a identificar a categoria em qualquer tela. O `Badge` ganha a variante por categoria no próprio componente;
+- a paleta das categorias fica longe do verde e do vermelho, que são de alta e baixa: um badge de categoria não pode ser lido como resultado.
+
+**F45 — Operações: filtros e seletor de ativo.** A lista de ativos é um select comum que exige rolar até achar o ticker, e ela só cresce com o tempo. O "Limpar filtros" é um botão grande que pesa mais que os próprios filtros. Serve N3.
+
+Plano:
+- `AssetCombobox` em `shared/components` (Popover + Command do shadcn, busca por ticker), usado em todo campo que escolhe ativo: filtros de operações, formulário de operação, e os que vierem (correlação, metas);
+- "Limpar filtros" como botão discreto ao lado dos filtros, visível só com filtro ativo;
+- filtros na URL (D13);
+- tipo de operação e classe do ativo com badge colorido: a classe com a cor da categoria (F44), a compra e a venda com cores próprias.
+
+**F46 — Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro.** Três correções no cadastro de renda fixa da F12. Serve N2 e N5.
+
+- **O título nasce com a primeira aplicação.** Hoje o cadastro cria o título zerado, e a aplicação fica escondida no detalhe. O formulário pede o valor e a data da primeira aplicação, gravados na mesma transação.
+- **Selic é Selic + spread.** Título atrelado à Selic, como o Tesouro Selic, rende a Selic mais uma taxa anual (ex.: Selic + 0,10% a.a.), e não um percentual dela. A taxa do indexador Selic passa a ser o spread, e o fator diário é o da Selic × (1 + spread)^(1/252). O CDI segue como percentual. Nenhum título Selic existe no banco real, então não há dado a converter.
+- **Tipo do produto no lugar do checkbox de isenção.** Enum com CDB, LC, LCI, LCA, CRI, CRA, debênture, debênture incentivada, Tesouro Selic, Tesouro Prefixado e Tesouro IPCA+. A isenção de IR sai do tipo (LCI, LCA, CRI, CRA e debênture incentivada são isentos para pessoa física), e o Tesouro fixa o indexador. A coluna `tax_exempt` sai, e o tipo vira filtro e agrupamento nas telas de renda fixa.
+
+**F47 — Comparador de renda fixa.** Ferramenta para decidir entre opções de renda fixa antes de aplicar, no lugar do Comparador-Renda-Fixa. Serve N9.
+
+Plano:
+- cada opção tem tipo do produto (F46), indexador, taxa, valor e datas de aplicação e resgate, e elas aparecem lado a lado;
+- para cada opção: valor bruto no resgate, alíquota de IR pelo prazo (ou isenção pelo tipo), valor líquido, rentabilidade líquida ao ano e equivalente em % do CDI;
+- gráfico da evolução do valor líquido de cada opção no tempo;
+- projeção com CDI e IPCA constantes, editáveis, partindo do último valor em cache (CDI anualizado e IPCA dos últimos 12 meses); a marcação é a da F12, sobre a série projetada;
+- dica na tela: o **equivalente em % do CDI** é o quanto um CDB tributado precisaria render para empatar com a opção depois do IR. Uma LCI isenta de 90% do CDI, num prazo com IR de 15% no CDB, empata com um CDB de cerca de 106% do CDI (90 ÷ 0,85).
+
+**F48 — Fiscal: navegação por mês na URL.** O seletor de mês da tela Fiscal não é o do IR-Helper, e o mês escolhido não fica na URL: navegando pelas setas, não dá para saber se a tela mudou de fato. Serve N5.
+
+Plano:
+- o seletor do IR-Helper: ‹ mês/ano ›, com o seletor de mês num popover (grade de meses com o ano navegável). O `monthpicker.tsx` adaptado no IR-Helper é portado para `shared/components`, com os meses em pt-BR;
+- a aba (Mensal, Anual, Todos os meses, IRPF), o ano e o mês ficam na URL (D13). Setas e teclado mudam a URL, e voltar no navegador e link direto funcionam;
+- a aba Anual e o IRPF usam o mesmo seletor, só de ano.
+
+**F49 — Simulador: à vista, parcelado ou adiantar a fatura.** Ferramenta para uma compra que dá para pagar à vista: compensa pegar o desconto à vista, parcelar deixando o dinheiro investido, ou adiantar as parcelas que faltam em troca de um desconto? Serve N9.
+
+**Como a conta funciona.** No parcelado, o valor inteiro fica investido e cada parcela sai do investimento no mês dela: o montante vai diminuindo, e cada fatia rende só até o mês em que é paga, com o IR do prazo dela (22,5% até 180 dias, 20% até 360, e assim por diante). O que sobra no fim é o ganho de parcelar. À vista, o desconto é ganho na hora e pode ficar investido até o fim do mesmo prazo. Ganha a opção que termina com mais dinheiro. Exemplo com CDI de 14% a.a., R$ 1.000 em 10x sem juros e um CDB de 100% do CDI: parcelando sobram cerca de R$ 49, então o à vista compensa com desconto acima de uns 4,5%.
+
+Plano:
+- **à vista × parcelado:** entrada com valor, número de parcelas, desconto à vista e o investimento onde o dinheiro fica (tipo, indexador e taxa, como no comparador da F47). Saída: quanto sobra em cada caminho e qual vence;
+- **a conta nos dois sentidos:**
+  - **do desconto para o investimento:** informado o desconto à vista, o app mostra os investimentos hipotéticos que, na estratégia parcelada, empatam com ele — um CDB a X% do CDI, uma LCI/LCA a Y% do CDI, um prefixado a Z% ao ano, um IPCA+ a W%. Qualquer taxa acima dessas faz o parcelado vencer. Exemplo com CDI de 14% a.a. e 10x: 20% de desconto só é batido por um CDB de cerca de 780% do CDI, uma LCA de 590% do CDI ou um prefixado de 109% a.a., ou seja, nunca; 5% de desconto é batido por um CDB de 112% do CDI, uma LCA de 88% do CDI ou um prefixado de 15,7% a.a., que existem;
+  - **do investimento para o desconto:** informados o parcelamento e o investimento, o app mostra o desconto à vista que empata, a resposta prática para "quanto de desconto eu devo pedir";
+- **adiantar a fatura:** o mesmo cálculo sobre as parcelas que faltam, com o desconto oferecido pelo adiantamento;
+- **gráficos:** o saldo do investimento caindo parcela a parcela até o fim, contra o do caminho à vista; e o ganho de cada caminho conforme o número de parcelas e o desconto variam, com a linha de empate;
+- **investimento sem liquidez diária:** a opção "escada", com um título por parcela vencendo antes de cada fatura (ou títulos agrupados por vencimento), cada um com a taxa e o IR do próprio prazo. Permite usar CDB ou prefixado de prazo maior no lugar do de liquidez diária, respeitando a carência mínima de cada produto;
+- IOF sobre o rendimento do que sai em menos de 30 dias, que pega a primeira parcela;
+- projeção do CDI e do IPCA como na F47: constante, editável, partindo do último valor em cache.
+
+Nada é gravado: a simulação é conta sobre valores digitados na hora.
+
 ---
 ## 2. Nice-to-have
 
-> Nenhum item nesta categoria atualmente.
+| ID | Resumo | D# | Marco | Depende de | Esforço | Risco | Valor | Custo-benefício | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **F43** | Sidebar | — | M9 | F2 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+
+**F43 — Sidebar.** A sidebar de hoje é uma lista crua de links com texto pequeno, abaixo até do exemplo do shadcn.
+
+Plano:
+- referência: as sidebars do SimuladorFinanceiro e do IR-Helper, e os blocos de sidebar do shadcn;
+- cabeçalho com o nome e o ícone do app;
+- itens agrupados por assunto, com rótulo de grupo (carteira e ativos; operações e importação; mercado e análises; fiscal), ícone e texto maiores, e o item ativo destacado;
+- recolhível para só os ícones, com o estado guardado (o `SidebarProvider` já faz isso por cookie);
+- rodapé com a troca de tema e o contador do painel de dados (F42), quando ele existir.
 
 ---
 ## 3. Descartada
@@ -657,7 +824,7 @@ Sem histórico de pertença: mover um ativo de subcarteira muda também o passad
 | --- | --- | --- | --- | --- | --- |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 — decide a fonte de F20 | M4 | — | 🔍 Em avaliação |
 | **F29** | Empacotamento desktop | Nenhuma N# direta — conforto de uso | — | F2 | 🔍 Em avaliação |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | Nenhuma N# direta — qualidade de uso das telas de N1/N2 | — | F11 | 🔍 Em avaliação |
+| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | Nenhuma N# direta — qualidade de uso das telas de N1/N2 | M9 | F11 | 🔍 Em avaliação |
 | **F31** | Hot-reload do backend não reinicia o worker | Nenhuma N# direta — atrito de desenvolvimento | — | F2 | 🔍 Em avaliação |
 
 **F19 — Spike: proventos no relatório de movimentação da B3.** O que falta definir: se o xlsx de movimentação da B3, exportado **sem filtro**, traz os proventos (dividendo, JCP, rendimento, rendimento tributado) com o que a F20 precisa: ativo, tipo, quantidade, valor por unidade e valor total. O xlsx que alimenta o IR-Helper foi exportado filtrado e não traz nenhum.
@@ -672,16 +839,16 @@ Exportar um período conhecido, conferir contra o extrato da corretora e decidir
 
 **F29 — Empacotamento desktop.** O que falta definir: se vale empacotar (PyInstaller .exe, como no SimuladorFinanceiro, ou Tauri) ou se `pnpm dev` com um atalho basta para o uso diário. Baixa prioridade: vale quando subir o app incomodar no uso real.
 
-**F30 — Identidade visual própria.** O que falta definir: paleta, tipografia e cores de alta e de baixa que digam *este* app — dashboard financeiro, tabela densa e muito gráfico — no lugar do preset `nova` do shadcn (base `radix`, Lucide, fonte Geist, baseColor neutral).
+**F30 — Identidade visual própria.** O que falta definir: paleta, tipografia e tom das cores de alta, de baixa e das categorias que digam *este* app — dashboard financeiro, tabela densa e muito gráfico — no lugar do preset `nova` do shadcn (base `radix`, Lucide, fonte Geist, baseColor neutral).
 
 A decisão cobre o que já é token no `index.css`:
-- as cinco cores de série (`--chart-1` a `--chart-5`), hoje uma paleta categórica validada para daltonismo e contraste nos dois temas; uma paleta nova passa pela mesma validação;
-- uma cor de alta e uma de baixa distintas do verde e do vermelho puros, por daltonismo e porque o vermelho do `destructive` significa erro;
+- as cinco cores de série (`--chart-1` a `--chart-5`), hoje uma paleta categórica validada para daltonismo e contraste nos dois temas, e que a F44 torna a cor de cada categoria em todo o app; uma paleta nova passa pela mesma validação;
+- o tom dos tokens de alta e baixa que a F44 cria, distintos do verde e do vermelho puros, por daltonismo e porque o vermelho do `destructive` significa erro;
 - contraste para tabela densa no claro e no escuro.
 
-Os outros presets do shadcn (`vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) são ponto de partida barato: trocar é um comando.
+Pontos de partida baratos: os outros presets do shadcn (`vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`), que se trocam com um comando, e os registries do diretório do shadcn, cujos componentes entram pela mesma CLI e ficam no repo como os do shadcn.
 
-Como sai daqui: o usuário usa o app e traz as críticas. O que for identidade (token, paleta, fonte) fica nesta feature; cada problema de usabilidade vira uma feature própria e pequena, com o que incomodou e o conserto.
+Os problemas de uso que o usuário relata viram cards próprios (F43 a F48); esta feature fica com a identidade.
 
 **F31 — Hot-reload do backend não reinicia o worker.** O que falta definir: por que o worker não reinicia no Windows. Enquanto isso, o `main.py` sobe o uvicorn sem reload, e mudança no backend pede reiniciar o `pnpm dev`. Baixa prioridade.
 
