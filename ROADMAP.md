@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluída a M4: a F19 fechou a fonte (os dois relatórios da B3), a F20 trouxe o registro, a importação, o histórico, as fichas do IRPF e o provento na rentabilidade, e a F38 trouxe o desempenho e a distribuição.
+> **Última mudança (2026-09-25):** Concluído o comparador de renda fixa (F47), com a projeção editável do CDI, da Selic e do IPCA e o IOF nas ferramentas.
 
 ## Glossário
 
@@ -41,7 +41,6 @@
 | **F43** | Sidebar | — | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
-| **F47** | Comparador de renda fixa | — | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ⏳ |
@@ -49,7 +48,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (41 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (42 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -94,6 +93,7 @@
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
+| **F47** | Comparador de renda fixa | — | ✅ |
 
 </details>
 
@@ -107,7 +107,6 @@
 | --- | --- | --- | --- | --- |
 | **F25** | Subcarteiras | M6 | 2 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
-| **F47** | Comparador de renda fixa | M7 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -117,6 +116,7 @@
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | M9 | 0 | ⏳ |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | M7 | 0 | ⏳ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | 0 | ⏳ |
 | **F51** | Máscaras nos campos | M9 | 0 | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
@@ -269,15 +269,22 @@
 >
 > **Serve:** N8, N9
 >
-> **Progresso:** 0/5 concluídas
+> **Progresso:** 1/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F26** | Risco × retorno | F10, F15 | 💤 |
 | **F27** | Ferramenta de correlação entre dois ativos | F10 | ⏳ |
 | **F39** | Correlação da carteira | F27 | ⏳ |
-| **F47** | Comparador de renda fixa | F46 | ⏳ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ⏳ |
+
+<details><summary>Concluído (1 item)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F47** | Comparador de renda fixa | F46 | ✅ |
+
+</details>
 
 ### M8 — Qualidade dos dados
 
@@ -375,7 +382,7 @@
 | **F44** | Carteira: layout, gráfico e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ✅ Concluído |
-| **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
@@ -819,14 +826,20 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco migrado: um Tesouro Selic + 0,10% a.a. cadastrado com a aplicação aparece no grupo do tipo e rende pela série da Selic, e o indexador fica travado ao escolher o tipo.
 
-**F47 — Comparador de renda fixa.** Ferramenta para decidir entre opções de renda fixa antes de aplicar, no lugar do Comparador-Renda-Fixa. Serve N9.
+**F47 — Comparador de renda fixa.** Ferramenta para decidir entre opções de renda fixa antes de aplicar, no lugar do Comparador-Renda-Fixa. Serve N9. A tela Comparador de RF tem até cinco opções lado a lado, cada uma com tipo, indexador, taxa, valor e datas de aplicação e resgate. Por opção, o card mostra o líquido no resgate, o ganho líquido, o líquido ao ano, o equivalente em % do CDI, o IR (alíquota e valor, ou "Isento") e o IOF quando há. O card de maior líquido leva o selo, e o gráfico traz o líquido de cada opção no tempo. `POST /api/simulation/fixed-income` faz a conta sem gravar nada, e `GET /api/simulation/rates` dá o ponto de partida da projeção.
 
-Plano:
-- cada opção tem tipo do produto (F46), indexador, taxa, valor e datas de aplicação e resgate, e elas aparecem lado a lado;
-- para cada opção: valor bruto no resgate, alíquota de IR pelo prazo (ou isenção pelo tipo), valor líquido, rentabilidade líquida ao ano e equivalente em % do CDI;
-- gráfico da evolução do valor líquido de cada opção no tempo;
-- projeção com CDI e IPCA constantes, editáveis, partindo do último valor em cache (CDI anualizado e IPCA dos últimos 12 meses); a marcação é a da F12, sobre a série projetada;
-- dica na tela: o **equivalente em % do CDI** é o quanto um CDB tributado precisaria render para empatar com a opção depois do IR. Uma LCI isenta de 90% do CDI, num prazo com IR de 15% no CDB, empata com um CDB de cerca de 106% do CDI (90 ÷ 0,85).
+- **Projeção:** `backend/domain/projection.py` estende o CDI e a Selic (taxa diária em cada dia de semana) e o IPCA (taxa mensal no dia 1) depois do último dado real, a partir de taxas ao ano editáveis. O padrão é o último valor real: o CDI e a Selic do último dia, anualizados por 252 dias úteis, e o IPCA acumulado em 12 meses. A marcação é a da F12, sobre a série estendida.
+- **Resgate de uma aplicação:** `Application`, em `backend/domain/fixed_income.py`, dá o bruto, o IOF, o IR e o líquido em qualquer dia, e o bruto que deixa um líquido dado.
+- **Equivalente em % do CDI:** a taxa de um CDB tributado, nas mesmas datas, que entrega o mesmo líquido, achada por bisseção (`backend/domain/break_even.py`).
+- **Líquido ao ano:** `(líquido ÷ aplicado)^(252 ÷ dias úteis) − 1`.
+
+Decisões tomadas durante:
+- **A Selic também é projetada e editável:** o Tesouro Selic e a Selic + spread precisam dela.
+- **O IOF entra nas ferramentas:** tabela regressiva sobre o rendimento resgatado em menos de 30 dias, e o IR sobre o rendimento menos o IOF. Vale para todos os tipos; os isentos só não pagam IR. A marcação da carteira segue sem IOF.
+- **A regra de bolso "90 ÷ 0,85" vale para prazo curto:** em dois anos, uma LCI de 90% do CDI empata com um CDB de cerca de 104% do CDI, e não 106%, porque os juros compostos pesam. A dica da tela diz isso.
+- A tela guarda as opções na URL (`options`, em JSON) e só a projeção editada (`cdi`, `selic`, `ipca`). O tipo, o indexador e a taxa viraram `InvestmentTermsFields`, em `shared/components`, que o formulário do título também usa.
+
+**Aceite verificado** no app de pé, numa cópia do banco migrado: um CDB de 110% do CDI, uma LCI de 90% e um Tesouro IPCA+ 6% aparecem lado a lado com o gráfico. Mudar o CDI projetado muda os números e a URL, e "Voltar ao último valor real" limpa a projeção editada.
 
 **F48 — Fiscal: navegação por mês na URL.** O seletor de mês da tela Fiscal não é o do IR-Helper, e o mês escolhido não fica na URL: navegando pelas setas, não dá para saber se a tela mudou de fato. Serve N5.
 
