@@ -244,3 +244,40 @@ def test_value_stops_at_maturity() -> None:
 
     assert late.as_of == maturity
     assert late.gross_value == on_maturity.gross_value
+
+
+def test_day_change_is_one_business_day_of_yield() -> None:
+    """A variação do dia é o rendimento desde o dia útil anterior: na segunda-feira,
+    o da sexta, e o fim de semana não rende no pré."""
+    start, monday = date(2024, 1, 1), date(2024, 1, 15)
+    daily = Decimal("1.12") ** (Decimal(1) / Decimal(252))
+
+    marking = mark(_terms(), [_movement(start, "1000")], {}, monday)
+
+    assert _round(marking.day_change) == _round(
+        marking.gross_value - marking.gross_value / daily
+    )
+
+
+def test_application_made_today_is_not_a_gain() -> None:
+    """A aplicação de hoje entra no saldo, mas não na variação do dia."""
+    start, today = date(2024, 1, 1), date(2024, 1, 10)
+
+    alone = mark(_terms(), [_movement(start, "1000")], {}, today)
+    with_today = mark(
+        _terms(), [_movement(start, "1000"), _movement(today, "500")], {}, today
+    )
+
+    assert with_today.gross_value == alone.gross_value + Decimal(500)
+    assert _round(with_today.day_change) == _round(alone.day_change)
+
+
+def test_matured_investment_has_no_day_change() -> None:
+    """Depois do vencimento o título não rende mais: a variação do dia é zero."""
+    start, maturity = date(2024, 1, 1), date(2024, 3, 1)
+
+    marking = mark(
+        _terms(maturity_date=maturity), [_movement(start, "1000")], {}, date(2024, 9, 2)
+    )
+
+    assert marking.day_change == 0

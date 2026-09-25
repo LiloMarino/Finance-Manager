@@ -543,9 +543,15 @@ export interface components {
             /** Files */
             files: Blob[];
         };
-        /** CategoryAllocationDTO */
+        /**
+         * CategoryAllocationDTO
+         * @description `cost` é o custo da renda variável e o principal da renda fixa. A variação
+         *     do dia é nula quando nenhum item da categoria tem uma.
+         */
         CategoryAllocationDTO: {
             category: components["schemas"]["PortfolioCategory"];
+            /** Asset Count */
+            asset_count: number;
             /**
              * Value
              * Format: decimal
@@ -556,6 +562,22 @@ export interface components {
              * Format: decimal
              */
             share: DecimalString;
+            /**
+             * Cost
+             * Format: decimal
+             */
+            cost: DecimalString;
+            /**
+             * Unrealized Result
+             * Format: decimal
+             */
+            unrealized_result: DecimalString;
+            /** Unrealized Return */
+            unrealized_return: DecimalString | null;
+            /** Day Change */
+            day_change: DecimalString | null;
+            /** Day Return */
+            day_return: DecimalString | null;
         };
         /**
          * CategoryResultDTO
@@ -765,6 +787,7 @@ export interface components {
             investment_id: number;
             /** Label */
             label: string;
+            product_type: components["schemas"]["FixedIncomeType"];
             indexer: components["schemas"]["Indexer"];
             /**
              * Rate
@@ -796,6 +819,20 @@ export interface components {
              * Format: decimal
              */
             share: DecimalString;
+            /**
+             * Unrealized Result
+             * Format: decimal
+             */
+            unrealized_result: DecimalString;
+            /** Unrealized Return */
+            unrealized_return: DecimalString | null;
+            /**
+             * Day Change
+             * Format: decimal
+             */
+            day_change: DecimalString;
+            /** Day Return */
+            day_return: DecimalString | null;
             /**
              * As Of
              * Format: date
@@ -1325,8 +1362,12 @@ export interface components {
         PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income";
         /**
          * PortfolioDTO
-         * @description Frações (`share`, `unrealized_return`) vão de 0 a 1. A de setor e segmento
-         *     é sobre o total da renda variável.
+         * @description Frações (`share`, `unrealized_return`, `day_return`) vão de 0 a 1. A de setor
+         *     e segmento é sobre o total da renda variável.
+         *
+         *     A variação do dia da renda variável compara o fechamento de `price_date`, o
+         *     pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
+         *     a marcação de hoje contra a do dia útil anterior.
          */
         PortfolioDTO: {
             /**
@@ -1334,6 +1375,14 @@ export interface components {
              * Format: decimal
              */
             total: DecimalString;
+            /** Day Change */
+            day_change: DecimalString | null;
+            /** Day Return */
+            day_return: DecimalString | null;
+            /** Price Date */
+            price_date: string | null;
+            /** Previous Price Date */
+            previous_price_date: string | null;
             /** Categories */
             categories: components["schemas"]["CategoryAllocationDTO"][];
             /** Positions */
@@ -1347,7 +1396,9 @@ export interface components {
         };
         /**
          * PositionDTO
-         * @description `price` nulo é ativo sem cotação em cache, valorado pelo custo.
+         * @description `price` nulo é ativo sem cotação em cache, valorado pelo custo. A variação do
+         *     dia é nula quando o ativo não tem o fechamento do pregão mais recente, ou não
+         *     tem o anterior a ele.
          */
         PositionDTO: {
             /** Asset Id */
@@ -1395,6 +1446,10 @@ export interface components {
             unrealized_result: DecimalString;
             /** Unrealized Return */
             unrealized_return: DecimalString | null;
+            /** Day Change */
+            day_change: DecimalString | null;
+            /** Day Return */
+            day_return: DecimalString | null;
         };
         /** PreviewRowDTO */
         PreviewRowDTO: {

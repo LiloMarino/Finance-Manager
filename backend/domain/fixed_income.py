@@ -88,11 +88,13 @@ class Movement:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Marking:
     """`invested` é o principal ainda aplicado; `series_date` é o último dado real
-    do indexador usado, e depois dele o último valor se repete."""
+    do indexador usado, e depois dele o último valor se repete. `day_change` é o
+    rendimento bruto desde o dia útil anterior, sobre o que está aplicado hoje."""
 
     invested: Decimal
     gross_value: Decimal
     estimated_tax: Decimal
+    day_change: Decimal
     as_of: date
     series_date: date | None
 
@@ -136,10 +138,10 @@ def tax_rate(days: int) -> Decimal:
 def _daily_factor(
     terms: FixedIncomeTerms,
     rates: Mapping[IndexSeries, Sequence[DailyRate]],
+    business: BusinessCalendar,
 ) -> Callable[[date], Decimal]:
     """O quanto o título rende do dia `d` para o dia seguinte. Um dia útil carrega
     a taxa de um dia útil; o IPCA rende por dia corrido, pró-rata no mês."""
-    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
     share = terms.rate / HUNDRED
 
     match terms.indexer:
@@ -236,11 +238,15 @@ def mark(
             invested=ZERO,
             gross_value=ZERO,
             estimated_tax=ZERO,
+            day_change=ZERO,
             as_of=as_of,
             series_date=series_date,
         )
 
-    factor = _accumulation(_daily_factor(terms, rates), ordered[0].movement_date, as_of)
+    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+    factor = _accumulation(
+        _daily_factor(terms, rates, business), ordered[0].movement_date, as_of
+    )
     lots: list[_Lot] = []
     for movement in ordered:
         units = movement.amount / factor(movement.movement_date)
@@ -269,10 +275,22 @@ def mark(
             ZERO,
         )
     )
+    # Cada lote rende desde o dia útil anterior ou desde que foi aberto, o que for
+    # mais recente: a aplicação do dia entra no saldo sem contar como ganho
+    previous = business.previous(as_of)
+    day_change = (
+        sum(
+            (lot.units * (now - factor(max(previous, lot.opened))) for lot in lots),
+            ZERO,
+        )
+        if as_of == today
+        else ZERO
+    )
     return Marking(
         invested=sum((lot.principal for lot in lots), ZERO),
         gross_value=sum((lot.units * now for lot in lots), ZERO),
         estimated_tax=estimated_tax,
+        day_change=day_change,
         as_of=as_of,
         series_date=series_date,
     )

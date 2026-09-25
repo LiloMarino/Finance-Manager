@@ -1,12 +1,13 @@
 import { AllocationChart } from "@/features/portfolio/allocation-chart";
-import { FixedIncomeHoldings } from "@/features/portfolio/fixed-income-holdings";
-import { PositionsTable } from "@/features/portfolio/positions-table";
+import { CategorySections } from "@/features/portfolio/category-sections";
+import { MetricHint, dayChangeHint } from "@/features/portfolio/metric-hint";
 import { SectorDistribution } from "@/features/portfolio/sector-distribution";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import { formatBRL } from "@/types/decimal";
+import { formatDate } from "@/shared/lib/format";
+import { formatBRL, formatSignedBRL, formatSignedPercent } from "@/types/decimal";
 
 export function HomePage() {
   const { data, isPending, error } = usePortfolio();
@@ -33,6 +34,21 @@ export function HomePage() {
                 Patrimônio total
               </CardTitle>
               <p className="text-4xl font-semibold">{formatBRL(data.total)}</p>
+              {data.day_change && (
+                <p className="tabular-nums">
+                  <MetricHint hint={dayChangeHint}>
+                    <span className="text-muted-foreground">Variação do dia</span>
+                  </MetricHint>{" "}
+                  {formatSignedBRL(data.day_change)}
+                  {data.day_return && ` (${formatSignedPercent(data.day_return)})`}
+                </p>
+              )}
+              <p className="text-muted-foreground text-xs">
+                {data.price_date && data.previous_price_date
+                  ? `Renda variável: fechamento de ${formatDate(data.price_date)} contra o de ${formatDate(data.previous_price_date)}. `
+                  : "Renda variável: sem dois pregões em cache para a variação do dia. "}
+                Renda fixa: marcação de hoje contra a do dia útil anterior.
+              </p>
             </CardHeader>
             {data.categories.length > 0 && (
               <CardContent>
@@ -40,6 +56,9 @@ export function HomePage() {
               </CardContent>
             )}
           </Card>
+
+          {/* Posições por categoria */}
+          <CategorySections portfolio={data} />
 
           {/* Renda variável por setor e segmento */}
           {data.sectors.length > 0 && (
@@ -52,14 +71,6 @@ export function HomePage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Renda variável */}
-          <h2 className="text-lg font-semibold">Renda variável</h2>
-          <PositionsTable positions={data.positions} />
-
-          {/* Renda fixa */}
-          <h2 className="text-lg font-semibold">Renda fixa</h2>
-          <FixedIncomeHoldings holdings={data.fixed_income} />
         </>
       )}
     </div>

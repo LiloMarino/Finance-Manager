@@ -34,6 +34,7 @@ class MarkedInvestment:
     gross_value: Decimal
     estimated_tax: Decimal
     net_value: Decimal
+    day_change: Decimal
     as_of: date
     series_date: date | None
 
@@ -93,6 +94,7 @@ def _marked(investment: FixedIncomeInvestment, marking: Marking) -> MarkedInvest
         gross_value=marking.gross_value,
         estimated_tax=marking.estimated_tax,
         net_value=marking.net_value,
+        day_change=marking.day_change,
         as_of=marking.as_of,
         series_date=marking.series_date,
     )

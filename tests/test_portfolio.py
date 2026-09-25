@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from fastapi.testclient import TestClient
@@ -24,6 +24,7 @@ from backend.core.models.models import (
 )
 
 TODAY = date.today()
+YESTERDAY = TODAY - timedelta(days=1)
 
 
 def _asset(
@@ -171,3 +172,74 @@ def test_sector_distribution_divides_equity_only(
         position["ticker"]: (position["sector"], position["segment"])
         for position in body["positions"]
     } == {"ABCD3": ("Financeiro", "Bancos"), "ABCD11": (None, None)}
+
+
+def _close(session: Session, asset: Asset, day: date, close: str) -> None:
+    session.add(PriceHistory(asset_id=asset.id, price_date=day, close=Decimal(close)))
+    session.commit()
+
+
+def test_day_change_compares_the_last_two_closes(
+    api: TestClient, session: Session
+) -> None:
+    """A variação do dia é a quantidade vezes a diferença entre o último fechamento
+    e o anterior, com o percentual sobre o anterior; o total diz de que pregões."""
+    asset = _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")
+    _close(session, asset, YESTERDAY, "25")
+
+    body = api.get("/api/portfolio").json()
+
+    [position] = body["positions"]
+    assert Decimal(position["day_change"]) == Decimal(50)
+    assert Decimal(position["day_return"]) == Decimal("0.2")
+    assert (body["price_date"], body["previous_price_date"]) == (
+        TODAY.isoformat(),
+        YESTERDAY.isoformat(),
+    )
+    assert Decimal(body["day_change"]) == Decimal(50)
+
+
+def test_asset_with_stale_close_has_no_day_change(
+    api: TestClient, session: Session
+) -> None:
+    """Ativo cujo último fechamento não é o do pregão mais recente fica sem variação
+    do dia, e ela não entra na soma da categoria."""
+    fresh = _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")
+    _close(session, fresh, YESTERDAY, "25")
+    stale = _asset(session, "EFGH3", AssetClass.STOCK, "10", "20")
+    _close(session, stale, YESTERDAY - timedelta(days=1), "18")
+    _close(session, stale, YESTERDAY, "19")
+
+    body = api.get("/api/portfolio").json()
+
+    by_ticker = {position["ticker"]: position for position in body["positions"]}
+    assert by_ticker["EFGH3"]["day_change"] is None
+    [stock] = body["categories"]
+    assert Decimal(stock["day_change"]) == Decimal(50)
+    assert Decimal(stock["day_return"]) == Decimal("0.2")
+
+
+def test_category_adds_up_its_rows(api: TestClient, session: Session) -> None:
+    """O cabeçalho da categoria soma as linhas: quantos ativos, valor, custo,
+    resultado e variação do dia."""
+    first = _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")
+    _close(session, first, YESTERDAY, "25")
+    second = _asset(session, "EFGH3", AssetClass.STOCK, "5", "40", close="36")
+    _close(session, second, YESTERDAY, "40")
+    _fixed_income(session, "1000")
+
+    body = api.get("/api/portfolio").json()
+
+    stock, fixed_income = body["categories"]
+    assert stock["asset_count"] == 2
+    assert Decimal(stock["value"]) == Decimal(480)
+    assert Decimal(stock["cost"]) == Decimal(400)
+    assert Decimal(stock["unrealized_result"]) == Decimal(80)
+    assert Decimal(stock["unrealized_return"]) == Decimal("0.2")
+    assert Decimal(stock["day_change"]) == Decimal(30)
+    assert (fixed_income["category"], fixed_income["asset_count"]) == (
+        "fixed_income",
+        1,
+    )
+    assert Decimal(fixed_income["unrealized_result"]) == 0
+    assert Decimal(fixed_income["day_change"]) == 0

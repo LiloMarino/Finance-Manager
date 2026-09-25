@@ -24,51 +24,60 @@ from backend.repository.operations import operation_records
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AssetPrice:
+    """O último fechamento em cache e o anterior a ele, cada um com a data."""
+
     asset_id: int
     ticker: str
     asset_class: AssetClass
     close: Decimal | None
     price_date: date | None
+    previous_close: Decimal | None
+    previous_date: date | None
 
 
 def latest_prices(session: Session) -> list[AssetPrice]:
-    """Último fechamento em cache de cada ativo com operação: é o preço
-    atual, online ou não, e vem sempre com a data dele."""
-    latest = (
-        select(
-            PriceHistory.asset_id,
-            func.max(PriceHistory.price_date).label("price_date"),
+    """Os dois últimos fechamentos em cache de cada ativo com operação: o último é
+    o preço atual, online ou não."""
+    ranked = select(
+        PriceHistory.asset_id,
+        PriceHistory.price_date,
+        PriceHistory.close,
+        func.row_number()
+        .over(
+            partition_by=PriceHistory.asset_id,
+            order_by=PriceHistory.price_date.desc(),
         )
-        .group_by(PriceHistory.asset_id)
-        .subquery()
-    )
-    rows = session.execute(
-        select(
-            Asset.id,
-            Asset.ticker,
-            Asset.asset_class,
-            PriceHistory.close,
-            PriceHistory.price_date,
-        )
-        .outerjoin(latest, latest.c.asset_id == Asset.id)
-        .outerjoin(
-            PriceHistory,
-            (PriceHistory.asset_id == latest.c.asset_id)
-            & (PriceHistory.price_date == latest.c.price_date),
-        )
+        .label("rank"),
+    ).subquery()
+    closes: dict[int, list[tuple[date, Decimal]]] = {}
+    for asset_id, price_date, close in session.execute(
+        select(ranked.c.asset_id, ranked.c.price_date, ranked.c.close)
+        .where(ranked.c.rank <= 2)
+        .order_by(ranked.c.asset_id, ranked.c.rank)
+    ).tuples():
+        closes.setdefault(asset_id, []).append((price_date, close))
+
+    prices: list[AssetPrice] = []
+    for asset_id, ticker, asset_class in session.execute(
+        select(Asset.id, Asset.ticker, Asset.asset_class)
         .where(Asset.id.in_(select(Operation.asset_id)))
         .order_by(Asset.ticker)
-    ).all()
-    return [
-        AssetPrice(
-            asset_id=asset_id,
-            ticker=ticker,
-            asset_class=asset_class,
-            close=close,
-            price_date=price_date,
+    ).tuples():
+        found = closes.get(asset_id, [])
+        last = found[0] if found else None
+        previous = found[1] if len(found) > 1 else None
+        prices.append(
+            AssetPrice(
+                asset_id=asset_id,
+                ticker=ticker,
+                asset_class=asset_class,
+                close=last[1] if last else None,
+                price_date=last[0] if last else None,
+                previous_close=previous[1] if previous else None,
+                previous_date=previous[0] if previous else None,
+            )
         )
-        for asset_id, ticker, asset_class, close, price_date in rows
-    ]
+    return prices
 
 
 def index_rates(session: Session) -> dict[IndexSeries, list[DailyRate]]:

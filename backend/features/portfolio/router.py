@@ -6,14 +6,21 @@ from fastapi import APIRouter
 
 from backend.core.database.session import SessionDep
 from backend.core.dto import BaseDTO, DecimalStr
-from backend.core.enum import AssetClass, Indexer, PortfolioCategory
+from backend.core.enum import (
+    AssetClass,
+    FixedIncomeType,
+    Indexer,
+    PortfolioCategory,
+)
 from backend.features.portfolio.service import portfolio
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 
 
 class PositionDTO(BaseDTO):
-    """`price` nulo é ativo sem cotação em cache, valorado pelo custo."""
+    """`price` nulo é ativo sem cotação em cache, valorado pelo custo. A variação do
+    dia é nula quando o ativo não tem o fechamento do pregão mais recente, ou não
+    tem o anterior a ele."""
 
     asset_id: int
     ticker: str
@@ -29,11 +36,14 @@ class PositionDTO(BaseDTO):
     share: DecimalStr
     unrealized_result: DecimalStr
     unrealized_return: DecimalStr | None
+    day_change: DecimalStr | None
+    day_return: DecimalStr | None
 
 
 class FixedIncomeHoldingDTO(BaseDTO):
     investment_id: int
     label: str
+    product_type: FixedIncomeType
     indexer: Indexer
     rate: DecimalStr
     invested: DecimalStr
@@ -41,13 +51,26 @@ class FixedIncomeHoldingDTO(BaseDTO):
     estimated_tax: DecimalStr
     net_value: DecimalStr
     share: DecimalStr
+    unrealized_result: DecimalStr
+    unrealized_return: DecimalStr | None
+    day_change: DecimalStr
+    day_return: DecimalStr | None
     as_of: date
 
 
 class CategoryAllocationDTO(BaseDTO):
+    """`cost` é o custo da renda variável e o principal da renda fixa. A variação
+    do dia é nula quando nenhum item da categoria tem uma."""
+
     category: PortfolioCategory
+    asset_count: int
     value: DecimalStr
     share: DecimalStr
+    cost: DecimalStr
+    unrealized_result: DecimalStr
+    unrealized_return: DecimalStr | None
+    day_change: DecimalStr | None
+    day_return: DecimalStr | None
 
 
 class SectorAllocationDTO(BaseDTO):
@@ -66,10 +89,18 @@ class SegmentAllocationDTO(BaseDTO):
 
 
 class PortfolioDTO(BaseDTO):
-    """Frações (`share`, `unrealized_return`) vão de 0 a 1. A de setor e segmento
-    é sobre o total da renda variável."""
+    """Frações (`share`, `unrealized_return`, `day_return`) vão de 0 a 1. A de setor
+    e segmento é sobre o total da renda variável.
+
+    A variação do dia da renda variável compara o fechamento de `price_date`, o
+    pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
+    a marcação de hoje contra a do dia útil anterior."""
 
     total: DecimalStr
+    day_change: DecimalStr | None
+    day_return: DecimalStr | None
+    price_date: date | None
+    previous_price_date: date | None
     categories: list[CategoryAllocationDTO]
     positions: list[PositionDTO]
     fixed_income: list[FixedIncomeHoldingDTO]

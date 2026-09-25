@@ -1,5 +1,6 @@
 import { Cell, Pie, PieChart } from "recharts";
 
+import { type Category, categoryLabels } from "@/features/portfolio/labels";
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
 import {
   type ChartConfig,
@@ -17,15 +18,13 @@ import {
 } from "@/shared/components/ui/table";
 import { formatBRL, formatPercent, toChartNumber } from "@/types/decimal";
 
-type Category = Portfolio["categories"][number]["category"];
-
 // A cor segue a categoria, não a posição dela na lista: cada uma tem o seu slot
 const categoryConfig = {
-  stock: { label: "Ações", color: "var(--chart-1)" },
-  fii: { label: "FIIs", color: "var(--chart-2)" },
-  etf: { label: "ETFs", color: "var(--chart-3)" },
-  bdr: { label: "BDRs", color: "var(--chart-4)" },
-  fixed_income: { label: "Renda fixa", color: "var(--chart-5)" },
+  stock: { label: categoryLabels.stock, color: "var(--chart-1)" },
+  fii: { label: categoryLabels.fii, color: "var(--chart-2)" },
+  etf: { label: categoryLabels.etf, color: "var(--chart-3)" },
+  bdr: { label: categoryLabels.bdr, color: "var(--chart-4)" },
+  fixed_income: { label: categoryLabels.fixed_income, color: "var(--chart-5)" },
 } satisfies ChartConfig & Record<Category, { label: string; color: string }>;
 
 export function AllocationChart({ categories }: { categories: Portfolio["categories"] }) {

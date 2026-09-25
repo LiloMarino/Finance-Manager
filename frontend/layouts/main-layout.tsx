@@ -30,6 +30,7 @@ import {
   SidebarTrigger,
 } from "@/shared/components/ui/sidebar";
 import { Toaster } from "@/shared/components/ui/sonner";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 
 // Paths em inglês acompanham o código; o rótulo é o que aparece pro usuário.
 const navItems = [
@@ -57,43 +58,45 @@ export function MainLayout() {
   }, [refreshPrices, refreshIndexes]);
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="px-4 py-3 text-base font-semibold">
-          Finance Manager
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map(({ to, label, icon: Icon }) => (
-                  <SidebarMenuItem key={to}>
-                    <SidebarMenuButton asChild isActive={pathname === to}>
-                      <NavLink to={to} end>
-                        <Icon />
-                        {label}
-                      </NavLink>
-                    </SidebarMenuButton>
-                    {to === "/data-health" && Boolean(issues.data?.length) && (
-                      <SidebarMenuBadge>{issues.data?.length}</SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-
-      <SidebarInset className="min-w-0">
-        <header className="flex h-14 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-        </header>
-        <main className="flex-1 p-6">
-          <Outlet />
-        </main>
-      </SidebarInset>
-      <Toaster richColors />
-    </SidebarProvider>
+    <TooltipProvider>
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader className="px-4 py-3 text-base font-semibold">
+            Finance Manager
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map(({ to, label, icon: Icon }) => (
+                    <SidebarMenuItem key={to}>
+                      <SidebarMenuButton asChild isActive={pathname === to}>
+                        <NavLink to={to} end>
+                          <Icon />
+                          {label}
+                        </NavLink>
+                      </SidebarMenuButton>
+                      {to === "/data-health" && Boolean(issues.data?.length) && (
+                        <SidebarMenuBadge>{issues.data?.length}</SidebarMenuBadge>
+                      )}
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+  
+        <SidebarInset className="min-w-0">
+          <header className="flex h-14 items-center gap-2 border-b px-4">
+            <SidebarTrigger />
+          </header>
+          <main className="flex-1 p-6">
+            <Outlet />
+          </main>
+        </SidebarInset>
+        <Toaster richColors />
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
