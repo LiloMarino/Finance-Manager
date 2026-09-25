@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluídos os benchmarks CDI, IPCA e IBOV (F16, com o IBOV no cache das séries) e a comparação ano a ano (F18): o M3 fecha.
+> **Última mudança (2026-09-25):** Concluída a M4: a F19 fechou a fonte (os dois relatórios da B3), a F20 trouxe o registro, a importação, o histórico, as fichas do IRPF e o provento na rentabilidade, e a F38 trouxe o desempenho e a distribuição.
 
 ## Glossário
 
@@ -19,14 +19,12 @@
 | **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
 | **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52 | — |
 | **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51 | — |
-| **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F20, F38 | — |
+| **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F19, F20, F38 | — |
 | **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48, F51 | — |
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
-| **F19** | Spike: proventos no relatório de movimentação da B3 | — | 🔍 |
-| **F20** | Proventos: registro e histórico | — | ⏳ |
 | **F24** | Rebalanceamento | — | ⏳ |
 | **F25** | Subcarteiras | — | ⏳ |
 | **F26** | Risco × retorno | — | 💤 |
@@ -39,7 +37,6 @@
 | **F33** | Custo da bonificação | — | ⏳ |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
-| **F38** | Desempenho e distribuição dos proventos | — | ⏳ |
 | **F39** | Correlação da carteira | — | ⏳ |
 | **F43** | Sidebar | — | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
@@ -52,7 +49,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (38 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (41 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -85,11 +82,14 @@
 | **F16** | Benchmarks: CDI, IPCA e IBOV | — | ✅ |
 | **F17** | Evolução do patrimônio | — | ✅ |
 | **F18** | Comparação ano a ano | — | ✅ |
+| **F19** | Spike: proventos no relatório de movimentação da B3 | — | ✅ |
+| **F20** | Proventos: registro e histórico | — | ✅ |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
+| **F38** | Desempenho e distribuição dos proventos | — | ✅ |
 | **F40** | Troca de ticker como renomeação | — | ✅ |
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
@@ -105,7 +105,6 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
 | **F25** | Subcarteiras | M6 | 2 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
 | **F47** | Comparador de renda fixa | M7 | 1 | ⏳ |
@@ -209,13 +208,21 @@
 >
 > **Serve:** N4
 >
-> **Progresso:** 0/3 concluídas
+> **Progresso:** 3/3 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F19** | Spike: proventos no relatório de movimentação da B3 | — | 🔍 |
-| **F20** | Proventos: registro e histórico | F19 | ⏳ |
-| **F38** | Desempenho e distribuição dos proventos | F20 | ⏳ |
+| — | *(nada em aberto)* | — | — |
+
+<details><summary>Concluído (3 itens)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F19** | Spike: proventos no relatório de movimentação da B3 | — | ✅ |
+| **F20** | Proventos: registro e histórico | F19 | ✅ |
+| **F38** | Desempenho e distribuição dos proventos | F20 | ✅ |
+
+</details>
 
 ### M5 — Fiscal
 
@@ -345,7 +352,7 @@
 | **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F17** | Evolução do patrimônio | N2, N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F18** | Comparação ano a ano | N1 | D5 | M3 | F15, F16 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
-| **F20** | Proventos: registro e histórico | N4, N5 | D2 | M4 | F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F20** | Proventos: registro e histórico | N4, N5 | D2 | M4 | F19 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
 | **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
@@ -357,7 +364,7 @@
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
 | **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ✅ Concluído |
-| **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
@@ -374,6 +381,7 @@
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -535,18 +543,30 @@ Decisões tomadas durante:
 
 **Aceite:** o usuário usa esta tabela no lugar da que consulta hoje. Fica com o usuário. Na cópia do banco migrado, o ano corrente da tabela é igual à rentabilidade de "Este ano", e o acumulado do último ano é igual à rentabilidade desde o início.
 
-**F20 — Proventos: registro e histórico.** O registro de cada provento recebido e a tela de histórico para auditar. Serve N4 e N5.
+**F20 — Proventos: registro e histórico.** O registro de cada provento recebido, a importação, a tela de histórico para auditar, as fichas do IRPF e o provento na rentabilidade. Serve N4 e N5.
 
-Plano:
-- tabela `income_events`: ativo, tipo (dividendo, JCP, rendimento, rendimento tributado; o enum fecha com o que a F19 encontrar), quantidade, valor por unidade, valor total e a data que a F19 confirmar;
-- importação pela fonte da F19, no mesmo fluxo de preview e confirmação da F6 e com a mesma idempotência; cadastro manual para o resto;
-- tela Histórico de proventos: categoria, ativo, tipo, quantidade, valor por unidade, valor total e data, com busca por ativo, filtros de categoria, tipo e período, e o total recebido no topo;
-- no relatório do IRPF (F22), as fichas de proventos: dividendos em Rendimentos Isentos (código 09) e JCP em Tributação Exclusiva (código 10), por fonte pagadora com CNPJ;
-- a rentabilidade da F15 soma o provento na cota no dia do pagamento; quem chegar por último entre F15 e F20 faz essa ligação.
+**Registro.** A tabela `income_events` tem o ativo, o tipo (`dividend`, `jcp` e `distribution`, que é o "Rendimento"), a quantidade, o valor bruto por unidade, o valor líquido e a data do pagamento, com as CHECK de quantidade e valor. O ativo com provento não pode ser excluído, e a junção de dois ativos na troca de ticker leva os proventos junto.
 
-Fica fora: corretora, status e o provisionado (provento anunciado e ainda não pago), que nenhuma fonte gratuita entrega.
+**Importação.** A importação saiu de `operations` para um feature próprio, `imports`, com `POST /api/import/preview` e `POST /api/import/confirm` e a tela `/import`. Um upload traz as operações e os proventos, e o preview mostra os dois em tabelas separadas, com a mesma seleção e os mesmos status. O adapter reconhece o relatório pelo cabeçalho: de movimentação ou de proventos recebidos. A classificação (nova, já existe, possível duplicata, repetida no lote) virou uma função genérica na chave, usada pelos dois. A chave do provento deixa de fora o valor por unidade. No lote, as linhas do relatório de movimentação são classificadas primeiro, e assim o valor por unidade que fica é o de 3 casas.
 
-**Aceite:** o total de proventos de um ano bate com o informe de rendimentos da corretora.
+**Histórico.** `GET /api/income` filtra por ativo, categoria, tipo e período e devolve o total. O `POST`/`PUT`/`DELETE` fazem o cadastro manual. A aba Histórico da tela Proventos tem os filtros, o total no topo, a tabela e o formulário.
+
+**IRPF.** O relatório do ano ganha as fichas de proventos, com a ficha saindo do tipo e da classe do ativo:
+- dividendo de ação: Isentos 09;
+- rendimento de FII: Isentos 26;
+- JCP: Exclusiva 10;
+- rendimento de ETF: Exclusiva 06;
+- atualização de ação: Exclusiva 12 (Outros).
+
+Cada ficha lista um item por ativo, com o CNPJ e o líquido do ano. O que não tem ficha automática, como o dividendo de BDR, vai para uma lista à parte. O topo do relatório inteiro tem um aviso: o relatório é um cálculo do app, para conferir, e a fonte da declaração é o informe de rendimentos da corretora.
+
+**Rentabilidade.** A série diária ganhou a linha `income` por ativo, e a cota passou a ser `(valor + saídas + proventos) / (véspera + entradas)`. Com isso, a rentabilidade, o ano a ano e o % do CDI contam o provento no dia do pagamento. A evolução do patrimônio mantém o investido como entradas menos saídas, porque o provento não devolve o que foi investido.
+
+Fica fora: corretora, status e o provisionado, que nenhuma fonte gratuita entrega.
+
+**Verificado:** os dois relatórios reais, importados juntos numa cópia do banco, gravam cada provento uma vez, e a soma bate com o total do relatório de proventos recebidos. O segundo preview não traz nenhuma linha nova.
+
+**Aceite:** o total de proventos de um ano bate com o informe de rendimentos da corretora. Fica com o usuário, com um export que cubra um ano-calendário inteiro.
 
 **F21 — Motor fiscal.** `backend/domain/tax.py`, puro: `assess` apura todos os meses da primeira operação até o mês corrente, e o prejuízo e o saldo abaixo do mínimo atravessam de um mês para o outro. Em vez de portar o motor do IR-Helper, as regras seguem a Receita, conferidas no Perguntas e Respostas IRPF 2026 (perguntas 704 a 731) e na IN RFB 1.585/2015, art. 37:
 - ganho líquido é o resultado do conjunto do mês, e não venda a venda;
@@ -676,12 +696,15 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco migrado: logo depois da migration, os ativos em carteira aparecem no painel. Um setor e um segmento criados na tela Setores e escolhidos no "Editar ativo" do painel baixam o contador na hora, e a Carteira passa a dividir a renda variável entre o setor e "Sem classificação".
 
-**F38 — Desempenho e distribuição dos proventos.** As visões de análise sobre o registro da F20. Serve N4.
+**F38 — Desempenho e distribuição dos proventos.** As visões de análise sobre o registro da F20, nas abas Desempenho e Distribuição da tela Proventos. Serve N4.
 
-Plano:
-- **desempenho mensal:** gráfico de barras dos proventos por mês, ou por ano, com filtro de período. No topo, o total recebido e os totais dos últimos 6, 12 e 24 meses; embaixo, o total de cada categoria com a fração dela;
-- **distribuição:** gráfico de pizza de quanto cada categoria e cada ativo contribuiu no período escolhido (6, 12 ou 24 meses). Embaixo, uma seção recolhível por categoria, com cada ativo: quantidade, dividend yield, yield on cost, último provento (valor e data) e total acumulado;
-- dicas na tela: o **dividend yield** é o que o ativo pagou nos últimos 12 meses dividido pelo preço de hoje (R$ 6 pagos por um ativo que vale R$ 100 dá 6%), e diz quanto ele rende para quem compra hoje. O **yield on cost** é o mesmo valor pago dividido pelo preço médio que você pagou (R$ 6 sobre um PM de R$ 80 dá 7,5%), e diz quanto ele rende sobre o seu dinheiro. Quando o ativo valorizou desde a compra, o yield on cost fica acima do dividend yield.
+- **Desempenho:** `GET /api/income/performance` (mês ou ano, período) devolve o total desde o primeiro provento, os totais dos últimos 6, 12 e 24 meses, uma barra por mês ou por ano do período (inclusive os meses sem provento), cada barra por categoria, e o total de cada categoria com a fração dela. Na tela, os quatro números vêm com a dica, o gráfico de barras empilhadas por categoria tem o seletor de período e a opção de mês ou ano, e a tabela mostra as categorias.
+- **Distribuição:** `GET /api/income/distribution?months=` devolve o que cada categoria e cada ativo pagou na janela (6, 12 ou 24 meses), com a fração de cada um. Por ativo, vêm também a quantidade de hoje, o dividend yield, o yield on cost, o último provento (valor e data) e o total acumulado. Na tela, a rosca é por categoria, e embaixo há uma seção recolhível por categoria, com os ativos e uma barra da fração de cada um.
+- **Dividend yield e yield on cost:** o líquido pago por unidade nos últimos 12 meses (cada provento dividido pela quantidade que o recebeu) sobre o preço de hoje e sobre o PM. São nulos sem posição ou sem cotação. As dicas trazem os exemplos do plano: R$ 6 sobre R$ 100 dá 6%, e R$ 6 sobre um PM de R$ 80 dá 7,5%.
+
+Decisões tomadas durante:
+- **A fração por ativo é uma barra na linha, e não uma pizza.** Uma pizza por ativo precisaria de uma cor por ativo, gerada além da paleta das categorias. A cor segue a categoria em toda a tela.
+- Tudo é em valor líquido, o mesmo do informe da corretora.
 
 **F28 — Alerta de rebalanceamento com o app fechado.** Substitui o popup agendado do script: um aviso quando algum desvio passar do limite configurado na F24. Serve N6.
 
@@ -871,6 +894,17 @@ Plano:
 
 Alternativa a conferir: a classificação setorial da B3, em português e oficial para as empresas listadas (setor econômico, subsetor e segmento), num arquivo baixável. Conferir se ela cobre BDR e FII antes de trocar de fonte.
 
+**F19 — Spike: proventos no relatório de movimentação da B3.** Executado com dois exports do mesmo período de 12 meses: o relatório de movimentação (Extrato) sem filtro e o de proventos recebidos (aba Proventos). Os dois foram cruzados linha a linha.
+
+Achados:
+- **Tipos de linha:** `Dividendo`, `Juros Sobre Capital Próprio` e `Rendimento`, todos `Credito`. O `Rendimento` aparece em três situações: a distribuição de FII, a distribuição de ETF e, em ação, a atualização pela Selic de um provento pago com atraso (centavos). "Rendimento tributado" não aparece. O extrato traz ainda `Evento em Dinheiro - Excluído` (`Debito`), que é um pagamento cancelado.
+- **Bruto e líquido:** o `Preço unitário` é o valor bruto por unidade, e o `Valor da Operação` é o líquido. No JCP e na distribuição de ETF, o líquido é cerca de 0,85 × o bruto, porque os 15% já foram retidos na fonte e a B3 trunca o centavo. No dividendo e no rendimento de FII, o líquido é igual ao bruto.
+- **Data:** só a do pagamento. A data com não vem.
+- **Os dois relatórios trazem os mesmos proventos**, com o mesmo total. Na aba Proventos, a quantidade vem como texto, o valor por unidade vem arredondado a 2 casas e há um rodapé com o total.
+- **Chave natural:** `(ticker, data, tipo, quantidade, valor líquido)`, sem o valor por unidade, reconhece o mesmo provento nos dois relatórios. A mesma chave pode repetir no mesmo dia, por exemplo em dois rendimentos de centavos, e a multiplicidade da F6 cobre isso.
+
+**Decisão:** a fonte da F20 é a B3 pelos dois relatórios, com o cadastro manual para o que faltar. O de movimentação é o preferido: já alimenta os eventos, é um arquivo só para tudo e traz o valor por unidade em 3 casas.
+
 ---
 ## 2. Nice-to-have
 
@@ -901,20 +935,9 @@ Plano:
 
 | ID | Resumo | Conexão | Marco | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| **F19** | Spike: proventos no relatório de movimentação da B3 | N4 — decide a fonte de F20 | M4 | — | 🔍 Em avaliação |
 | **F29** | Empacotamento desktop | Nenhuma N# direta — conforto de uso | — | F2 | 🔍 Em avaliação |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | Nenhuma N# direta — qualidade de uso das telas de N1/N2 | M9 | F11 | 🔍 Em avaliação |
 | **F31** | Hot-reload do backend não reinicia o worker | Nenhuma N# direta — atrito de desenvolvimento | — | F2 | 🔍 Em avaliação |
-
-**F19 — Spike: proventos no relatório de movimentação da B3.** O que falta definir: se o xlsx de movimentação da B3, exportado **sem filtro**, traz os proventos (dividendo, JCP, rendimento, rendimento tributado) com o que a F20 precisa: ativo, tipo, quantidade, valor por unidade e valor total. O xlsx que alimenta o IR-Helper foi exportado filtrado e não traz nenhum.
-
-A conferir:
-- quais tipos de linha aparecem e como se chamam;
-- se o JCP vem bruto ou líquido dos 15% retidos;
-- que data vem: a da movimentação é a do pagamento; a data com provavelmente não vem;
-- se a chave natural da importação da F6 funciona igual para eles, sem duplicar na reimportação.
-
-Exportar um período conhecido, conferir contra o extrato da corretora e decidir a fonte da F20: a B3, com cadastro manual para o que faltar, ou só o cadastro manual. Fonte paga fica fora, como em F10.
 
 **F29 — Empacotamento desktop.** O que falta definir: se vale empacotar (PyInstaller .exe, como no SimuladorFinanceiro, ou Tauri) ou se `pnpm dev` com um atalho basta para o uso diário. Baixa prioridade: vale quando subir o app incomodar no uso real.
 
