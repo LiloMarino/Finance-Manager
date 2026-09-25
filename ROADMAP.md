@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Marco de qualidade dos dados concluído: cache externo idempotente, troca de ticker como renomeação (a transferência saiu) e painel de saúde dos dados; o item de setor e segmento do painel entra com F37.
+> **Última mudança (2026-09-25):** Marco do patrimônio atual concluído: posição por categoria com variação do dia, setor e segmento cadastrados, e renda fixa com tipo do produto, Selic + spread e aplicação no cadastro.
 
 ## Glossário
 
@@ -44,20 +44,17 @@
 | **F33** | Custo da bonificação | — | ⏳ |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
-| **F36** | Posição por categoria com variação do dia | — | ⏳ |
-| **F37** | Setor e segmento cadastrados | — | ⏳ |
 | **F38** | Desempenho e distribuição dos proventos | — | ⏳ |
 | **F39** | Correlação da carteira | — | ⏳ |
 | **F43** | Sidebar | — | ⏳ |
 | **F44** | Carteira: gráfico, tooltip e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
-| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ⏳ |
 | **F47** | Comparador de renda fixa | — | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (30 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (33 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -88,9 +85,12 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
+| **F36** | Posição por categoria com variação do dia | — | ✅ |
+| **F37** | Setor e segmento cadastrados | — | ✅ |
 | **F40** | Troca de ticker como renomeação | — | ✅ |
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
 
 </details>
 
@@ -104,15 +104,13 @@
 | --- | --- | --- | --- | --- |
 | **F14** | Série diária por ativo | M3 | 8 | ⏳ |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
-| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | M2 | 2 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
+| **F47** | Comparador de renda fixa | M7 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 | **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
 | **F33** | Custo da bonificação | M5 | 0 | ⏳ |
-| **F36** | Posição por categoria com variação do dia | M2 | 0 | ⏳ |
-| **F37** | Setor e segmento cadastrados | M2 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: gráfico, tooltip e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
@@ -156,21 +154,22 @@
 >
 > **Serve:** N2
 >
-> **Progresso:** 3/6 concluídas
+> **Progresso:** 6/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F36** | Posição por categoria com variação do dia | F11 | ⏳ |
-| **F37** | Setor e segmento cadastrados | F11 | ⏳ |
-| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | F12 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (3 itens)</summary>
+<details><summary>Concluído (6 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F10** | Provider de dados de mercado + cache de preços | F5 | ✅ |
 | **F11** | Carteira: patrimônio total, por categoria e posição | F9, F10 | ✅ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | F10 | ✅ |
+| **F36** | Posição por categoria com variação do dia | F11 | ✅ |
+| **F37** | Setor e segmento cadastrados | F11 | ✅ |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | F12 | ✅ |
 
 </details>
 
@@ -339,8 +338,8 @@
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
-| **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
+| **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
@@ -351,7 +350,7 @@
 | **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F44** | Carteira: gráfico, tooltip e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
@@ -636,25 +635,24 @@ Sem prioridade: o IRRF retido hoje é de centavos, e o app prefere simplicidade 
 
 Gatilho: o primeiro mês em que o IRRF retido mudar o DARF.
 
-**F36 — Posição por categoria com variação do dia.** A tabela de posições da Carteira passa a ser agrupada por categoria, em seções recolhíveis. Serve N2.
+**F36 — Posição por categoria com variação do dia.** A Carteira trocou as duas tabelas soltas por um `Accordion` com uma seção por categoria. O cabeçalho de cada seção mostra o número de ativos, a variação total e a do dia (R$ e %), o valor e a fração da carteira com barra. Dentro de cada seção, uma tabela ordenável por coluna (`@tanstack/react-table` sobre o `Table` do shadcn) traz o preço médio, o preço atual com a variação sobre o PM, a quantidade, o valor, a variação do dia, a variação total e a fração. A renda fixa é uma seção com colunas próprias: título, tipo, aplicado, valor bruto e as duas variações. `latest_prices` passou a trazer os dois últimos fechamentos de cada ativo, e a marcação da renda fixa ganhou `day_change`. O `GET /api/portfolio` devolve a variação por ativo, os agregados por categoria e a do total, com as datas dos dois pregões comparados, tudo calculado no Python.
 
-Plano:
-- cabeçalho de cada categoria: nome, número de ativos, variação total (R$ e %), variação do dia (R$ e %), valor e fração da carteira, com barra;
-- dentro, uma linha por ativo: preço médio, preço atual com a variação sobre o PM, quantidade, valor atual, variação do dia (R$ e %), variação total (R$ e %) e fração da carteira, com ordenação por coluna;
-- a variação do dia é o último fechamento em cache contra o do pregão anterior, também do cache; a tela diz de que data é o "hoje";
-- a renda fixa é uma categoria: aplicado, bruto marcado, variação total e variação do dia pela marcação;
-- `GET /api/portfolio` ganha a variação do dia e o agregado por categoria, calculados no Python (D4).
+Decisões tomadas durante:
+- **O "hoje" da renda variável é o pregão mais recente do cache:** o ativo cujo último fechamento é de outro dia fica sem variação do dia ("—") e fora da soma da categoria. O percentual é sobre o valor da véspera, que é o de hoje menos a variação.
+- **Na renda fixa, a variação do dia é o rendimento desde o dia útil anterior sobre os lotes de hoje:** a aplicação feita hoje entra no saldo sem contar como ganho, e o título vencido tem variação zero.
+- **Tabela do shadcn com TanStack Table, e não o Data Grid do ReUI:** o item do ReUI só instala inteiro, com DnD, virtualização e Base UI ao lado do Radix. A ordenação é a mesma do TanStack, com uma dependência só. As seções de renda variável ordenam juntas, e a de renda fixa tem ordenação própria.
+- "Variação do dia" e "Variação total" têm dica com a definição e um exemplo, no cabeçalho das colunas e no card do patrimônio. A cor de alta e baixa fica para a F44.
 
-**F37 — Setor e segmento cadastrados.** Cada ativo classificado por setor e segmento, escolhidos de um cadastro, e a distribuição do patrimônio por eles. Serve N2.
+**Aceite verificado** no app de pé, numa cópia do banco migrado: todas as posições trazem a variação do dia com as datas dos dois pregões, a renda fixa rende um dia útil da Selic, as seções recolhem, e ordenar por valor numa seção reordena todas as de renda variável.
 
-Plano:
-- tabelas `sectors` (nome único) e `segments` (nome único dentro do setor, FK para ele). O ativo aponta para um segmento, e o setor vem por ele. Com o nome escolhido de uma lista, "Bancos" e "Banco" não viram dois setores;
-- a coluna de texto `sector` de `assets` sai. Ela está vazia no banco real, então o dry run da migration aceita;
-- cadastro de setores e segmentos, e um select no formulário do ativo, com "sem classificação" para o que não tiver;
-- distribuição do patrimônio por setor e por segmento: gráfico e tabela de valores;
-- o painel de saúde dos dados (F42) ganha o tipo "ativo sem setor ou segmento", que afeta a distribuição por setor.
+**F37 — Setor e segmento cadastrados.** As tabelas `sectors` (nome único) e `segments` (nome único dentro do setor) entraram, com `segment_id` anulável em `assets` e as duas FKs em `RESTRICT`; a coluna de texto `sector` saiu. `/api/sectors` cria, renomeia e apaga setores e segmentos, e recusa com 409 o nome repetido, o setor com segmento e o segmento com ativo. O ativo devolve o setor e o segmento pelos nomes, e a troca de ticker que junta dois ativos mantém a classificação de um deles. A tela Setores tem um card por setor com os segmentos, e o formulário do ativo ganhou o select de segmento agrupado por setor, com "Sem classificação". Na Carteira, o card "Renda variável por setor" mostra, em abas, setor e segmento: barras horizontais e a tabela de valor e fração.
 
-Sobre a fonte: o yfinance traz `sector` e `industry` para ações, em inglês e na taxonomia do Yahoo (ex.: "Financial Services / Banks - Regional"); para FII traz só "Real Estate", e para ETF nada. Serve, no máximo, de sugestão no cadastro, e o cadastro é a fonte.
+Decisões tomadas durante:
+- **A distribuição divide só a renda variável:** a renda fixa não tem setor, e a fração é sobre o total da renda variável. O ativo sem segmento entra em "Sem classificação".
+- **Barras, e não donut:** o número de setores passa das cinco cores de gráfico, e a barra compara tamanhos com uma cor só.
+- **O painel de saúde ganhou "Ativos sem setor ou segmento"**, só para os ativos com posição aberta, que são os que entram na distribuição. A ação é o "Editar ativo".
+
+**Aceite verificado** no app de pé, numa cópia do banco migrado: logo depois da migration, os ativos em carteira aparecem no painel. Um setor e um segmento criados na tela Setores e escolhidos no "Editar ativo" do painel baixam o contador na hora, e a Carteira passa a dividir a renda variável entre o setor e "Sem classificação".
 
 **F38 — Desempenho e distribuição dos proventos.** As visões de análise sobre o registro da F20. Serve N4.
 
@@ -759,11 +757,14 @@ Plano:
 - filtros na URL (D13);
 - tipo de operação e classe do ativo com badge colorido: a classe com a cor da categoria (F44), a compra e a venda com cores próprias.
 
-**F46 — Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro.** Três correções no cadastro de renda fixa da F12. Serve N2 e N5.
+**F46 — Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro.** O enum `FixedIncomeType` (CDB, RDB, LC, LCI, LCA, CRI, CRA, debênture, debênture incentivada e os três do Tesouro) substituiu a coluna `tax_exempt`: a isenção sai do tipo (`TAX_EXEMPT_TYPES`), e um `CHECK` prende cada Tesouro ao indexador do nome. A taxa da Selic passou a ser o spread anual, com o fator diário `(1 + Selic do dia) × (1 + spread)^(1/252)`; o CDI segue como percentual. O `POST /api/fixed-income` recebe a primeira aplicação junto e grava título e aplicação no mesmo commit; o `PUT` segue só com os termos. No formulário, o tipo vem primeiro, e o Tesouro fixa e trava o indexador. A tela de renda fixa agrupa os títulos por tipo, com o filtro na URL (`?type=`).
 
-- **O título nasce com a primeira aplicação.** Hoje o cadastro cria o título zerado, e a aplicação fica escondida no detalhe. O formulário pede o valor e a data da primeira aplicação, gravados na mesma transação.
-- **Selic é Selic + spread.** Título atrelado à Selic, como o Tesouro Selic, rende a Selic mais uma taxa anual (ex.: Selic + 0,10% a.a.), e não um percentual dela. A taxa do indexador Selic passa a ser o spread, e o fator diário é o da Selic × (1 + spread)^(1/252). O CDI segue como percentual. Nenhum título Selic existe no banco real, então não há dado a converter.
-- **Tipo do produto no lugar do checkbox de isenção.** Enum com CDB, LC, LCI, LCA, CRI, CRA, debênture, debênture incentivada, Tesouro Selic, Tesouro Prefixado e Tesouro IPCA+. A isenção de IR sai do tipo (LCI, LCA, CRI, CRA e debênture incentivada são isentos para pessoa física), e o Tesouro fixa o indexador. A coluna `tax_exempt` sai, e o tipo vira filtro e agrupamento nas telas de renda fixa.
+Decisões tomadas durante:
+- **RDB entrou na lista de tipos:** é o produto da caixinha da corretora. A migration gravou RDB no título tributado que já existia, e LCI no isento (não havia nenhum).
+- **O spread da Selic aceita zero e negativo:** o `CHECK` da taxa positiva passou a valer só fora da Selic.
+- O item "Renda fixa sem aplicação" do painel de saúde ficou: com a aplicação no cadastro, ele só aparece quando alguém apaga todas as movimentações de um título.
+
+**Aceite verificado** no app de pé, numa cópia do banco migrado: um Tesouro Selic + 0,10% a.a. cadastrado com a aplicação aparece no grupo do tipo e rende pela série da Selic, e o indexador fica travado ao escolher o tipo.
 
 **F47 — Comparador de renda fixa.** Ferramenta para decidir entre opções de renda fixa antes de aplicar, no lugar do Comparador-Renda-Fixa. Serve N9.
 
