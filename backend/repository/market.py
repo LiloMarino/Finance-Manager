@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from backend.core.enum import AssetClass, IndexSeries
@@ -157,3 +158,15 @@ def last_fetch(log: FetchLog | None) -> LastFetch | None:
     return LastFetch(
         attempted_at=log.attempted_at, succeeded_at=log.succeeded_at, gap=log.gap
     )
+
+
+def drop_price_cache(session: Session, asset_ids: Collection[int]) -> None:
+    """Apaga o cache de cotação dos ativos e o registro da última consulta deles.
+
+    O fechamento em cache vem ajustado pelos eventos que a fonte conhecia quando o
+    buscou. Um evento novo muda a base de todo o histórico do ativo, então o próximo
+    refresh busca a janela inteira de novo, já ajustada."""
+    if not asset_ids:
+        return
+    session.execute(delete(PriceHistory).where(PriceHistory.asset_id.in_(asset_ids)))
+    session.execute(delete(FetchLog).where(FetchLog.asset_id.in_(asset_ids)))

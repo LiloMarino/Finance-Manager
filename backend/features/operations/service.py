@@ -8,10 +8,12 @@ from sqlalchemy.orm import Session
 from backend.core.enum import OperationType
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, Operation
+from backend.domain.position import CORPORATE_EVENTS
 from backend.features.operations.dto import (
     OperationDTO,
     OperationInDTO,
 )
+from backend.repository.market import drop_price_cache
 from backend.repository.operations import check_positions
 from backend.repository.tickers import TickerHistory, ticker_history
 
@@ -92,6 +94,8 @@ def create_operation(session: Session, payload: OperationInDTO) -> OperationDTO:
     )
     session.add(operation)
     check_positions(session, [asset.ticker])
+    if operation.operation_type in CORPORATE_EVENTS:
+        drop_price_cache(session, [asset.id])
     session.commit()
     return _to_dto(operation, asset, ticker_history(session))
 
@@ -101,6 +105,7 @@ def update_operation(
 ) -> OperationDTO:
     operation = _operation(session, operation_id)
     previous = _asset(session, operation.asset_id)
+    previous_type = operation.operation_type
     asset = _asset(session, payload.asset_id)
     operation.asset_id = asset.id
     operation.operation_date = payload.operation_date
@@ -108,6 +113,17 @@ def update_operation(
     operation.quantity = payload.quantity
     operation.unit_price = payload.unit_price
     check_positions(session, {previous.ticker, asset.ticker})
+    drop_price_cache(
+        session,
+        {
+            asset_id
+            for asset_id, operation_type in (
+                (previous.id, previous_type),
+                (asset.id, operation.operation_type),
+            )
+            if operation_type in CORPORATE_EVENTS
+        },
+    )
     session.commit()
     return _to_dto(operation, asset, ticker_history(session))
 
@@ -117,4 +133,6 @@ def delete_operation(session: Session, operation_id: int) -> None:
     asset = _asset(session, operation.asset_id)
     session.delete(operation)
     check_positions(session, [asset.ticker])
+    if operation.operation_type in CORPORATE_EVENTS:
+        drop_price_cache(session, [asset.id])
     session.commit()

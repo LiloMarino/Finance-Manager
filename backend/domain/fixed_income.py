@@ -220,6 +220,41 @@ def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:
     return result
 
 
+def daily_gross(
+    terms: FixedIncomeTerms,
+    movements: Sequence[Movement],
+    rates: Mapping[IndexSeries, Sequence[DailyRate]],
+    days: Sequence[date],
+) -> list[Decimal]:
+    """O saldo bruto no fim de cada um dos `days`, em ordem: o de `mark` com as
+    movimentações até o dia. Uma acumulação só serve a série toda, porque `F(d)` só
+    depende dos dias até `d`."""
+    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    if not ordered or not days:
+        return [ZERO] * len(days)
+
+    last = min(days[-1], terms.maturity_date) if terms.maturity_date else days[-1]
+    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+    factor = _accumulation(
+        _daily_factor(terms, rates, business), ordered[0].movement_date, last
+    )
+    values: list[Decimal] = []
+    units = ZERO
+    cursor = 0
+    for day in days:
+        while cursor < len(ordered) and ordered[cursor].movement_date <= day:
+            movement = ordered[cursor]
+            moved = movement.amount / factor(movement.movement_date)
+            if movement.movement_type is FixedIncomeMovementType.APPLICATION:
+                units += moved
+            else:
+                # Resgate maior que o saldo zera o título, como em `_redeem`
+                units = max(ZERO, units - moved)
+            cursor += 1
+        values.append(units * factor(day) if units else ZERO)
+    return values
+
+
 def mark(
     terms: FixedIncomeTerms,
     movements: Sequence[Movement],

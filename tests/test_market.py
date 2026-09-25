@@ -24,6 +24,7 @@ from backend.core.enum import (
 )
 from backend.core.models.models import (
     Asset,
+    FetchLog,
     IndexHistory,
     Operation,
     PriceHistory,
@@ -520,3 +521,62 @@ def test_sgs_value_keeps_all_digits() -> None:
     assert to_daily_rates(body) == [
         DailyRate(rate_date=date(2024, 2, 5), value=Decimal("0.043739"))
     ]
+
+
+def _stock(session: Session, ticker: str) -> Asset:
+    asset = Asset(ticker=ticker, asset_class=AssetClass.STOCK)
+    session.add(asset)
+    session.flush()
+    return asset
+
+
+def test_corporate_event_drops_the_price_cache_of_the_asset(
+    api: TestClient, session: Session
+) -> None:
+    """Gravar um desdobro apaga o cache de cotação do ativo e o registro da última
+    consulta, para o próximo refresh buscar o histórico na base nova."""
+    asset = _stock(session, "ABCD3")
+    other = _stock(session, "EFGH3")
+    for found in (asset, other):
+        session.add(
+            Operation(
+                asset_id=found.id,
+                operation_date=FIRST_OPERATION,
+                operation_type=OperationType.BUY,
+                quantity=Decimal(10),
+                unit_price=Decimal(10),
+            )
+        )
+        session.add(
+            PriceHistory(
+                asset_id=found.id, price_date=FIRST_OPERATION, close=Decimal(10)
+            )
+        )
+        session.add(
+            FetchLog(
+                attempted_at=datetime.now(),
+                succeeded_at=None,
+                gap=False,
+                asset_id=found.id,
+                series=None,
+            )
+        )
+    session.commit()
+
+    response = api.post(
+        "/api/operations",
+        json={
+            "asset_id": asset.id,
+            "operation_date": "2024-03-01",
+            "operation_type": "split",
+            "quantity": "10",
+            "unit_price": "0",
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    session.expire_all()
+    cached = set(session.scalars(select(PriceHistory.asset_id)))
+    logged = set(session.scalars(select(FetchLog.asset_id)))
+    assert cached == {other.id}
+    assert logged == {other.id}

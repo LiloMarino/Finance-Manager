@@ -20,6 +20,10 @@ from backend.core.enum import OperationType
 from backend.core.errors import FinanceError
 
 ZERO = Decimal(0)
+# Mudam a quantidade sem dinheiro: a cotação da fonte vem ajustada por eles
+CORPORATE_EVENTS = frozenset(
+    {OperationType.BONUS, OperationType.SPLIT, OperationType.REVERSE_SPLIT}
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

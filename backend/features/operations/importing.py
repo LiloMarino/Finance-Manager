@@ -26,7 +26,7 @@ from backend.adapters.pdf_text import extract_pdf_text
 from backend.core.enum import AssetClass, ImportSource, ImportStatus, OperationType
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, Operation
-from backend.domain.position import OperationRecord
+from backend.domain.position import CORPORATE_EVENTS, OperationRecord
 from backend.features.operations.b3_report import parse_b3_movements
 from backend.features.operations.dto import (
     IgnoredMovementDTO,
@@ -39,6 +39,7 @@ from backend.features.operations.dto import (
     PreviewRowDTO,
 )
 from backend.features.operations.nubank_note import parse_nubank_note
+from backend.repository.market import drop_price_cache
 from backend.repository.operations import check_positions, operation_records
 from backend.repository.tickers import resolve_tickers
 
@@ -231,6 +232,7 @@ def confirm_import(session: Session, payload: ImportConfirmDTO) -> ImportResultD
 
     remaining = Counter(_key(op) for op in operation_records(session, tickers))
     created = 0
+    evented: set[int] = set()
     for op in operations:
         key = _key(op)
         if remaining[key] > 0:
@@ -246,8 +248,11 @@ def confirm_import(session: Session, payload: ImportConfirmDTO) -> ImportResultD
             )
         )
         created += 1
+        if op.operation_type in CORPORATE_EVENTS:
+            evented.add(assets[op.ticker].id)
 
     check_positions(session, tickers)
+    drop_price_cache(session, evented)
     session.commit()
     return ImportResultDTO(
         created=created,
