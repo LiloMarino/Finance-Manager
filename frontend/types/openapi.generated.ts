@@ -630,6 +630,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/simulation/installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Installments
+         * @description Conta sobre os valores enviados, sem gravar nada.
+         */
+        post: operations["installments_api_simulation_installments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -699,6 +719,21 @@ export interface components {
             /** Price Date */
             price_date: string | null;
         };
+        /** BalancePointDTO */
+        BalancePointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /**
+             * Installments
+             * Format: decimal
+             */
+            installments: DecimalString;
+            /** Cash */
+            cash: DecimalString | null;
+        };
         /**
          * BenchmarkReturnDTO
          * @description A referência no mesmo período e nos mesmos dias da carteira, recomeçando do
@@ -723,6 +758,16 @@ export interface components {
         Body_preview_api_import_preview_post: {
             /** Files */
             files: Blob[];
+        };
+        /**
+         * BreakEvenRateDTO
+         * @description A taxa no formato do indexador; nula quando nenhuma empata.
+         */
+        BreakEvenRateDTO: {
+            product_type: components["schemas"]["FixedIncomeType"];
+            indexer: components["schemas"]["Indexer"];
+            /** Rate */
+            rate: DecimalString | null;
         };
         /**
          * CategoryAllocationDTO
@@ -932,6 +977,16 @@ export interface components {
             ipca: DecimalString | null;
             /** Ipca Date */
             ipca_date: string | null;
+        };
+        /** CurvePointDTO */
+        CurvePointDTO: {
+            /** Installments */
+            installments: number;
+            /**
+             * Break Even Discount
+             * Format: decimal
+             */
+            break_even_discount: DecimalString;
         };
         /** DarfPaymentDTO */
         DarfPaymentDTO: {
@@ -1632,6 +1687,89 @@ export interface components {
          */
         Indexer: "cdi" | "selic" | "ipca" | "prefixed";
         /**
+         * InstallmentMode
+         * @description Compra: o valor é o preço, dividido nas parcelas. Adiantamento: o valor é o de
+         *     cada parcela que falta.
+         * @enum {string}
+         */
+        InstallmentMode: "purchase" | "prepayment";
+        /**
+         * InstallmentsDTO
+         * @description As sobras são o que cada caminho deixa no último vencimento, líquido.
+         *     `difference` é a sobra do vencedor menos a do outro.
+         */
+        InstallmentsDTO: {
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Cash Price */
+            cash_price: DecimalString | null;
+            /** Withdrawals */
+            withdrawals: components["schemas"]["WithdrawalDTO"][];
+            /**
+             * Installments Leftover
+             * Format: decimal
+             */
+            installments_leftover: DecimalString;
+            /** Cash Leftover */
+            cash_leftover: DecimalString | null;
+            winner: components["schemas"]["PaymentChoice"] | null;
+            /** Difference */
+            difference: DecimalString | null;
+            /**
+             * Break Even Discount
+             * Format: decimal
+             */
+            break_even_discount: DecimalString;
+            /** Break Even Rates */
+            break_even_rates: components["schemas"]["BreakEvenRateDTO"][] | null;
+            /** Balance */
+            balance: components["schemas"]["BalancePointDTO"][];
+            /** Curve */
+            curve: components["schemas"]["CurvePointDTO"][];
+        };
+        /**
+         * InstallmentsInDTO
+         * @description `amount` segue o `mode`: o preço na compra, a parcela no adiantamento.
+         *     `cash_discount` em %, opcional: sem ele, sai só o desconto de empate.
+         */
+        InstallmentsInDTO: {
+            mode: components["schemas"]["InstallmentMode"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /** Installments */
+            installments: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * First Due Date
+             * Format: date
+             */
+            first_due_date: string;
+            /** Cash Discount */
+            cash_discount?: DecimalString | null;
+            investment: components["schemas"]["InvestmentInDTO"];
+            projection: components["schemas"]["ProjectionInDTO"];
+        };
+        /** InvestmentInDTO */
+        InvestmentInDTO: {
+            product_type: components["schemas"]["FixedIncomeType"];
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+        };
+        /**
          * IrpfAssetDTO
          * @description Um item da ficha Bens e Direitos, pelo custo de aquisição em 31/12.
          */
@@ -1972,6 +2110,11 @@ export interface components {
          * @enum {string}
          */
         OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split";
+        /**
+         * PaymentChoice
+         * @enum {string}
+         */
+        PaymentChoice: "cash" | "installments";
         /**
          * PerformanceDTO
          * @description Retornos em fração (0,1 é 10%), pela variação da cota, sem contar aportes e
@@ -2347,6 +2490,39 @@ export interface components {
          * @enum {string}
          */
         TradeType: "swing" | "day_trade";
+        /** WithdrawalDTO */
+        WithdrawalDTO: {
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Withdrawn On
+             * Format: date
+             */
+            withdrawn_on: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Gross
+             * Format: decimal
+             */
+            gross: DecimalString;
+            /**
+             * Iof
+             * Format: decimal
+             */
+            iof: DecimalString;
+            /**
+             * Income Tax
+             * Format: decimal
+             */
+            income_tax: DecimalString;
+        };
         /**
          * YearReturnsDTO
          * @description `months` tem 12 posições, de janeiro a dezembro, nulas fora da série.
@@ -4344,6 +4520,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ComparisonDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    installments_api_simulation_installments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallmentsInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallmentsDTO"];
                 };
             };
             /** @description Unprocessable Content */

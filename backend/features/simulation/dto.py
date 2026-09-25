@@ -1,5 +1,5 @@
 """As ferramentas de simulação: taxas em % no formato do indexador (110 é 110% do
-CDI), e retorno e alíquota em fração (0,1 é 10%)."""
+CDI), e retorno, alíquota e desconto de empate em fração (0,1 é 10%)."""
 
 from __future__ import annotations
 
@@ -10,11 +10,12 @@ from typing import Self
 from pydantic import field_validator, model_validator
 
 from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
-from backend.core.enum import FixedIncomeType, Indexer
+from backend.core.enum import FixedIncomeType, Indexer, InstallmentMode, PaymentChoice
 from backend.domain.fixed_income import terms_problem
 
 # O limite de prazo mantém a conta dia a dia em tempo de resposta
 MAX_TERM_YEARS = 40
+MAX_INSTALLMENTS = 60
 
 
 class CurrentRatesDTO(BaseDTO):
@@ -112,3 +113,87 @@ class ComparisonDTO(BaseDTO):
     results: list[ComparisonResultDTO]
     best: int | None
     points: list[ComparisonPointDTO]
+
+
+class InstallmentsInDTO(BaseDTO):
+    """`amount` segue o `mode`: o preço na compra, a parcela no adiantamento.
+    `cash_discount` em %, opcional: sem ele, sai só o desconto de empate."""
+
+    mode: InstallmentMode
+    amount: DecimalStrIn
+    installments: int
+    start_date: date
+    first_due_date: date
+    cash_discount: DecimalStrIn | None = None
+    investment: InvestmentInDTO
+    projection: ProjectionInDTO
+
+    @field_validator("amount")
+    @classmethod
+    def _positive_amount(cls, value: Decimal) -> Decimal:
+        return _positive(value)
+
+    @field_validator("installments")
+    @classmethod
+    def _installments_range(cls, value: int) -> int:
+        if not 1 <= value <= MAX_INSTALLMENTS:
+            raise ValueError(f"O número de parcelas vai de 1 a {MAX_INSTALLMENTS}.")
+        return value
+
+    @field_validator("cash_discount")
+    @classmethod
+    def _discount_range(cls, value: Decimal | None) -> Decimal | None:
+        if value is not None and not 0 <= value < 100:
+            raise ValueError("O desconto vai de 0% a menos de 100%.")
+        return value
+
+    @model_validator(mode="after")
+    def _due_after_start(self) -> Self:
+        if self.first_due_date <= self.start_date:
+            raise ValueError("A primeira parcela vence depois do dia da decisão.")
+        return self
+
+
+class WithdrawalDTO(BaseDTO):
+    due_date: date
+    withdrawn_on: date
+    amount: DecimalStr
+    gross: DecimalStr
+    iof: DecimalStr
+    income_tax: DecimalStr
+
+
+class BreakEvenRateDTO(BaseDTO):
+    """A taxa no formato do indexador; nula quando nenhuma empata."""
+
+    product_type: FixedIncomeType
+    indexer: Indexer
+    rate: DecimalStr | None
+
+
+class BalancePointDTO(BaseDTO):
+    day: date
+    installments: DecimalStr
+    cash: DecimalStr | None
+
+
+class CurvePointDTO(BaseDTO):
+    installments: int
+    break_even_discount: DecimalStr
+
+
+class InstallmentsDTO(BaseDTO):
+    """As sobras são o que cada caminho deixa no último vencimento, líquido.
+    `difference` é a sobra do vencedor menos a do outro."""
+
+    total: DecimalStr
+    cash_price: DecimalStr | None
+    withdrawals: list[WithdrawalDTO]
+    installments_leftover: DecimalStr
+    cash_leftover: DecimalStr | None
+    winner: PaymentChoice | None
+    difference: DecimalStr | None
+    break_even_discount: DecimalStr
+    break_even_rates: list[BreakEvenRateDTO] | None
+    balance: list[BalancePointDTO]
+    curve: list[CurvePointDTO]

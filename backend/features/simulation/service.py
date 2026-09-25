@@ -1,20 +1,32 @@
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
 from backend.domain.comparison import Option, compare
 from backend.domain.fixed_income import FixedIncomeTerms
+from backend.domain.installments import (
+    CURVE_INSTALLMENTS,
+    Purchase,
+    simulate,
+)
 from backend.domain.projection import Assumptions, current_rates, project
 from backend.features.simulation.dto import (
+    BalancePointDTO,
+    BreakEvenRateDTO,
     ComparisonDTO,
     ComparisonInDTO,
     ComparisonPointDTO,
     ComparisonResultDTO,
     CurrentRatesDTO,
+    CurvePointDTO,
+    InstallmentsDTO,
+    InstallmentsInDTO,
     InvestmentInDTO,
     ProjectionInDTO,
+    WithdrawalDTO,
 )
 from backend.repository.market import index_rates
 
@@ -97,4 +109,65 @@ def compare_options(session: Session, payload: ComparisonInDTO) -> ComparisonDTO
             ComparisonPointDTO(day=point.day, net_values=point.net_values)
             for point in comparison.points
         ],
+    )
+
+
+def _months_after(day: date, months: int) -> date:
+    index = day.year * 12 + day.month - 1 + months
+    return date(index // 12, index % 12 + 1, 1)
+
+
+def simulate_installments(
+    session: Session, payload: InstallmentsInDTO
+) -> InstallmentsDTO:
+    purchase = Purchase(
+        mode=payload.mode,
+        amount=payload.amount,
+        installments=payload.installments,
+        start=payload.start_date,
+        first_due=payload.first_due_date,
+        discount=payload.cash_discount,
+    )
+    # A curva de empate vai além do parcelamento informado: a série cobre o maior
+    # último vencimento dela, com um mês de folga
+    horizon = _months_after(
+        payload.first_due_date, max(CURVE_INSTALLMENTS, payload.installments) + 1
+    )
+    rates = project(
+        index_rates(session),
+        _assumptions(payload.projection),
+        payload.start_date,
+        horizon,
+    )
+    simulation = simulate(purchase, _terms(payload.investment), rates)
+    difference: Decimal | None = None
+    if simulation.cash_leftover is not None:
+        difference = abs(simulation.cash_leftover - simulation.installments_leftover)
+    return InstallmentsDTO(
+        total=simulation.total,
+        cash_price=simulation.cash_price,
+        withdrawals=[
+            WithdrawalDTO(
+                due_date=withdrawal.installment.due_date,
+                withdrawn_on=withdrawal.withdrawn_on,
+                amount=withdrawal.installment.amount,
+                gross=withdrawal.redemption.gross,
+                iof=withdrawal.redemption.iof,
+                income_tax=withdrawal.redemption.income_tax,
+            )
+            for withdrawal in simulation.withdrawals
+        ],
+        installments_leftover=simulation.installments_leftover,
+        cash_leftover=simulation.cash_leftover,
+        winner=simulation.winner,
+        difference=difference,
+        break_even_discount=simulation.break_even_discount,
+        break_even_rates=[
+            BreakEvenRateDTO.model_validate(rate)
+            for rate in simulation.break_even_rates
+        ]
+        if simulation.break_even_rates is not None
+        else None,
+        balance=[BalancePointDTO.model_validate(point) for point in simulation.balance],
+        curve=[CurvePointDTO.model_validate(point) for point in simulation.curve],
     )

@@ -9,8 +9,10 @@ from backend.core.enum.income_form import IncomeForm
 from backend.core.enum.income_type import IncomeType
 from backend.core.enum.index_series import IndexSeries
 from backend.core.enum.indexer import Indexer
+from backend.core.enum.installment_mode import InstallmentMode
 from backend.core.enum.loss_pool import LossPool
 from backend.core.enum.operation_type import OperationType
+from backend.core.enum.payment_choice import PaymentChoice
 from backend.core.enum.portfolio_category import PortfolioCategory
 from backend.core.enum.trade_type import TradeType
 
@@ -26,8 +28,10 @@ __all__ = [
     "IncomeType",
     "IndexSeries",
     "Indexer",
+    "InstallmentMode",
     "LossPool",
     "OperationType",
+    "PaymentChoice",
     "PortfolioCategory",
     "TradeType",
 ]

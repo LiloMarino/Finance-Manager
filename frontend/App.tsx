@@ -13,6 +13,7 @@ import { FixedIncomeComparatorPage } from "@/pages/fixed-income-comparator";
 import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
 import { HomePage } from "@/pages/home";
 import { ImportPage } from "@/pages/import";
+import { InstallmentsPage } from "@/pages/installments";
 import { IncomePage } from "@/pages/income";
 import { MarketPage } from "@/pages/market";
 import { MonthlyReturnsPage } from "@/pages/monthly-returns";
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
             <Route path="market" element={<MarketPage />} />
             <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
+            <Route path="installments" element={<InstallmentsPage />} />
             <Route
               path="income"
               element={<IncomePage />}
