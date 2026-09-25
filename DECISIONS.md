@@ -4,7 +4,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-25):** D6 inclui a bonificação no ajuste do fechamento, e um evento gravado apaga o cache de cotação do ativo.
+> **Última mudança (2026-09-25):** D6 põe o IBOV no cache das séries, em pontos, buscado pelo provider de cotações.
 
 ---
 
@@ -144,11 +144,11 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 ### D6 — Dados de mercado atrás de interface, com cache local e só fonte gratuita
 **Status:** ✅ Decidida
 
-**Decisão:** cotações pelo `MarketDataProvider` (yfinance, `TICKER.SA`) e séries do BCB SGS (CDI, Selic, IPCA) pelo `IndexSeriesProvider`, cada um com cache local (`price_history`, `index_history`). O app funciona offline com o último valor conhecido, e a tela diz até que data o dado é real. Só fonte gratuita.
+**Decisão:** cotações pelo `MarketDataProvider` (yfinance, `TICKER.SA`) e séries do BCB SGS (CDI, Selic, IPCA) pelo `IndexSeriesProvider`, cada um com cache local (`price_history`, `index_history`). O IBOV é uma série como as do BCB, em `index_history` com o fechamento em pontos, e vem do `MarketDataProvider` (`^BVSP`). O app funciona offline com o último valor conhecido, e a tela diz até que data o dado é real. Só fonte gratuita.
 
 **Por quê:** fonte gratuita muda e quebra, e trocar de fonte fica restrito a `adapters/`.
 
-**O cache tem três camadas: tela → banco → fonte externa.** A tela lê só o banco. O front pede o refresh ao abrir o app e pelo botão da tela Mercado, e quem decide se vai à rede é o backend: a fonte só é consultada quando falta um dado que já devia existir (o último pregão fechado, a última publicação do BCB), dentro do período em que ele é necessário, e no máximo uma vez por intervalo. Para cotação, o período necessário são os dias em que houve posição no ativo: a renda variável tem milhares de tickers, e o cache guarda só os da carteira. As três séries do BCB (CDI, Selic, IPCA) ficam inteiras no cache, desde o início de cada uma, porque servem toda a renda fixa, os benchmarks e as ferramentas. Com o cache em dia, o refresh é idempotente e não sai da máquina, por mais vezes que seja chamado.
+**O cache tem três camadas: tela → banco → fonte externa.** A tela lê só o banco. O front pede o refresh ao abrir o app e pelo botão da tela Mercado, e quem decide se vai à rede é o backend: a fonte só é consultada quando falta um dado que já devia existir (o último pregão fechado, a última publicação do BCB), dentro do período em que ele é necessário, e no máximo uma vez por intervalo. Para cotação, o período necessário são os dias em que houve posição no ativo: a renda variável tem milhares de tickers, e o cache guarda só os da carteira. As três séries do BCB (CDI, Selic, IPCA) e o IBOV ficam inteiros no cache, desde o início de cada um, porque servem toda a renda fixa, os benchmarks e as ferramentas. Com o cache em dia, o refresh é idempotente e não sai da máquina, por mais vezes que seja chamado.
 
 **Consequências:**
 - O `create_app` não toca no banco: o refresh é uma chamada como as outras.

@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluídas a série diária (F14, recalculada a cada request, sem tabela), a rentabilidade por cota (F15) e a evolução do patrimônio (F17).
+> **Última mudança (2026-09-25):** Concluídos os benchmarks CDI, IPCA e IBOV (F16, com o IBOV no cache das séries) e a comparação ano a ano (F18): o M3 fecha.
 
 ## Glossário
 
@@ -25,8 +25,6 @@
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
-| **F16** | Benchmarks: CDI, IPCA e IBOV | — | ⏳ |
-| **F18** | Comparação ano a ano | — | ⏳ |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | — | 🔍 |
 | **F20** | Proventos: registro e histórico | — | ⏳ |
 | **F24** | Rebalanceamento | — | ⏳ |
@@ -54,7 +52,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (36 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (38 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -84,7 +82,9 @@
 | **F13** | Caixa e reserva | — | 🚫 |
 | **F14** | Série diária por ativo | — | ✅ |
 | **F15** | Desempenho de rentabilidade | — | ✅ |
+| **F16** | Benchmarks: CDI, IPCA e IBOV | — | ✅ |
 | **F17** | Evolução do patrimônio | — | ✅ |
+| **F18** | Comparação ano a ano | — | ✅ |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
@@ -107,7 +107,6 @@
 | --- | --- | --- | --- | --- |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
 | **F25** | Subcarteiras | M6 | 2 | ⏳ |
-| **F16** | Benchmarks: CDI, IPCA e IBOV | M3 | 1 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
 | **F47** | Comparador de renda fixa | M7 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
@@ -186,20 +185,21 @@
 >
 > **Serve:** N1, N2
 >
-> **Progresso:** 3/5 concluídas
+> **Progresso:** 5/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F16** | Benchmarks: CDI, IPCA e IBOV | F15 | ⏳ |
-| **F18** | Comparação ano a ano | F15, F16 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (3 itens)</summary>
+<details><summary>Concluído (5 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F14** | Série diária por ativo | F11, F12 | ✅ |
 | **F15** | Desempenho de rentabilidade | F14 | ✅ |
+| **F16** | Benchmarks: CDI, IPCA e IBOV | F15 | ✅ |
 | **F17** | Evolução do patrimônio | F14 | ✅ |
+| **F18** | Comparação ano a ano | F15, F16 | ✅ |
 
 </details>
 
@@ -342,9 +342,9 @@
 | **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ✅ Concluído |
 | **F14** | Série diária por ativo | N1, N2 | D2, D6 | M3 | F11, F12 | Alto | Alto | Alto | Bom | ✅ Concluído |
 | **F15** | Desempenho de rentabilidade | N1 | D5 | M3 | F14 | Médio | Médio | Alto | Excelente | ✅ Concluído |
-| **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F17** | Evolução do patrimônio | N2, N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
-| **F18** | Comparação ano a ano | N1 | D5 | M3 | F15, F16 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F18** | Comparação ano a ano | N1 | D5 | M3 | F15, F16 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
 | **F20** | Proventos: registro e histórico | N4, N5 | D2 | M4 | F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
 | **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
@@ -501,14 +501,17 @@ Decisões tomadas durante:
 
 **Aceite:** a rentabilidade de um período conhecido bate com a de uma fonte externa que também mede por cota, com diferença de até 0,1 p.p. Fica com o usuário, e a comparação só fecha depois dos proventos (F20), porque a fonte externa conta o retorno total.
 
-**F16 — Benchmarks: CDI, IPCA e IBOV.** As referências no mesmo gráfico da F15, escolhidas num seletor e recomeçando do zero no início do período escolhido. Serve N1.
+**F16 — Benchmarks: CDI, IPCA e IBOV.** `backend/domain/benchmarks.py` trata cada referência como uma cota: um nível por dia útil, nos mesmos dias da carteira, que o `period_return` lê como lê a cota. O CDI é a curva de um título a 100% do CDI, e o IPCA, a de um título a IPCA + 0%, as duas com a acumulação da marcação da renda fixa, que subiu de `fixed_income.py` para `backend/domain/index_growth.py`. O IBOV é o fechamento do dia sobre o do primeiro dia. `GET /api/performance` devolve, por referência, o retorno do período, os pontos nos mesmos dias da carteira e a data do último valor real, e devolve também o "% do CDI" (o retorno do período sobre o do CDI), calculado no Python. Na tela Rentabilidade, as referências são escolhidas num seletor múltiplo (o CDI vem marcado), cada uma é uma linha sobre a área da carteira, e o "% do CDI" fica ao lado do retorno do período, com a dica. O detalhe do ativo ganhou o mesmo seletor. Serve N1.
 
-Plano:
-- CDI e IPCA já estão em `index_history`; o IBOV (`^BVSP`) vem do yfinance pelo `MarketDataProvider` e entra no mesmo cache das séries (D6);
-- o IPCA é mensal e é distribuído pelos dias do mês, como na marcação da renda fixa;
-- "% do CDI" ao lado da rentabilidade do período, com a dica: 120% do CDI é ter rendido 1,2 vez o que o CDI rendeu no mesmo período.
+Decisões tomadas durante:
+- **O IBOV mora no cache das séries**, como `IndexSeries.IBOV` em `index_history`, com o valor em pontos de fechamento. O refresh das séries recebe também o `MarketDataProvider` e busca o `^BVSP` por ele, desde o primeiro pregão que o yfinance serve; o yfinance deixou de pôr `.SA` em símbolo de índice. A migration refaz a CHECK do enum em `index_history` e `fetch_log`.
+- O IBOV segue a regra da série diária no refresh e no painel de saúde: espera o dia útil anterior, como o CDI.
+- Uma referência sem valor até o primeiro dia da carteira fica sem pontos, em vez de começar no meio do período.
+- Embaixo do gráfico, cada referência escolhida diz até quando o dado é real; o IPCA, pelo mês publicado.
 
-**Aceite:** o usuário responde "rendi mais que o CDI este ano?" olhando uma tela só.
+**Limitações residuais:** depois do último IPCA publicado, o último valor se repete, como na marcação da renda fixa. Com um mês de deflação, a linha segue caindo até o IPCA seguinte sair.
+
+**Aceite verificado:** o usuário responde "rendi mais que o CDI este ano?" na tela Rentabilidade, pelo "% do CDI" com o período "Este ano". Na cópia do banco migrado, o CDI de cada mês bate com o CDI acumulado no mês publicado pelo BCB, com diferença abaixo de 0,01 p.p. (a série oficial tem duas casas).
 
 **F17 — Evolução do patrimônio.** `GET /api/evolution` (categoria, início e fim) soma a série diária por dia. Por ponto, devolve o patrimônio, o aplicado (entradas menos saídas acumuladas) e o ganho (o patrimônio menos o aplicado). Devolve também o total de hoje, o crescimento dos últimos 6, 12 e 24 meses em reais e em percentual, e o valor de hoje de cada categoria. A tela Evolução tem esses números, cada um com a dica, a tabela por categoria, os mesmos filtros da rentabilidade e o gráfico de área. A chave "Composição" divide a área em aplicado e ganho empilhados. Serve N2 e N1.
 
@@ -520,16 +523,17 @@ Decisões tomadas durante:
 
 **Aceite verificado:** no último dia, a faixa de ganho é igual ao resultado não realizado da carteira somado ao resultado das vendas, na cópia do banco migrado e num teste com dado fictício. O total da evolução é o total da carteira.
 
-**F18 — Comparação ano a ano.** A visão mais consultada de N1: uma tabela com um ano por linha e as colunas de janeiro a dezembro, mais o ano e o acumulado, e um gráfico de barras com os mesmos números. Serve N1.
+**F18 — Comparação ano a ano.** `monthly_returns` em `backend/domain/performance.py` dá a variação da cota em cada mês, do último fechamento do mês anterior ao último do mês, e em cada ano; o acumulado é a cota no fim do ano. `GET /api/performance/monthly` (categoria, ativo) devolve os anos da carteira, os das três referências nos mesmos meses, o melhor e o pior mês, e quantos meses subiram e caíram, do total. Tela Ano a ano: os quatro números, cada um com a dica; a tabela com um ano por linha, de janeiro a dezembro, o ano e o acumulado, com as células na cor de alta ou de baixa; e o gráfico de barras por mês, com o seletor de período, ou por ano. O filtro de categoria e o seletor de referência valem para tudo: com uma referência, a linha dela fica sob a da carteira em cada ano, e a barra dela ao lado. Serve N1, pela cota de D5.
 
-Plano:
-- a rentabilidade de cada mês sai da cota (F15). "Ano" é o produto dos meses, e "Acumulado" é o produto dos anos até ali, que é como a cota compõe (D5);
-- no topo: o melhor mês, o pior mês, e quantos meses foram positivos e quantos negativos;
-- seletor do que mostrar: a carteira, uma categoria, e uma referência (CDI, IPCA ou IBOV, da F16). Com uma referência escolhida, a linha dela aparece sob a da carteira em cada ano;
-- gráfico de barras por mês no período escolhido, ou por ano, com a carteira e a referência lado a lado; filtro de período;
-- células coloridas pelo sinal, com as cores de alta e de baixa da F30 quando ela existir.
+Decisões tomadas durante:
+- **O ano e o acumulado saem da razão das cotas**, que é o produto dos meses sem o arredondamento de compor os meses já arredondados.
+- O primeiro mês parte do início da carteira, e o mês corrente vai até hoje. Mês parado não conta como positivo nem como negativo.
+- No gráfico por mês, entra o mês cujo dia 1 cai no período: o mês é contado inteiro.
+- As cores de alta e de baixa nasceram como tokens do tema (`--gain`, `--loss`), para a identidade visual própria ajustar o tom num lugar só.
 
-**Aceite:** o usuário usa esta tabela no lugar da que consulta hoje.
+**Limitações residuais:** sem proventos, a tabela é só a variação de preço, e a tela diz isso.
+
+**Aceite:** o usuário usa esta tabela no lugar da que consulta hoje. Fica com o usuário. Na cópia do banco migrado, o ano corrente da tabela é igual à rentabilidade de "Este ano", e o acumulado do último ano é igual à rentabilidade desde o início.
 
 **F20 — Proventos: registro e histórico.** O registro de cada provento recebido e a tela de histórico para auditar. Serve N4 e N5.
 
