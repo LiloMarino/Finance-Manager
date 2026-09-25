@@ -1,8 +1,9 @@
 import { AllocationChart } from "@/features/portfolio/allocation-chart";
 import { CategorySections } from "@/features/portfolio/category-sections";
-import { MetricHint, dayChangeHint } from "@/features/portfolio/metric-hint";
+import { dayChangeHint } from "@/features/portfolio/hints";
 import { SectorDistribution } from "@/features/portfolio/sector-distribution";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
+import { MetricHint } from "@/shared/components/metric-hint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";

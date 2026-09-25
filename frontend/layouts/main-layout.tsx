@@ -10,6 +10,7 @@ import {
   PieChart,
   Receipt,
   Shapes,
+  TrendingUp,
 } from "lucide-react";
 
 import { useDataHealth } from "@/features/data-health/use-data-health";
@@ -35,6 +36,7 @@ import { TooltipProvider } from "@/shared/components/ui/tooltip";
 // Paths em inglês acompanham o código; o rótulo é o que aparece pro usuário.
 const navItems = [
   { to: "/", label: "Carteira", icon: PieChart },
+  { to: "/performance", label: "Rentabilidade", icon: TrendingUp },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },
   { to: "/sectors", label: "Setores", icon: Shapes },

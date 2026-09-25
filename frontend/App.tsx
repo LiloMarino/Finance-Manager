@@ -13,6 +13,7 @@ import { HomePage } from "@/pages/home";
 import { ImportOperationsPage } from "@/pages/import-operations";
 import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
+import { PerformancePage } from "@/pages/performance";
 import { PlaceholderPage } from "@/pages/placeholder";
 import { SectorsPage } from "@/pages/sectors";
 import { TaxPage } from "@/pages/tax";
@@ -25,6 +26,7 @@ export default function App() {
         <Routes>
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
+            <Route path="performance" element={<PerformancePage />} />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="operations/import" element={<ImportOperationsPage />} />
             <Route path="assets" element={<AssetsPage />} />

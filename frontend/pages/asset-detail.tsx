@@ -5,6 +5,7 @@ import { AssetFormDialog } from "@/features/assets/asset-form-dialog";
 import { TickerChangeDialog } from "@/features/assets/ticker-change-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
+import { PerformancePanel } from "@/features/performance/performance-panel";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -107,6 +108,15 @@ export function AssetDetailPage() {
           ) : (
             <p className="text-muted-foreground">Sem posição aberta.</p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Rentabilidade</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PerformancePanel assetId={assetId} />
         </CardContent>
       </Card>
 

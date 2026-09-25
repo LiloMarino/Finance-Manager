@@ -13,14 +13,14 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { type Category, categoryLabels } from "@/features/portfolio/labels";
-import {
-  MetricHint,
-  dayChangeHint,
-  totalChangeHint,
-} from "@/features/portfolio/metric-hint";
+import { dayChangeHint, totalChangeHint } from "@/features/portfolio/hints";
 import { SortableHeader } from "@/features/portfolio/sortable-header";
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
+import { MetricHint } from "@/shared/components/metric-hint";
+import {
+  type PortfolioCategory,
+  portfolioCategoryLabels,
+} from "@/shared/lib/portfolio-category";
 import {
   Accordion,
   AccordionContent,
@@ -311,7 +311,7 @@ function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {
   return (
     <div className="grid flex-1 grid-cols-2 items-center gap-x-6 gap-y-2 pr-4 sm:grid-cols-5">
       <span>
-        <span className="text-base font-semibold">{categoryLabels[allocation.category]}</span>
+        <span className="text-base font-semibold">{portfolioCategoryLabels[allocation.category]}</span>
         <span className="text-muted-foreground block text-xs font-normal">
           {count} {count === 1 ? noun : `${noun}s`}
         </span>
@@ -343,7 +343,7 @@ variável ordenam juntas; a de renda fixa tem colunas e ordenação próprias. *
 export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
   const [equitySorting, setEquitySorting] = useState<SortingState>([]);
   const [holdingSorting, setHoldingSorting] = useState<SortingState>([]);
-  const categories: Category[] = portfolio.categories.map((item) => item.category);
+  const categories: PortfolioCategory[] = portfolio.categories.map((item) => item.category);
 
   if (categories.length === 0) {
     return (

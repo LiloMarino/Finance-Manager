@@ -4,6 +4,9 @@ export const queryKeys = {
   assets: ["assets"] as const,
   operations: ["operations"] as const,
   portfolio: ["portfolio"] as const,
+  // Debaixo da carteira: toda escrita que a invalida muda também o passado dela
+  performance: ["portfolio", "performance"] as const,
+  evolution: ["portfolio", "evolution"] as const,
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   fixedIncome: ["fixed-income"] as const,

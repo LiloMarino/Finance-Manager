@@ -312,6 +312,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Performance */
+        get: operations["get_performance_api_performance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fixed-income": {
         parameters: {
             query?: never;
@@ -1262,6 +1279,33 @@ export interface components {
          */
         OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split";
         /**
+         * PerformanceDTO
+         * @description Retornos em fração (0,1 é 10%), pela variação da cota, sem contar aportes e
+         *     resgates. `start` é o dia cujo fechamento é a base do período, nulo quando ele
+         *     começa com a carteira, e os pontos acumulam desde essa base. Os retornos
+         *     recentes contam até hoje e são nulos quando a carteira é mais nova que eles.
+         */
+        PerformanceDTO: {
+            /** First Date */
+            first_date: string | null;
+            /** Start */
+            start: string | null;
+            /** End */
+            end: string | null;
+            /** Since Inception */
+            since_inception: DecimalString | null;
+            /** Period */
+            period: DecimalString | null;
+            /** Last 6 Months */
+            last_6_months: DecimalString | null;
+            /** Last 12 Months */
+            last_12_months: DecimalString | null;
+            /** Last 24 Months */
+            last_24_months: DecimalString | null;
+            /** Points */
+            points: components["schemas"]["ReturnPointDTO"][];
+        };
+        /**
          * PeriodPositionDTO
          * @description Posição num limite do período, pelo custo fiscal.
          */
@@ -1494,6 +1538,19 @@ export interface components {
             updated: string[];
             /** Failed */
             failed: string[];
+        };
+        /** ReturnPointDTO */
+        ReturnPointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /**
+             * Cumulative Return
+             * Format: decimal
+             */
+            cumulative_return: DecimalString;
         };
         /**
          * SectorAllocationDTO
@@ -2566,6 +2623,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PortfolioDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_performance_api_performance_get: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                asset_id?: number | null;
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceDTO"];
                 };
             };
             /** @description Unprocessable Content */
