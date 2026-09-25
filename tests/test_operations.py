@@ -147,51 +147,6 @@ def test_price_must_match_the_operation_type(api: TestClient) -> None:
         assert response.status_code == 422
 
 
-def test_transfer_carries_the_source_average_price(api: TestClient) -> None:
-    """A transferência grava o par no mesmo dia, com o PM da origem, e move a
-    posição inteira para o destino."""
-    source = _asset(api, "WXYZ33", "bdr")
-    target = _asset(api, "WXYZ34", "bdr")
-    _operation(api, source, "buy", "4", "4", day="2024-01-10")
-    _operation(api, source, "buy", "4", "5", day="2024-01-11")
-
-    response = api.post(
-        "/api/operations/transfer",
-        json={
-            "from_asset_id": source,
-            "to_asset_id": target,
-            "operation_date": "2024-02-05",
-            "quantity": "8",
-        },
-    )
-
-    assert response.status_code == 201
-    assert [
-        (op["ticker"], op["operation_type"], op["unit_price"]) for op in response.json()
-    ] == [("WXYZ33", "transfer_out", "4.5"), ("WXYZ34", "transfer_in", "4.5")]
-    assert _positions(api) == [("WXYZ34", "8", "4.5", "36.0")]
-
-
-def test_transfer_larger_than_the_position_is_refused(api: TestClient) -> None:
-    """Não se transfere mais do que a origem tinha no dia."""
-    source = _asset(api, "WXYZ33", "bdr")
-    target = _asset(api, "WXYZ34", "bdr")
-    _operation(api, source, "buy", "4", "4")
-
-    response = api.post(
-        "/api/operations/transfer",
-        json={
-            "from_asset_id": source,
-            "to_asset_id": target,
-            "operation_date": "2024-02-05",
-            "quantity": "5",
-        },
-    )
-
-    assert response.status_code == 422
-    assert "WXYZ33 tinha 4" in response.json()["detail"]
-
-
 def test_asset_with_operations_cannot_be_deleted(api: TestClient) -> None:
     """Apagar ativo com operação volta 409 com o motivo; sem operação, apaga."""
     used = _asset(api)

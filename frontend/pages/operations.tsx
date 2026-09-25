@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { OperationFilters } from "@/features/operations/operation-filters";
 import { OperationFormDialog } from "@/features/operations/operation-form-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
-import { TransferDialog } from "@/features/operations/transfer-dialog";
 import {
   type OperationFilters as Filters,
   useOperations,
@@ -34,7 +33,6 @@ export function OperationsPage() {
               Importar
             </Link>
           </Button>
-          <TransferDialog />
           <OperationFormDialog
             trigger={
               <Button>

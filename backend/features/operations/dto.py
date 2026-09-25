@@ -15,7 +15,6 @@ CORPORATE_EVENTS = (
     OperationType.SPLIT,
     OperationType.REVERSE_SPLIT,
 )
-TRANSFERS = (OperationType.TRANSFER_IN, OperationType.TRANSFER_OUT)
 
 
 def check_quantity_and_price(
@@ -28,8 +27,6 @@ def check_quantity_and_price(
         raise ValueError("Compra e venda precisam de preço maior que zero.")
     if operation_type in CORPORATE_EVENTS and unit_price != 0:
         raise ValueError("Bonificação, desdobro e grupamento não têm preço.")
-    if operation_type in TRANSFERS and unit_price < 0:
-        raise ValueError("O preço da transferência não pode ser negativo.")
 
 
 class OperationDTO(BaseDTO):
@@ -44,8 +41,7 @@ class OperationDTO(BaseDTO):
 
 
 class OperationInDTO(BaseDTO):
-    """Compra, venda e evento corporativo; a transferência tem endpoint próprio,
-    porque o preço dela é o PM da origem."""
+    """Compra, venda e evento corporativo."""
 
     asset_id: int
     operation_date: date
@@ -55,32 +51,13 @@ class OperationInDTO(BaseDTO):
 
     @model_validator(mode="after")
     def _valid_for_type(self) -> Self:
-        if self.operation_type in TRANSFERS:
-            raise ValueError(
-                "Transferência se registra pelo formulário de transferência."
-            )
         check_quantity_and_price(self.operation_type, self.quantity, self.unit_price)
-        return self
-
-
-class TransferInDTO(BaseDTO):
-    from_asset_id: int
-    to_asset_id: int
-    operation_date: date
-    quantity: DecimalStrIn
-
-    @model_validator(mode="after")
-    def _distinct_assets(self) -> Self:
-        if self.from_asset_id == self.to_asset_id:
-            raise ValueError("Origem e destino da transferência devem ser diferentes.")
-        if self.quantity <= 0:
-            raise ValueError("A quantidade deve ser maior que zero.")
         return self
 
 
 class ImportedOperationDTO(BaseDTO):
     """Uma operação lida de arquivo: sai do parser, vai ao preview e volta no
-    confirmar. Transferência não vem de arquivo."""
+    confirmar."""
 
     ticker: str
     operation_date: date
@@ -90,8 +67,6 @@ class ImportedOperationDTO(BaseDTO):
 
     @model_validator(mode="after")
     def _valid_for_type(self) -> Self:
-        if self.operation_type in TRANSFERS:
-            raise ValueError("Transferência não entra por importação.")
         check_quantity_and_price(self.operation_type, self.quantity, self.unit_price)
         return self
 

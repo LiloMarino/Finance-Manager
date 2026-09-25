@@ -17,8 +17,6 @@ import { formatDate } from "@/shared/lib/format";
 import { operationTypeLabels } from "@/shared/lib/labels";
 import { formatBRL, formatQuantity } from "@/types/decimal";
 
-const transferTypes: Operation["operation_type"][] = ["transfer_in", "transfer_out"];
-
 export function OperationsTable({ operations }: { operations: Operation[] }) {
   if (operations.length === 0) {
     return <p className="text-muted-foreground">Nenhuma operação encontrada.</p>;
@@ -55,17 +53,14 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
               {formatBRL(operation.unit_price)}
             </TableCell>
             <TableCell className="text-right">
-              {/* A transferência se desfaz apagando as duas pontas */}
-              {!transferTypes.includes(operation.operation_type) && (
-                <OperationFormDialog
-                  operation={operation}
-                  trigger={
-                    <Button variant="ghost" size="icon-sm" aria-label="Editar operação">
-                      <Pencil />
-                    </Button>
-                  }
-                />
-              )}
+              <OperationFormDialog
+                operation={operation}
+                trigger={
+                  <Button variant="ghost" size="icon-sm" aria-label="Editar operação">
+                    <Pencil />
+                  </Button>
+                }
+              />
               <DeleteOperationDialog operation={operation} />
             </TableCell>
           </TableRow>

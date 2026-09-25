@@ -1,7 +1,7 @@
 """Posição e preço médio, recalculados das operações a cada consulta.
 
-Funções puras sobre `OperationRecord`: servem as telas, a transferência, a checagem
-de posição negativa e a apuração fiscal. A ordem das contas faz parte do resultado:
+Funções puras sobre `OperationRecord`: servem as telas, a checagem de posição
+negativa e a apuração fiscal. A ordem das contas faz parte do resultado:
 no contexto Decimal padrão (28 dígitos), outra ordem muda o último dígito do PM.
 
 O PM é o custo fiscal: compra e venda do mesmo ativo no mesmo dia se pareiam como day
@@ -101,17 +101,13 @@ def apply(position: Position, operation: OperationRecord) -> Position:
     match operation.operation_type:
         case OperationType.BUY:
             return _acquire(position, operation.quantity, operation.unit_price)
-        case OperationType.SELL | OperationType.TRANSFER_OUT:
+        case OperationType.SELL:
             return _release(position, operation.quantity)
         case OperationType.BONUS | OperationType.SPLIT:
             return _rescale(position, position.quantity + operation.quantity)
         case OperationType.REVERSE_SPLIT:
             # `quantity` é o fator do grupamento
             return _rescale(position, position.quantity * operation.quantity)
-        case OperationType.TRANSFER_IN:
-            if position.quantity + operation.quantity == ZERO:
-                return position
-            return _acquire(position, operation.quantity, operation.unit_price)
 
 
 def _chronological(operations: Iterable[OperationRecord]) -> list[OperationRecord]:
@@ -225,15 +221,6 @@ def holding_windows(operations: Iterable[OperationRecord]) -> dict[str, HoldingW
         )
         for ticker, start in first.items()
     }
-
-
-def position_at(
-    operations: Iterable[OperationRecord], ticker: str, until: date
-) -> Position:
-    """Posição de `ticker` no fim do dia `until`, com as operações desse dia."""
-    return current_positions(
-        op for op in operations if op.ticker == ticker and op.operation_date <= until
-    ).get(ticker, Position())
 
 
 def check_non_negative(operations: Iterable[OperationRecord]) -> None:

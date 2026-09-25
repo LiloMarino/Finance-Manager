@@ -5,7 +5,6 @@ from datetime import date, timedelta
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import OperationType
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, AssetTickerHistory, Operation
 from backend.features.assets.dto import (
@@ -145,41 +144,28 @@ def change_ticker(
 
 
 def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDTO:
-    """Junta em `target` o ativo que a transferência registrava como dois: as
-    operações de `source` passam para `target`, e o par de transferência entre eles
-    no dia da troca sai, porque a posição agora continua no mesmo ativo."""
+    """Junta em `target` o ativo que estava cadastrado como dois: as operações de
+    `source`, todas anteriores à troca, passam para `target`, cujas operações são
+    todas a partir dela."""
     source_operations = list(
         session.scalars(select(Operation).where(Operation.asset_id == source.id))
     )
     target_operations = list(
         session.scalars(select(Operation).where(Operation.asset_id == target.id))
     )
-    pair = [
-        operation
-        for operation, operation_type in [
-            *((op, OperationType.TRANSFER_OUT) for op in source_operations),
-            *((op, OperationType.TRANSFER_IN) for op in target_operations),
-        ]
-        if operation.operation_type is operation_type
-        and operation.operation_date == day
-    ]
-    paired = {operation.id for operation in pair}
-    if any(op.operation_date >= day for op in source_operations if op.id not in paired):
+    if any(op.operation_date >= day for op in source_operations):
         raise InvalidTickerChangeError(
             f"{source.ticker} tem operação a partir de {day:%d/%m/%Y}: com a troca, "
             f"ela seria de {target.ticker}. Mova a operação antes de trocar o ticker."
         )
-    if any(op.operation_date < day for op in target_operations if op.id not in paired):
+    if any(op.operation_date < day for op in target_operations):
         raise InvalidTickerChangeError(
             f"{target.ticker} tem operação antes de {day:%d/%m/%Y}, quando o ativo "
             f"ainda se chamava {source.ticker}."
         )
 
-    for operation in pair:
-        session.delete(operation)
     for operation in source_operations:
-        if operation.id not in paired:
-            operation.asset_id = target.id
+        operation.asset_id = target.id
     for entry in session.scalars(
         select(AssetTickerHistory).where(AssetTickerHistory.asset_id == source.id)
     ):

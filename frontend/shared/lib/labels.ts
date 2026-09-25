@@ -18,8 +18,6 @@ export const operationTypeLabels: Record<OperationType, string> = {
   bonus: "Bonificação",
   split: "Desdobro",
   reverse_split: "Grupamento",
-  transfer_in: "Transferência (entrada)",
-  transfer_out: "Transferência (saída)",
 };
 
 export const indexerLabels: Record<Indexer, string> = {

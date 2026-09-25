@@ -30,8 +30,7 @@ import {
 } from "@/shared/lib/labels";
 import { parseDecimalInput, toDecimalString } from "@/types/decimal";
 
-// A transferência tem formulário próprio: o preço dela é o PM da origem
-const manualTypes: OperationType[] = ["buy", "sell", "bonus", "split", "reverse_split"];
+const operationTypes: OperationType[] = ["buy", "sell", "bonus", "split", "reverse_split"];
 const pricedTypes: OperationType[] = ["buy", "sell"];
 
 const quantityLabels: Partial<Record<OperationType, string>> = {
@@ -160,7 +159,7 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {manualTypes.map((type) => (
+                  {operationTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {operationTypeLabels[type]}
                     </SelectItem>

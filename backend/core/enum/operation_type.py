@@ -7,5 +7,3 @@ class OperationType(StrEnum):
     BONUS = "bonus"
     SPLIT = "split"
     REVERSE_SPLIT = "reverse_split"
-    TRANSFER_IN = "transfer_in"
-    TRANSFER_OUT = "transfer_out"

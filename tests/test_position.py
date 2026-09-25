@@ -15,7 +15,6 @@ from backend.domain.position import (
     check_non_negative,
     current_positions,
     holding_windows,
-    position_at,
     settle_day_trades,
 )
 
@@ -86,23 +85,6 @@ def test_reverse_split_multiplies_quantity_by_the_factor() -> None:
     assert position == Position(quantity=Decimal(10), average_price=Decimal(10))
 
 
-def test_transfer_pair_carries_the_average_price() -> None:
-    """Troca de ticker: a saída zera a origem e a entrada leva o PM da origem."""
-    source = _op(OperationType.BUY, "8", "4.215", ticker="WXYZ33")
-    positions = current_positions(
-        [
-            source,
-            _op(OperationType.TRANSFER_OUT, "8", "4.215", ticker="WXYZ33"),
-            _op(OperationType.TRANSFER_IN, "8", "4.215", ticker="WXYZ34"),
-        ]
-    )
-
-    assert positions["WXYZ33"] == Position()
-    assert positions["WXYZ34"] == Position(
-        quantity=Decimal(8), average_price=Decimal("4.215")
-    )
-
-
 def test_operations_run_by_date_then_recording_order() -> None:
     """A ordem é a data e, no mesmo dia, a ordem de gravação, não a da lista."""
     buy = _op(OperationType.BUY, "10", "10", day=date(2024, 2, 5))
@@ -112,20 +94,6 @@ def test_operations_run_by_date_then_recording_order() -> None:
     position = _position(rebuy, sell, buy)
 
     assert position == Position(quantity=Decimal(10), average_price=Decimal(30))
-
-
-def test_position_at_includes_operations_of_that_day() -> None:
-    """A posição numa data conta as operações do próprio dia e ignora as depois."""
-    operations = [
-        _op(OperationType.BUY, "10", "10", day=date(2024, 2, 5)),
-        _op(OperationType.BUY, "10", "30", day=date(2024, 2, 6)),
-        _op(OperationType.BUY, "10", "10", ticker="WXYZ3", day=date(2024, 2, 5)),
-    ]
-
-    assert position_at(operations, "ABCD11", date(2024, 2, 5)) == Position(
-        quantity=Decimal(10), average_price=Decimal(10)
-    )
-    assert position_at(operations, "ABCD11", date(2024, 2, 4)) == Position()
 
 
 def test_negative_position_is_refused() -> None:

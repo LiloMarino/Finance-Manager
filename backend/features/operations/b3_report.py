@@ -32,7 +32,7 @@ FRACTION_AUCTION = "Leilão de Fração"
 IGNORED_MOVEMENTS = {
     "Transferência - Liquidação": "liquidação de compra ou venda: entra pela nota de corretagem",
     "Fração em Ativos": "saída da fração para o leilão: a venda entra pelo Leilão de Fração",
-    "Atualização": "atualização de custódia: troca de ticker entra pela transferência",
+    "Atualização": "atualização de custódia: troca de ticker entra pelo detalhe do ativo",
     "Direito de Subscrição": "direito de subscrição não é posição",
     "Direitos de Subscrição - Não Exercido": "direito de subscrição não é posição",
     "Transferência": "transferência entre custódias não muda a posição",

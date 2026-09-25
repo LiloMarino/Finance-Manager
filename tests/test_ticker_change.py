@@ -85,37 +85,24 @@ def test_ticker_change_keeps_the_asset_and_dates_each_ticker(api: TestClient) ->
     ] == ["WXYZ34"]
 
 
-def test_change_to_existing_asset_merges_and_drops_the_transfer_pair(
-    api: TestClient,
-) -> None:
-    """Trocar para um ticker que já é ativo junta os dois e apaga o par de
-    transferência daquela data. Posição e PM de todos os meses ficam iguais aos de
-    antes, cada um com o ticker da época."""
+def test_change_to_existing_asset_merges_both(api: TestClient) -> None:
+    """Trocar para um ticker que já é ativo junta os dois num só: a posição do
+    ticker antigo continua no novo, com o PM dela, e cada mês mostra o ticker
+    da época."""
     source = _asset(api, "WXYZ33")
     target = _asset(api, "WXYZ34")
     _buy(api, source, "2024-01-10", "4", "4")
     _buy(api, source, "2024-01-11", "4", "5")
-    transfer = api.post(
-        "/api/operations/transfer",
-        json={
-            "from_asset_id": source,
-            "to_asset_id": target,
-            "operation_date": "2024-02-05",
-            "quantity": "8",
-        },
-    )
-    assert transfer.status_code == 201
     _buy(api, target, "2024-03-01", "2", "6")
-    months = [(2024, month) for month in (1, 2, 3)]
-    before = [_closing(api, *month) for month in months]
 
     response = _change(api, source, "WXYZ34", "2024-02-05")
 
     assert response.status_code == 200, response.text
     assert response.json()["id"] == target
-    assert [_closing(api, *month) for month in months] == before
+    assert _closing(api, 2024, 1) == [("WXYZ33", "8", "4.5")]
+    assert _closing(api, 2024, 2) == [("WXYZ34", "8", "4.5")]
+    assert _closing(api, 2024, 3) == [("WXYZ34", "10", "4.8")]
     assert api.get(f"/api/assets/{source}").status_code == 404
-    assert {op["operation_type"] for op in api.get("/api/operations").json()} == {"buy"}
 
 
 def test_merge_is_refused_with_source_operation_after_the_change(

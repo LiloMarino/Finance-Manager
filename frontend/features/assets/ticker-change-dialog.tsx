@@ -92,8 +92,7 @@ function TickerChangeForm({ asset, onSaved }: TickerChangeFormProps) {
           {existing && (
             <FieldDescription>
               {existing.ticker} já é um ativo: os dois viram um só, com as operações de{" "}
-              {asset.ticker} antes da data e as de {existing.ticker} a partir dela. A
-              transferência entre os dois na data é apagada.
+              {asset.ticker} antes da data e as de {existing.ticker} a partir dela.
             </FieldDescription>
           )}
           <FieldError errors={[errors.ticker]} />

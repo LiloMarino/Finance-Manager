@@ -112,23 +112,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/operations/transfer": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Transfer */
-        post: operations["transfer_api_operations_transfer_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/operations/{operation_id}": {
         parameters: {
             query?: never;
@@ -758,7 +741,7 @@ export interface components {
         /**
          * ImportedOperationDTO
          * @description Uma operação lida de arquivo: sai do parser, vai ao preview e volta no
-         *     confirmar. Transferência não vem de arquivo.
+         *     confirmar.
          */
         ImportedOperationDTO: {
             /** Ticker */
@@ -1040,8 +1023,7 @@ export interface components {
         };
         /**
          * OperationInDTO
-         * @description Compra, venda e evento corporativo; a transferência tem endpoint próprio,
-         *     porque o preço dela é o PM da origem.
+         * @description Compra, venda e evento corporativo.
          */
         OperationInDTO: {
             /** Asset Id */
@@ -1067,7 +1049,7 @@ export interface components {
          * OperationType
          * @enum {string}
          */
-        OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split" | "transfer_in" | "transfer_out";
+        OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split";
         /**
          * PeriodPositionDTO
          * @description Posição num limite do período, pelo custo fiscal.
@@ -1295,23 +1277,6 @@ export interface components {
          * @enum {string}
          */
         TradeType: "swing" | "day_trade";
-        /** TransferInDTO */
-        TransferInDTO: {
-            /** From Asset Id */
-            from_asset_id: number;
-            /** To Asset Id */
-            to_asset_id: number;
-            /**
-             * Operation Date
-             * Format: date
-             */
-            operation_date: string;
-            /**
-             * Quantity
-             * Format: decimal
-             */
-            quantity: DecimalString;
-        };
     };
     responses: never;
     parameters: never;
@@ -1574,48 +1539,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OperationDTO"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    transfer_api_operations_transfer_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TransferInDTO"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationDTO"][];
                 };
             };
             /** @description Unprocessable Content */

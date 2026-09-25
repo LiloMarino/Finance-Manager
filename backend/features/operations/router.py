@@ -13,7 +13,6 @@ from backend.features.operations.dto import (
     ImportResultDTO,
     OperationDTO,
     OperationInDTO,
-    TransferInDTO,
 )
 from backend.features.operations.importing import (
     UploadedFile,
@@ -23,7 +22,6 @@ from backend.features.operations.importing import (
 )
 from backend.features.operations.service import (
     create_operation,
-    create_transfer,
     delete_operation,
     list_operations,
     update_operation,
@@ -52,11 +50,6 @@ def list_all(
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create(session: SessionDep, payload: OperationInDTO) -> OperationDTO:
     return create_operation(session, payload)
-
-
-@router.post("/transfer", status_code=status.HTTP_201_CREATED)
-def transfer(session: SessionDep, payload: TransferInDTO) -> list[OperationDTO]:
-    return create_transfer(session, payload)
 
 
 @router.put("/{operation_id}")

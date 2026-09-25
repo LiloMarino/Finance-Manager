@@ -10,7 +10,6 @@ export type OperationFilters = NonNullable<
   paths["/api/operations"]["get"]["parameters"]["query"]
 >;
 type OperationInput = components["schemas"]["OperationInDTO"];
-type TransferInput = components["schemas"]["TransferInDTO"];
 
 export function useOperations(filters: OperationFilters = {}) {
   return useQuery({
@@ -52,12 +51,5 @@ export function useDeleteOperation() {
         path: { operation_id: operation.id },
       }),
     "Operação apagada.",
-  );
-}
-
-export function useTransfer() {
-  return useWrite(
-    (body: TransferInput) => post("/api/operations/transfer", { body }),
-    "Transferência registrada.",
   );
 }

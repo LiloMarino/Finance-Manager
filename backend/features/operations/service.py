@@ -8,14 +8,11 @@ from sqlalchemy.orm import Session
 from backend.core.enum import OperationType
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, Operation
-from backend.domain.position import position_at
 from backend.features.operations.dto import (
-    TRANSFERS,
     OperationDTO,
     OperationInDTO,
-    TransferInDTO,
 )
-from backend.repository.operations import check_positions, operation_records
+from backend.repository.operations import check_positions
 from backend.repository.tickers import TickerHistory, ticker_history
 
 
@@ -103,10 +100,6 @@ def update_operation(
     session: Session, operation_id: int, payload: OperationInDTO
 ) -> OperationDTO:
     operation = _operation(session, operation_id)
-    if operation.operation_type in TRANSFERS:
-        raise InvalidOperationError(
-            "Transferência não se edita: apague as duas pontas e registre de novo."
-        )
     previous = _asset(session, operation.asset_id)
     asset = _asset(session, payload.asset_id)
     operation.asset_id = asset.id
@@ -125,38 +118,3 @@ def delete_operation(session: Session, operation_id: int) -> None:
     session.delete(operation)
     check_positions(session, [asset.ticker])
     session.commit()
-
-
-def create_transfer(session: Session, payload: TransferInDTO) -> list[OperationDTO]:
-    """Troca de ticker: sai da origem e entra no destino no mesmo dia, levando o PM
-    que a origem tinha no fim desse dia."""
-    source = _asset(session, payload.from_asset_id)
-    target = _asset(session, payload.to_asset_id)
-    position = position_at(
-        operation_records(session, [source.ticker]),
-        source.ticker,
-        payload.operation_date,
-    )
-    if payload.quantity > position.quantity:
-        raise InvalidOperationError(
-            f"{source.ticker} tinha {position.quantity} em "
-            f"{payload.operation_date:%d/%m/%Y}: a transferência não pode ser maior."
-        )
-    pair = [
-        Operation(
-            asset_id=asset.id,
-            operation_date=payload.operation_date,
-            operation_type=operation_type,
-            quantity=payload.quantity,
-            unit_price=position.average_price,
-        )
-        for asset, operation_type in (
-            (source, OperationType.TRANSFER_OUT),
-            (target, OperationType.TRANSFER_IN),
-        )
-    ]
-    session.add_all(pair)
-    check_positions(session, [source.ticker, target.ticker])
-    session.commit()
-    history = ticker_history(session)
-    return [_to_dto(pair[0], source, history), _to_dto(pair[1], target, history)]

@@ -112,9 +112,7 @@ class Operation(Base):
     O significado de `quantity` e `unit_price` depende do tipo:
     - buy/sell: ações negociadas e preço pago/recebido por ação;
     - bonus/split: ações RECEBIDAS no evento, com preço zero;
-    - reverse_split: o FATOR do grupamento (10:1 grava 0.1), com preço zero;
-    - transfer_out/transfer_in: um par no mesmo dia, um em cada ativo (troca de
-      ticker), com o preço médio da origem em `unit_price`.
+    - reverse_split: o FATOR do grupamento (10:1 grava 0.1), com preço zero.
     """
 
     __tablename__ = "operations"
@@ -124,9 +122,7 @@ class Operation(Base):
         CheckConstraint(
             "(operation_type IN ('buy', 'sell') AND CAST(unit_price AS REAL) > 0)"
             " OR (operation_type IN ('bonus', 'split', 'reverse_split')"
-            " AND CAST(unit_price AS REAL) = 0)"
-            " OR (operation_type IN ('transfer_in', 'transfer_out')"
-            " AND CAST(unit_price AS REAL) >= 0)",
+            " AND CAST(unit_price AS REAL) = 0)",
             name="unit_price_by_type",
         ),
     )

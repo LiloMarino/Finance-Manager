@@ -40,9 +40,7 @@ def test_decimal_round_trips_through_sqlite(engine: Engine) -> None:
     with Session(engine) as session:
         asset = _asset(session)
         session.add(
-            _operation(
-                asset, OperationType.TRANSFER_IN, "10.10", str(LONG_REPEATING_DECIMAL)
-            )
+            _operation(asset, OperationType.BUY, "10.10", str(LONG_REPEATING_DECIMAL))
         )
         session.commit()
 
@@ -60,7 +58,6 @@ def test_decimal_round_trips_through_sqlite(engine: Engine) -> None:
         (OperationType.SELL, "-1", "10"),
         (OperationType.BUY, "1", "0"),
         (OperationType.SPLIT, "1", "0.01"),
-        (OperationType.TRANSFER_OUT, "8", "-4.215"),
     ],
 )
 def test_check_rejects_invalid_operation(
@@ -76,8 +73,7 @@ def test_check_rejects_invalid_operation(
 
 
 def test_corporate_event_quantity_rules_fit(engine: Engine) -> None:
-    """Bonificação e grupamento (quantidade como fator) e transferência (PM como
-    preço) passam pelos CHECK."""
+    """Bonificação e grupamento (quantidade como fator) passam pelos CHECK."""
     with Session(engine) as session:
         asset = _asset(session)
         session.add_all(
@@ -85,7 +81,6 @@ def test_corporate_event_quantity_rules_fit(engine: Engine) -> None:
                 _operation(asset, OperationType.BUY, "17", "10.66"),
                 _operation(asset, OperationType.BONUS, "0.05", "0"),
                 _operation(asset, OperationType.REVERSE_SPLIT, "0.1", "0"),
-                _operation(asset, OperationType.TRANSFER_OUT, "8", "4.215"),
             ]
         )
         session.flush()
