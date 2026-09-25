@@ -7,7 +7,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from backend.core.enum import OperationType
-from backend.features.operations.dto import ImportedOperationDTO
+from backend.features.imports.dto import ImportedOperationDTO
 
 BROKER_PATTERN = re.compile(r"\bNu\s+Investimentos\b", re.IGNORECASE)
 

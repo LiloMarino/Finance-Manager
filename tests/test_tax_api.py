@@ -6,8 +6,8 @@ from decimal import Decimal
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from backend.core.enum import AssetClass, OperationType
-from backend.core.models.models import Asset, Operation
+from backend.core.enum import AssetClass, IncomeType, OperationType
+from backend.core.models.models import Asset, IncomeEvent, Operation
 
 
 def _etf_with_gain(session: Session) -> None:
@@ -155,3 +155,62 @@ def test_irpf_report_fills_each_form(api: TestClient, session: Session) -> None:
     assert february["common"] == "5000"
     assert february["paid_amount"] == "750.00"
     assert body["darf_code"] == "6015"
+
+
+def test_irpf_report_puts_each_income_in_its_form(
+    api: TestClient, session: Session
+) -> None:
+    """Os proventos do ano, somados por ativo e tipo, vão para a ficha pelo tipo e
+    pela classe: dividendo isento, JCP e rendimento de ETF na tributação exclusiva,
+    rendimento de FII isento. Dividendo de BDR fica sem ficha automática, e provento
+    de outro ano fica de fora."""
+    assets = {
+        ticker: Asset(ticker=ticker, asset_class=asset_class)
+        for ticker, asset_class in (
+            ("ABCD3", AssetClass.STOCK),
+            ("EFGH11", AssetClass.FII),
+            ("IJKL11", AssetClass.ETF),
+            ("MNOP34", AssetClass.BDR),
+        )
+    }
+    session.add_all(assets.values())
+    session.flush()
+    for ticker, income_type, day, amount in (
+        ("ABCD3", IncomeType.DIVIDEND, date(2024, 3, 15), "10"),
+        ("ABCD3", IncomeType.DIVIDEND, date(2024, 9, 15), "5"),
+        ("ABCD3", IncomeType.JCP, date(2024, 6, 15), "8.5"),
+        ("EFGH11", IncomeType.DISTRIBUTION, date(2024, 5, 14), "20"),
+        ("IJKL11", IncomeType.DISTRIBUTION, date(2024, 5, 15), "17"),
+        ("MNOP34", IncomeType.DIVIDEND, date(2024, 7, 1), "3"),
+        ("ABCD3", IncomeType.DIVIDEND, date(2023, 3, 15), "100"),
+    ):
+        session.add(
+            IncomeEvent(
+                asset_id=assets[ticker].id,
+                payment_date=day,
+                income_type=income_type,
+                quantity=Decimal(10),
+                unit_price=Decimal(amount) / 10,
+                amount=Decimal(amount),
+            )
+        )
+    session.commit()
+
+    body = api.get("/api/tax/irpf/2024").json()
+
+    assert [
+        (
+            item["ticker"],
+            item["income_type"],
+            item["form"],
+            item["code"],
+            item["amount"],
+        )
+        for item in body["income"]
+    ] == [
+        ("MNOP34", "dividend", None, None, "3"),
+        ("IJKL11", "distribution", "exclusive", "06", "17"),
+        ("ABCD3", "jcp", "exclusive", "10", "8.5"),
+        ("ABCD3", "dividend", "exempt", "09", "15"),
+        ("EFGH11", "distribution", "exempt", "26", "20"),
+    ]

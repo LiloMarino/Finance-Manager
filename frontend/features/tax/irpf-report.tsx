@@ -1,7 +1,14 @@
+import { TriangleAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { formatMonth, lossPoolLabels } from "@/features/tax/labels";
+import {
+  formatMonth,
+  incomeCodeLabels,
+  incomeFormLabels,
+  lossPoolLabels,
+} from "@/features/tax/labels";
 import type { IrpfReport as IrpfReportData } from "@/features/tax/use-tax";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
@@ -13,13 +20,70 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
+import { incomeTypeLabels } from "@/shared/lib/labels";
 import { formatBRL, formatSignedBRL } from "@/types/decimal";
+
+type IncomeItem = IrpfReportData["income"][number];
+
+function CnpjCell({ item }: { item: { asset_id: number; cnpj: string | null } }) {
+  return (
+    <TableCell className="tabular-nums">
+      {item.cnpj ?? (
+        <Link to={`/assets/${item.asset_id}`}>
+          <Badge variant="destructive">sem CNPJ</Badge>
+        </Link>
+      )}
+    </TableCell>
+  );
+}
+
+function IncomeTable({ items, withCode }: { items: IncomeItem[]; withCode: boolean }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {withCode && <TableHead>Código</TableHead>}
+          <TableHead>CNPJ da fonte pagadora</TableHead>
+          <TableHead>Ativo</TableHead>
+          <TableHead>Tipo</TableHead>
+          <TableHead className="text-right">Líquido no ano</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((item) => (
+          <TableRow key={`${item.asset_id}-${item.income_type}`}>
+            {withCode && (
+              <TableCell>
+                {item.code} · {item.code ? incomeCodeLabels[item.code] : ""}
+              </TableCell>
+            )}
+            <CnpjCell item={item} />
+            <TableCell className="font-medium">{item.ticker}</TableCell>
+            <TableCell>{incomeTypeLabels[item.income_type]}</TableCell>
+            <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
 
 export function IrpfReport({ report }: { report: IrpfReportData }) {
   const { year } = report;
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Aviso de conferência */}
+      <Alert>
+        <TriangleAlert />
+        <AlertTitle>Confira antes de declarar</AlertTitle>
+        <AlertDescription>
+          Este relatório é um cálculo do app a partir do que está cadastrado, e pode ter
+          erros. Para a declaração, a fonte é o informe de rendimentos da corretora: use
+          este relatório para cruzar os valores e achar o que falta ou diverge.
+        </AlertDescription>
+      </Alert>
+
       {/* Bens e Direitos */}
       <Card>
         <CardHeader>
@@ -176,9 +240,48 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         </CardContent>
       </Card>
 
-      <p className="text-muted-foreground text-sm">
-        Dividendos (código 09) e JCP (código 10) vêm do informe de rendimentos da corretora.
-      </p>
+      {/* Proventos por ficha */}
+      {(["exempt", "exclusive"] as const).map((form) => {
+        const items = report.income.filter((item) => item.form === form);
+        return (
+          <Card key={form}>
+            <CardHeader>
+              <CardTitle>{incomeFormLabels[form]} · proventos</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <p className="text-muted-foreground text-sm">
+                {form === "exempt"
+                  ? "Um item por fonte pagadora, pelo valor recebido no ano."
+                  : "Um item por fonte pagadora, pelo valor líquido: o IR já foi retido na fonte."}
+              </p>
+              {items.length === 0 ? (
+                <p className="text-muted-foreground">Nenhum provento no ano.</p>
+              ) : (
+                <IncomeTable items={items} withCode />
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+
+      {/* Proventos sem ficha */}
+      {report.income.some((item) => item.form === null) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Proventos sem ficha automática</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <p className="text-muted-foreground text-sm">
+              O app não sabe em que ficha eles entram, como o dividendo de BDR, que é
+              tributado pelo carnê-leão. Confira no informe da corretora.
+            </p>
+            <IncomeTable
+              items={report.income.filter((item) => item.form === null)}
+              withCode={false}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

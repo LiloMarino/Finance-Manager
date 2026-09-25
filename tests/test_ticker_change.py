@@ -11,13 +11,13 @@ from backend.core.enum import ImportStatus
 from backend.core.models.models import Asset
 from backend.features.assets.dto import TickerChangeInDTO
 from backend.features.assets.service import change_ticker
-from backend.features.operations.dto import ImportConfirmDTO
-from backend.features.operations.importing import (
+from backend.features.imports.dto import ImportConfirmDTO
+from backend.features.imports.importing import (
     ParsedFile,
     confirm_import,
     preview_import,
 )
-from backend.features.operations.nubank_note import parse_nubank_note
+from backend.features.imports.nubank_note import parse_nubank_note
 
 
 def _asset(api: TestClient, ticker: str, asset_class: str = "bdr") -> int:
@@ -177,7 +177,10 @@ def test_note_with_previous_ticker_is_already_imported(session: Session) -> None
     )
     first = preview_import(session, [note])
     confirm_import(
-        session, ImportConfirmDTO(operations=[*first.rows], new_assets=first.new_assets)
+        session,
+        ImportConfirmDTO(
+            operations=[*first.rows], income=[], new_assets=first.new_assets
+        ),
     )
     asset_id = session.scalars(select(Asset.id)).one()
     change_ticker(

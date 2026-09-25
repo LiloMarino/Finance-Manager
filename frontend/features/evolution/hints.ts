@@ -3,4 +3,4 @@ export function growthHint(months: number): string {
 }
 
 export const compositionHint =
-  "Aplicado é o que você colocou menos o que tirou; ganho é o patrimônio menos o aplicado. O ganho junta o resultado das vendas e o do que ainda está na carteira. Os proventos recebidos não entram, porque saem da carteira. Num dia de perda, a linha tracejada mostra o aplicado acima do patrimônio.";
+  "Aplicado é o que você colocou menos o que tirou; ganho é o patrimônio menos o aplicado. O ganho junta o resultado das vendas e o do que ainda está na carteira. Os proventos recebidos não entram no ganho, porque saem da carteira; eles entram na rentabilidade. Num dia de perda, a linha tracejada mostra o aplicado acima do patrimônio.";

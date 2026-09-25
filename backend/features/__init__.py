@@ -10,6 +10,8 @@ from backend.features.data_health.router import router as data_health_router
 from backend.features.evolution.router import router as evolution_router
 from backend.features.fixed_income.router import router as fixed_income_router
 from backend.features.health.router import router as health_router
+from backend.features.imports.router import router as imports_router
+from backend.features.income.router import router as income_router
 from backend.features.market.router import router as market_router
 from backend.features.operations.router import router as operations_router
 from backend.features.performance.router import router as performance_router
@@ -22,6 +24,8 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(health_router, responses=ERROR_RESPONSES)
     app.include_router(market_router, responses=ERROR_RESPONSES)
     app.include_router(operations_router, responses=ERROR_RESPONSES)
+    app.include_router(imports_router, responses=ERROR_RESPONSES)
+    app.include_router(income_router, responses=ERROR_RESPONSES)
     app.include_router(assets_router, responses=ERROR_RESPONSES)
     app.include_router(sectors_router, responses=ERROR_RESPONSES)
     app.include_router(portfolio_router, responses=ERROR_RESPONSES)

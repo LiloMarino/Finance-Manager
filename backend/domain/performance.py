@@ -1,11 +1,12 @@
 """Rentabilidade por cota, a mesma conta da cota de um fundo.
 
 A cota começa em 1 e, a cada dia, é multiplicada por
-`(valor de hoje + saídas do dia) / (valor da véspera + entradas do dia)`. A entrada
-compra cotas pelo valor do dia e a saída as vende, então aporte e resgate mudam o
-número de cotas e deixam o valor da cota como está. A entrada soma embaixo e a saída
-em cima, e assim a primeira compra (véspera zerada) e a venda total (hoje zerado)
-fecham sem divisão por zero.
+`(valor de hoje + saídas do dia + proventos do dia) / (valor da véspera + entradas do
+dia)`. A entrada compra cotas pelo valor do dia e a saída as vende, então aporte e
+resgate mudam o número de cotas e deixam o valor da cota como está. O provento é
+ganho: soma em cima sem vender cota, no dia em que foi pago. A entrada soma embaixo e
+a saída em cima, e assim a primeira compra (véspera zerada) e a venda total (hoje
+zerado) fecham sem divisão por zero.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ def quota_series(points: Sequence[DailyPoint]) -> list[Decimal]:
     for point in points:
         base = previous + point.inflow
         if base > ZERO:
-            quota *= (point.value + point.outflow) / base
+            quota *= (point.value + point.outflow + point.income) / base
         quotas.append(quota)
         previous = point.value
     return quotas

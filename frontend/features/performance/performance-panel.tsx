@@ -95,8 +95,8 @@ export function PerformancePanel({ category, assetId, filters }: PerformancePane
           <div className="text-muted-foreground flex flex-col gap-1 text-xs">
             {data.first_date && (
               <p>
-                Série desde {formatDate(data.first_date)}. Só a variação de preço: os
-                proventos ainda não entram na rentabilidade.
+                Série desde {formatDate(data.first_date)}. Variação de preço mais os
+                proventos, no dia do pagamento.
               </p>
             )}
             {staleBenchmarks(data, selected).map((note) => (

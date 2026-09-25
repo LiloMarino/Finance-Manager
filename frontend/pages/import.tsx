@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { FileDropzone } from "@/features/operations/import/file-dropzone";
-import { ImportPreview } from "@/features/operations/import/import-preview";
-import { usePreviewImport } from "@/features/operations/import/use-import";
+import { FileDropzone } from "@/features/imports/file-dropzone";
+import { ImportPreview } from "@/features/imports/import-preview";
+import { usePreviewImport } from "@/features/imports/use-import";
 import { Button } from "@/shared/components/ui/button";
 
-export function ImportOperationsPage() {
+export function ImportPage() {
   const navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]);
   const preview = usePreviewImport();
@@ -24,7 +24,7 @@ export function ImportOperationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Importar operações</h1>
+        <h1 className="text-2xl font-semibold">Importar</h1>
         <p className="text-muted-foreground">
           Nada é gravado antes de você conferir o preview e confirmar. Reimportar um
           arquivo não duplica o que já está no banco.
@@ -36,9 +36,10 @@ export function ImportOperationsPage() {
           // Um preview novo recomeça a seleção do zero
           key={preview.submittedAt}
           preview={preview.data}
-          onDone={() => {
+          onCancel={clear}
+          onDone={(destination) => {
             clear();
-            void navigate("/operations");
+            void navigate(destination);
           }}
         />
       ) : (

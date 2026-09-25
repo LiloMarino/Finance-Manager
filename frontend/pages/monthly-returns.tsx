@@ -68,7 +68,7 @@ export function MonthlyReturnsPage() {
             <CardContent>
               <MonthlyReturnsTable monthly={data} benchmark={benchmark} />
               <p className="text-muted-foreground mt-3 text-xs">
-                Só a variação de preço: os proventos ainda não entram na rentabilidade.
+                Variação de preço mais os proventos, no mês do pagamento.
               </p>
             </CardContent>
           </Card>

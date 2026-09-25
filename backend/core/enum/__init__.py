@@ -5,6 +5,8 @@ from backend.core.enum.fixed_income_movement_type import FixedIncomeMovementType
 from backend.core.enum.fixed_income_type import FixedIncomeType
 from backend.core.enum.import_source import ImportSource
 from backend.core.enum.import_status import ImportStatus
+from backend.core.enum.income_form import IncomeForm
+from backend.core.enum.income_type import IncomeType
 from backend.core.enum.index_series import IndexSeries
 from backend.core.enum.indexer import Indexer
 from backend.core.enum.loss_pool import LossPool
@@ -20,6 +22,8 @@ __all__ = [
     "FixedIncomeType",
     "ImportSource",
     "ImportStatus",
+    "IncomeForm",
+    "IncomeType",
     "IndexSeries",
     "Indexer",
     "LossPool",

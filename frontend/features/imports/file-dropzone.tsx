@@ -38,8 +38,9 @@ export function FileDropzone({ onFiles }: FileDropzoneProps) {
     >
       <FileUp className="size-8 text-muted-foreground" />
       <p>
-        Solte aqui as notas de corretagem (PDF) e o relatório de movimentação da B3
-        (xlsx), quantos quiser de uma vez.
+        Solte aqui as notas de corretagem (PDF) e os relatórios da B3 (xlsx): o de
+        movimentação, que traz eventos e proventos, e o de proventos recebidos. Quantos
+        quiser de uma vez.
       </p>
       <Button variant="outline" onClick={() => input.current?.click()}>
         Escolher arquivos

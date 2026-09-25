@@ -130,7 +130,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/operations/import/preview": {
+    "/api/import/preview": {
         parameters: {
             query?: never;
             header?: never;
@@ -143,14 +143,14 @@ export interface paths {
          * Preview
          * @description Lê os arquivos e classifica cada linha contra o banco, sem gravar nada.
          */
-        post: operations["preview_api_operations_import_preview_post"];
+        post: operations["preview_api_import_preview_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/operations/import/confirm": {
+    "/api/import/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -160,7 +160,77 @@ export interface paths {
         get?: never;
         put?: never;
         /** Confirm */
-        post: operations["confirm_api_operations_import_confirm_post"];
+        post: operations["confirm_api_import_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/income": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All */
+        get: operations["list_all_api_income_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_income_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/income/{income_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update */
+        put: operations["update_api_income__income_id__put"];
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_income__income_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/income/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Performance */
+        get: operations["get_performance_api_income_performance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/income/distribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Distribution */
+        get: operations["get_distribution_api_income_distribution_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -609,8 +679,8 @@ export interface components {
             /** Years */
             years: components["schemas"]["YearReturnsDTO"][];
         };
-        /** Body_preview_api_operations_import_preview_post */
-        Body_preview_api_operations_import_preview_post: {
+        /** Body_preview_api_import_preview_post */
+        Body_preview_api_import_preview_post: {
             /** Files */
             files: Blob[];
         };
@@ -649,6 +719,23 @@ export interface components {
             day_change: DecimalString | null;
             /** Day Return */
             day_return: DecimalString | null;
+        };
+        /**
+         * CategoryAmountDTO
+         * @description `share` em fração do total do período: 0,25 é 25%.
+         */
+        CategoryAmountDTO: {
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
         };
         /**
          * CategoryResultDTO
@@ -1041,6 +1128,8 @@ export interface components {
         ImportConfirmDTO: {
             /** Operations */
             operations: components["schemas"]["ImportedOperationDTO"][];
+            /** Income */
+            income: components["schemas"]["ImportedIncomeDTO"][];
             /** New Assets */
             new_assets: components["schemas"]["NewAssetDTO"][];
         };
@@ -1058,6 +1147,8 @@ export interface components {
             files: components["schemas"]["ImportFileDTO"][];
             /** Rows */
             rows: components["schemas"]["PreviewRowDTO"][];
+            /** Income Rows */
+            income_rows: components["schemas"]["IncomePreviewRowDTO"][];
             /** Ignored */
             ignored: components["schemas"]["IgnoredMovementDTO"][];
             /** New Assets */
@@ -1069,6 +1160,10 @@ export interface components {
             created: number;
             /** Skipped */
             skipped: number;
+            /** Income Created */
+            income_created: number;
+            /** Income Skipped */
+            income_skipped: number;
             /** Assets Created */
             assets_created: string[];
         };
@@ -1076,12 +1171,41 @@ export interface components {
          * ImportSource
          * @enum {string}
          */
-        ImportSource: "b3" | "nubank";
+        ImportSource: "b3" | "b3_income" | "nubank";
         /**
          * ImportStatus
          * @enum {string}
          */
         ImportStatus: "new" | "existing" | "possible_duplicate" | "repeated_in_batch";
+        /**
+         * ImportedIncomeDTO
+         * @description Um provento lido de arquivo, com o valor por unidade bruto e o valor líquido.
+         */
+        ImportedIncomeDTO: {
+            /** Ticker */
+            ticker: string;
+            /**
+             * Payment Date
+             * Format: date
+             */
+            payment_date: string;
+            income_type: components["schemas"]["IncomeType"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /**
+             * Unit Price
+             * Format: decimal
+             */
+            unit_price: DecimalString;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
         /**
          * ImportedOperationDTO
          * @description Uma operação lida de arquivo: sai do parser, vai ao preview e volta no
@@ -1107,6 +1231,230 @@ export interface components {
              */
             unit_price: DecimalString;
         };
+        /**
+         * IncomeAssetDTO
+         * @description `amount` e `share` são da janela pedida; `accumulated`, desde sempre.
+         *
+         *     `dividend_yield` e `yield_on_cost` usam os últimos 12 meses: o líquido pago por
+         *     unidade dividido pelo preço de hoje e pelo preço médio. Nulos sem posição, sem
+         *     cotação ou sem PM.
+         */
+        IncomeAssetDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /** Dividend Yield */
+            dividend_yield: DecimalString | null;
+            /** Yield On Cost */
+            yield_on_cost: DecimalString | null;
+            /**
+             * Last Amount
+             * Format: decimal
+             */
+            last_amount: DecimalString;
+            /**
+             * Last Payment Date
+             * Format: date
+             */
+            last_payment_date: string;
+            /**
+             * Accumulated
+             * Format: decimal
+             */
+            accumulated: DecimalString;
+        };
+        /**
+         * IncomeBarDTO
+         * @description `period` é `2024` na visão por ano e `2024-03` na por mês.
+         */
+        IncomeBarDTO: {
+            /** Period */
+            period: string;
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Categories */
+            categories: components["schemas"]["CategoryAmountDTO"][];
+        };
+        /** IncomeDistributionDTO */
+        IncomeDistributionDTO: {
+            /** Months */
+            months: number;
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Categories */
+            categories: components["schemas"]["CategoryAmountDTO"][];
+            /** Assets */
+            assets: components["schemas"]["IncomeAssetDTO"][];
+        };
+        /**
+         * IncomeEventDTO
+         * @description `unit_price` é o bruto por unidade, e `amount` o líquido recebido.
+         */
+        IncomeEventDTO: {
+            /** Id */
+            id: number;
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            asset_class: components["schemas"]["AssetClass"];
+            /**
+             * Payment Date
+             * Format: date
+             */
+            payment_date: string;
+            income_type: components["schemas"]["IncomeType"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /**
+             * Unit Price
+             * Format: decimal
+             */
+            unit_price: DecimalString;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /** IncomeEventInDTO */
+        IncomeEventInDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /**
+             * Payment Date
+             * Format: date
+             */
+            payment_date: string;
+            income_type: components["schemas"]["IncomeType"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /**
+             * Unit Price
+             * Format: decimal
+             */
+            unit_price: DecimalString;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /**
+         * IncomeForm
+         * @description A ficha do IRPF em que o provento entra.
+         * @enum {string}
+         */
+        IncomeForm: "exempt" | "exclusive";
+        /** IncomeListDTO */
+        IncomeListDTO: {
+            /** Events */
+            events: components["schemas"]["IncomeEventDTO"][];
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+        };
+        /**
+         * IncomePerformanceDTO
+         * @description `total` e os recentes contam desde o primeiro provento até hoje; as barras e as
+         *     categorias, só o período pedido.
+         */
+        IncomePerformanceDTO: {
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /**
+             * Last 6 Months
+             * Format: decimal
+             */
+            last_6_months: DecimalString;
+            /**
+             * Last 12 Months
+             * Format: decimal
+             */
+            last_12_months: DecimalString;
+            /**
+             * Last 24 Months
+             * Format: decimal
+             */
+            last_24_months: DecimalString;
+            /**
+             * Period Total
+             * Format: decimal
+             */
+            period_total: DecimalString;
+            /** Bars */
+            bars: components["schemas"]["IncomeBarDTO"][];
+            /** Categories */
+            categories: components["schemas"]["CategoryAmountDTO"][];
+        };
+        /** IncomePreviewRowDTO */
+        IncomePreviewRowDTO: {
+            /** Ticker */
+            ticker: string;
+            /**
+             * Payment Date
+             * Format: date
+             */
+            payment_date: string;
+            income_type: components["schemas"]["IncomeType"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
+            /**
+             * Unit Price
+             * Format: decimal
+             */
+            unit_price: DecimalString;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /** File */
+            file: string;
+            status: components["schemas"]["ImportStatus"];
+        };
+        /**
+         * IncomeType
+         * @enum {string}
+         */
+        IncomeType: "dividend" | "jcp" | "distribution";
         /**
          * IndexSeries
          * @enum {string}
@@ -1156,6 +1504,29 @@ export interface components {
              */
             profit: DecimalString;
         };
+        /**
+         * IrpfIncomeDTO
+         * @description O líquido que um ativo pagou no ano num tipo de provento. `form` e `code` são
+         *     nulos quando o provento não tem ficha automática.
+         */
+        IrpfIncomeDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            asset_class: components["schemas"]["AssetClass"];
+            /** Cnpj */
+            cnpj: string | null;
+            income_type: components["schemas"]["IncomeType"];
+            form: components["schemas"]["IncomeForm"] | null;
+            /** Code */
+            code: string | null;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
         /** IrpfLossDTO */
         IrpfLossDTO: {
             pool: components["schemas"]["LossPool"];
@@ -1184,6 +1555,8 @@ export interface components {
             variable_income: components["schemas"]["IrpfVariableIncomeMonthDTO"][];
             /** Losses */
             losses: components["schemas"]["IrpfLossDTO"][];
+            /** Income */
+            income: components["schemas"]["IrpfIncomeDTO"][];
         };
         /**
          * IrpfVariableIncomeMonthDTO
@@ -2173,7 +2546,7 @@ export interface operations {
             };
         };
     };
-    preview_api_operations_import_preview_post: {
+    preview_api_import_preview_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2182,7 +2555,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_preview_api_operations_import_preview_post"];
+                "multipart/form-data": components["schemas"]["Body_preview_api_import_preview_post"];
             };
         };
         responses: {
@@ -2215,7 +2588,7 @@ export interface operations {
             };
         };
     };
-    confirm_api_operations_import_confirm_post: {
+    confirm_api_import_confirm_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2235,6 +2608,256 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportResultDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_all_api_income_get: {
+        parameters: {
+            query?: {
+                asset_id?: number | null;
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                income_type?: components["schemas"]["IncomeType"] | null;
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomeListDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_api_income_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncomeEventInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomeEventDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_api_income__income_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                income_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncomeEventInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomeEventDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_api_income__income_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                income_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_performance_api_income_performance_get: {
+        parameters: {
+            query?: {
+                group?: "month" | "year";
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomePerformanceDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_distribution_api_income_distribution_get: {
+        parameters: {
+            query?: {
+                months?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomeDistributionDTO"];
                 };
             };
             /** @description Unprocessable Content */

@@ -1,5 +1,5 @@
 export const monthHint =
-  "A rentabilidade por cota de cada mês, do fechamento do último dia útil do mês anterior ao do último dia útil do mês. Aportes e resgates não entram na conta. Por enquanto conta só a variação de preço; os proventos ainda não entram.";
+  "A rentabilidade por cota de cada mês, do fechamento do último dia útil do mês anterior ao do último dia útil do mês. Aportes e resgates não entram na conta. Os proventos entram como ganho no mês em que foram pagos.";
 
 export const yearHint =
   "A rentabilidade do ano, que compõe os meses em vez de somar: 1% num mês e 2% no seguinte dão 3,02% nos dois (1,01 × 1,02), não 3%.";

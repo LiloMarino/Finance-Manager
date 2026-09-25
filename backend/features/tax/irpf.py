@@ -7,6 +7,7 @@ ETF no grupo 07 (fundos).
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
@@ -14,19 +15,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.core.decimal_ctx import fmt
-from backend.core.enum import AssetClass, LossPool
+from backend.core.enum import AssetClass, IncomeType, LossPool
 from backend.core.models.models import Asset
-from backend.domain.irpf import is_declared
+from backend.domain.irpf import income_form, is_declared
 from backend.domain.position import Position, current_positions
 from backend.domain.tax import CENT, DARF_CODE, ZERO
 from backend.features.tax.dto import (
     IrpfAssetDTO,
     IrpfExemptMonthDTO,
+    IrpfIncomeDTO,
     IrpfLossDTO,
     IrpfReportDTO,
     IrpfVariableIncomeMonthDTO,
 )
 from backend.features.tax.service import assessments, payments
+from backend.repository.income import income_records
 from backend.repository.operations import operation_records
 from backend.repository.tickers import ticker_history
 
@@ -99,6 +102,41 @@ def _bens_e_direitos(session: Session, year: int) -> list[IrpfAssetDTO]:
     return sorted(items, key=lambda item: (item.group, item.code, item.ticker))
 
 
+def _income(session: Session, year: int) -> list[IrpfIncomeDTO]:
+    """Os proventos pagos no ano, somados por ativo e tipo, com o ticker vigente em
+    31/12, como na ficha Bens e Direitos."""
+    history = ticker_history(session)
+    amounts: defaultdict[tuple[int, IncomeType], Decimal] = defaultdict(lambda: ZERO)
+    for record in income_records(session):
+        if record.payment_date.year == year:
+            amounts[(record.asset_id, record.income_type)] += record.amount
+    assets = {
+        asset.id: asset
+        for asset in session.scalars(
+            select(Asset).where(Asset.id.in_({asset_id for asset_id, _ in amounts}))
+        )
+    }
+    items: list[IrpfIncomeDTO] = []
+    for (asset_id, income_type), amount in amounts.items():
+        asset = assets[asset_id]
+        found = income_form(income_type, asset.asset_class)
+        items.append(
+            IrpfIncomeDTO(
+                asset_id=asset_id,
+                ticker=history.on(asset_id, date(year, 12, 31), asset.ticker),
+                asset_class=asset.asset_class,
+                cnpj=asset.cnpj,
+                income_type=income_type,
+                form=found[0] if found else None,
+                code=found[1] if found else None,
+                amount=amount,
+            )
+        )
+    return sorted(
+        items, key=lambda item: (item.form or "", item.code or "", item.ticker)
+    )
+
+
 def irpf_report(session: Session, year: int, today: date) -> IrpfReportDTO:
     months = [item for item in assessments(session, today) if item.year == year]
     paid = payments(session)
@@ -138,4 +176,5 @@ def irpf_report(session: Session, year: int, today: date) -> IrpfReportDTO:
             IrpfLossDTO(pool=pool.pool, amount=pool.loss_after)
             for pool in (last.pools if last else [])
         ],
+        income=_income(session, year),
     )

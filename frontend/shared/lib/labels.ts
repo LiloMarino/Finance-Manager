@@ -5,6 +5,7 @@ export type AssetClass = components["schemas"]["AssetClass"];
 export type OperationType = components["schemas"]["OperationType"];
 export type Indexer = components["schemas"]["Indexer"];
 export type FixedIncomeType = components["schemas"]["FixedIncomeType"];
+export type IncomeType = components["schemas"]["IncomeType"];
 
 export const assetClassLabels: Record<AssetClass, string> = {
   stock: "Ação",
@@ -19,6 +20,12 @@ export const operationTypeLabels: Record<OperationType, string> = {
   bonus: "Bonificação",
   split: "Desdobro",
   reverse_split: "Grupamento",
+};
+
+export const incomeTypeLabels: Record<IncomeType, string> = {
+  dividend: "Dividendo",
+  jcp: "JCP",
+  distribution: "Rendimento",
 };
 
 export const indexerLabels: Record<Indexer, string> = {
@@ -70,6 +77,10 @@ export function isOperationType(value: string): value is OperationType {
   return value in operationTypeLabels;
 }
 
+export function isIncomeType(value: string): value is IncomeType {
+  return value in incomeTypeLabels;
+}
+
 export function isIndexer(value: string): value is Indexer {
   return value in indexerLabels;
 }
@@ -79,5 +90,6 @@ export function isFixedIncomeType(value: string): value is FixedIncomeType {
 }
 
 export const assetClasses = Object.keys(assetClassLabels).filter(isAssetClass);
+export const incomeTypes = Object.keys(incomeTypeLabels).filter(isIncomeType);
 export const indexers = Object.keys(indexerLabels).filter(isIndexer);
 export const fixedIncomeTypes = Object.keys(fixedIncomeTypeLabels).filter(isFixedIncomeType);

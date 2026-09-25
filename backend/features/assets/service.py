@@ -9,6 +9,7 @@ from backend.core.errors import FinanceError
 from backend.core.models.models import (
     Asset,
     AssetTickerHistory,
+    IncomeEvent,
     Operation,
     Segment,
 )
@@ -118,11 +119,16 @@ def update_asset(session: Session, asset_id: int, payload: AssetInDTO) -> AssetD
 
 
 def delete_asset(session: Session, asset_id: int) -> None:
-    """Ativo com operação fica: a FK é RESTRICT, e a mensagem diz o porquê."""
+    """Ativo com operação ou provento fica: a FK é RESTRICT, e a mensagem diz o
+    porquê."""
     asset = _asset(session, asset_id)
     if session.scalar(select(exists().where(Operation.asset_id == asset_id))):
         raise AssetConflictError(
             f"{asset.ticker} tem operações: apague as operações antes do ativo."
+        )
+    if session.scalar(select(exists().where(IncomeEvent.asset_id == asset_id))):
+        raise AssetConflictError(
+            f"{asset.ticker} tem proventos: apague os proventos antes do ativo."
         )
     session.delete(asset)
     session.commit()
@@ -167,7 +173,7 @@ def change_ticker(
 def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDTO:
     """Junta em `target` o ativo que estava cadastrado como dois: as operações de
     `source`, todas anteriores à troca, passam para `target`, cujas operações são
-    todas a partir dela."""
+    todas a partir dela. Os proventos dos dois ficam em `target`."""
     source_operations = list(
         session.scalars(select(Operation).where(Operation.asset_id == source.id))
     )
@@ -187,6 +193,10 @@ def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDT
 
     for operation in source_operations:
         operation.asset_id = target.id
+    for event in session.scalars(
+        select(IncomeEvent).where(IncomeEvent.asset_id == source.id)
+    ):
+        event.asset_id = target.id
     for entry in session.scalars(
         select(AssetTickerHistory).where(AssetTickerHistory.asset_id == source.id)
     ):
@@ -194,7 +204,7 @@ def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDT
     target.cnpj = target.cnpj or source.cnpj
     target.segment_id = target.segment_id or source.segment_id
     old_ticker = source.ticker
-    # As operações saem de `source` antes de apagá-lo: a FK delas é RESTRICT
+    # Operações e proventos saem de `source` antes de apagá-lo: a FK delas é RESTRICT
     session.flush()
     session.delete(source)
     session.flush()

@@ -37,7 +37,8 @@ class InvalidPeriodError(FinanceError):
 class DailyLine:
     """Um ativo (`asset_id`) ou um título (`investment_id`). `values[i]` é o valor no
     fim de `days[i]` da série; entrada é compra ou aplicação, saída é venda ou
-    resgate, em reais."""
+    resgate, e provento é o líquido recebido no dia, em reais. O provento fica fora
+    da saída porque não devolve o que foi investido."""
 
     category: PortfolioCategory
     asset_id: int | None
@@ -45,6 +46,7 @@ class DailyLine:
     values: list[Decimal]
     inflows: list[Decimal]
     outflows: list[Decimal]
+    income: list[Decimal]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -53,6 +55,7 @@ class DailyPoint:
     value: Decimal
     inflow: Decimal
     outflow: Decimal
+    income: Decimal
 
 
 def flow_index(days: Sequence[date], day: date) -> int:
@@ -136,11 +139,13 @@ def aggregate(days: Sequence[date], lines: Iterable[DailyLine]) -> list[DailyPoi
     values = [ZERO] * count
     inflows = [ZERO] * count
     outflows = [ZERO] * count
+    income = [ZERO] * count
     for line in lines:
         for index in range(count):
             values[index] += line.values[index]
             inflows[index] += line.inflows[index]
             outflows[index] += line.outflows[index]
+            income[index] += line.income[index]
     first = next(
         (
             index
@@ -155,6 +160,7 @@ def aggregate(days: Sequence[date], lines: Iterable[DailyLine]) -> list[DailyPoi
             value=values[index],
             inflow=inflows[index],
             outflow=outflows[index],
+            income=income[index],
         )
         for index in range(first, count)
     ]

@@ -1,4 +1,4 @@
-"""Quem entra na ficha Bens e Direitos do IRPF."""
+"""Quem entra na ficha Bens e Direitos do IRPF, e em que ficha entra cada provento."""
 
 from __future__ import annotations
 
@@ -6,7 +6,27 @@ from collections import defaultdict
 from collections.abc import Iterable
 from datetime import date
 
+from backend.core.enum import AssetClass, IncomeForm, IncomeType
 from backend.domain.position import OperationRecord, Position, current_positions
+
+# (ficha, código) de cada provento pelo tipo e pela classe do ativo. O JCP e a
+# distribuição de ETF já tiveram o IR retido na fonte; a atualização de provento de
+# ação paga com atraso vem como rendimento e é tributável, em Outros.
+INCOME_FORMS: dict[tuple[IncomeType, AssetClass], tuple[IncomeForm, str]] = {
+    (IncomeType.DIVIDEND, AssetClass.STOCK): (IncomeForm.EXEMPT, "09"),
+    (IncomeType.JCP, AssetClass.STOCK): (IncomeForm.EXCLUSIVE, "10"),
+    (IncomeType.DISTRIBUTION, AssetClass.FII): (IncomeForm.EXEMPT, "26"),
+    (IncomeType.DISTRIBUTION, AssetClass.ETF): (IncomeForm.EXCLUSIVE, "06"),
+    (IncomeType.DISTRIBUTION, AssetClass.STOCK): (IncomeForm.EXCLUSIVE, "12"),
+}
+
+
+def income_form(
+    income_type: IncomeType, asset_class: AssetClass
+) -> tuple[IncomeForm, str] | None:
+    """A ficha e o código do provento; nulo quando ele não tem ficha automática, como
+    o dividendo de BDR, que vai pelo carnê-leão."""
+    return INCOME_FORMS.get((income_type, asset_class))
 
 
 def is_declared(before: Position, after: Position) -> bool:

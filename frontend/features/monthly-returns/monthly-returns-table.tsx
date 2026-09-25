@@ -1,7 +1,8 @@
 import { Fragment } from "react";
 
 import { accumulatedHint, yearHint } from "@/features/monthly-returns/hints";
-import { monthLabels, signClass } from "@/features/monthly-returns/months";
+import { signClass } from "@/features/monthly-returns/months";
+import { monthLabels } from "@/shared/lib/months";
 import type {
   MonthlyReturns,
   YearReturns,

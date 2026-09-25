@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { AssetSelect } from "@/features/operations/asset-select";
+import { AssetSelect } from "@/shared/components/asset-select";
 import { type Operation, useSaveOperation } from "@/features/operations/use-operations";
 import { Button } from "@/shared/components/ui/button";
 import {

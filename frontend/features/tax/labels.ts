@@ -8,12 +8,27 @@ import type { VariantProps } from "class-variance-authority";
 type LossPool = components["schemas"]["LossPool"];
 type TradeType = components["schemas"]["TradeType"];
 type DarfStatus = components["schemas"]["DarfStatus"];
+type IncomeForm = components["schemas"]["IncomeForm"];
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
 
 export const lossPoolLabels: Record<LossPool, string> = {
   common: "Operações comuns",
   day_trade: "Day trade",
   fii: "FII",
+};
+
+export const incomeFormLabels: Record<IncomeForm, string> = {
+  exempt: "Rendimentos Isentos e Não Tributáveis",
+  exclusive: "Rendimentos Sujeitos à Tributação Exclusiva/Definitiva",
+};
+
+// O nome da linha da ficha em que cada código entra
+export const incomeCodeLabels: Record<string, string> = {
+  "09": "Lucros e dividendos recebidos",
+  "26": "Rendimentos de fundos imobiliários",
+  "10": "Juros sobre capital próprio",
+  "06": "Rendimentos de aplicações financeiras",
+  "12": "Outros",
 };
 
 export const tradeTypeLabels: Record<TradeType, string> = {

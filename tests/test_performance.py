@@ -10,6 +10,7 @@ from backend.core.enum import (
     AssetClass,
     FixedIncomeMovementType,
     FixedIncomeType,
+    IncomeType,
     Indexer,
     IndexSeries,
     OperationType,
@@ -18,6 +19,7 @@ from backend.core.models.models import (
     Asset,
     FixedIncomeInvestment,
     FixedIncomeMovement,
+    IncomeEvent,
     IndexHistory,
     Operation,
     PriceHistory,
@@ -28,13 +30,24 @@ from backend.domain.performance import period_return, quota_series
 DAY = date(2024, 3, 4)
 
 
-def _point(value: str, inflow: str = "0", outflow: str = "0") -> DailyPoint:
+def _point(
+    value: str, inflow: str = "0", outflow: str = "0", income: str = "0"
+) -> DailyPoint:
     return DailyPoint(
         day=DAY,
         value=Decimal(value),
         inflow=Decimal(inflow),
         outflow=Decimal(outflow),
+        income=Decimal(income),
     )
+
+
+def test_income_raises_the_quota_on_the_payment_day() -> None:
+    """Com o preço parado em R$ 1.000, um provento de R$ 10 é render 1% no dia em
+    que caiu na conta."""
+    quotas = quota_series([_point("1000", inflow="1000"), _point("1000", income="10")])
+
+    assert quotas == [1, Decimal("1.01")]
 
 
 def test_contribution_does_not_move_the_quota() -> None:
@@ -151,6 +164,32 @@ def test_period_starts_at_the_close_before_it(
     assert [
         (point["day"], Decimal(point["cumulative_return"])) for point in body["points"]
     ] == [(str(DAY), 0), (next_day, Decimal("0.1"))]
+
+
+def test_income_counts_in_the_return_and_not_in_the_invested(
+    api: TestClient, session: Session
+) -> None:
+    """Um provento de R$ 11 sobre R$ 110 de posição soma 10% à alta do dia: a cota
+    sobe 21%. Na evolução do patrimônio, o investido continua R$ 100."""
+    asset = _buy(session, "ABCD11", AssetClass.FII, DAY)
+    next_day = DAY + timedelta(days=1)
+    session.add(
+        IncomeEvent(
+            asset_id=asset.id,
+            payment_date=next_day,
+            income_type=IncomeType.DISTRIBUTION,
+            quantity=Decimal(10),
+            unit_price=Decimal("1.1"),
+            amount=Decimal(11),
+        )
+    )
+    session.commit()
+
+    performance = api.get("/api/performance", params={"end": str(next_day)}).json()
+    evolution = api.get("/api/evolution", params={"end": str(next_day)}).json()
+
+    assert Decimal(performance["period"]) == Decimal("0.21")
+    assert [point["invested"] for point in evolution["points"]] == ["100", "100"]
 
 
 def test_recent_returns_are_null_before_the_portfolio(

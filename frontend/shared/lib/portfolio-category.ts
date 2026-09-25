@@ -19,6 +19,10 @@ export const portfolioCategoryLabels: Record<PortfolioCategory, string> = {
   fixed_income: "Renda fixa",
 };
 
+export function isPortfolioCategory(value: string): value is PortfolioCategory {
+  return value in portfolioCategoryLabels;
+}
+
 // A cor segue a categoria, não a posição dela na lista: cada uma tem o seu slot
 export const portfolioCategoryConfig = {
   stock: { label: portfolioCategoryLabels.stock, color: "var(--chart-1)" },

@@ -8,6 +8,7 @@ export const queryKeys = {
   performance: ["portfolio", "performance"] as const,
   evolution: ["portfolio", "evolution"] as const,
   monthlyReturns: ["portfolio", "monthly-returns"] as const,
+  income: ["portfolio", "income"] as const,
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   fixedIncome: ["fixed-income"] as const,
@@ -25,6 +26,11 @@ export function invalidateKeys(
     predicate: ({ queryKey }) =>
       keys.some((key) => key.every((part, index) => queryKey[index] === part)),
   });
+}
+
+/** Todo provento muda a rentabilidade da carteira e o relatório do IRPF. */
+export function invalidateIncomeData(queryClient: QueryClient): Promise<void> {
+  return invalidateKeys(queryClient, [queryKeys.portfolio, queryKeys.tax]);
 }
 
 /** Toda escrita em ativo ou operação muda a carteira, as listas, os ativos a cotar,

@@ -22,6 +22,7 @@ from backend.core.enum import (
     AssetClass,
     FixedIncomeMovementType,
     FixedIncomeType,
+    IncomeType,
     Indexer,
     IndexSeries,
     OperationType,
@@ -161,6 +162,35 @@ class Operation(Base):
     )
     quantity: Mapped[Decimal] = mapped_column(DecimalText)
     unit_price: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class IncomeEvent(Base):
+    """Dado primário dos proventos: cada pagamento recebido, na data em que caiu na
+    conta.
+
+    `unit_price` é o valor bruto por unidade, e `amount` é o líquido que entrou, já
+    sem o IR retido na fonte do JCP e da distribuição de ETF."""
+
+    __tablename__ = "income_events"
+    __table_args__ = (
+        CheckConstraint("CAST(quantity AS REAL) > 0", name="quantity_positive"),
+        CheckConstraint(
+            "CAST(unit_price AS REAL) >= 0", name="unit_price_not_negative"
+        ),
+        CheckConstraint("CAST(amount AS REAL) > 0", name="amount_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    asset_id: Mapped[int] = mapped_column(
+        ForeignKey("assets.id", ondelete="RESTRICT"), index=True
+    )
+    payment_date: Mapped[date] = mapped_column(index=True)
+    income_type: Mapped[IncomeType] = mapped_column(
+        _enum_column(IncomeType, "income_type")
+    )
+    quantity: Mapped[Decimal] = mapped_column(DecimalText)
+    unit_price: Mapped[Decimal] = mapped_column(DecimalText)
+    amount: Mapped[Decimal] = mapped_column(DecimalText)
 
 
 class PriceHistory(Base):

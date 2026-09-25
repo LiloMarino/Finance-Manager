@@ -1,5 +1,5 @@
 export const quotaHint =
-  "Quanto a carteira rendeu sem contar o dinheiro que você colocou ou tirou, como a cota de um fundo. Ex.: a carteira valia R$ 1.000, você aportou R$ 500 e ela fechou o dia em R$ 1.530: o dia rendeu +2%, e não +53%. Por enquanto conta só a variação de preço; os proventos ainda não entram.";
+  "Quanto a carteira rendeu sem contar o dinheiro que você colocou ou tirou, como a cota de um fundo. Ex.: a carteira valia R$ 1.000, você aportou R$ 500 e ela fechou o dia em R$ 1.530: o dia rendeu +2%, e não +53%. Os proventos entram como ganho no dia do pagamento: R$ 10 recebidos numa carteira de R$ 1.000 parada somam +1% ao dia.";
 
 export const periodHint =
   "A rentabilidade no período escolhido abaixo, a partir do fechamento da véspera do primeiro dia dele.";

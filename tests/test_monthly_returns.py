@@ -53,7 +53,11 @@ def test_contribution_mid_month_does_not_change_the_month() -> None:
 
     def point(day: date, value: str, inflow: str = "0") -> DailyPoint:
         return DailyPoint(
-            day=day, value=Decimal(value), inflow=Decimal(inflow), outflow=Decimal(0)
+            day=day,
+            value=Decimal(value),
+            inflow=Decimal(inflow),
+            outflow=Decimal(0),
+            income=Decimal(0),
         )
 
     points = [

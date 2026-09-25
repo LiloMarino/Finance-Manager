@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from "recharts";
 
-import { monthLabel } from "@/features/monthly-returns/months";
+import { monthLabel } from "@/shared/lib/months";
 import type { MonthlyReturns } from "@/features/monthly-returns/use-monthly-returns";
 import {
   type ChartConfig,

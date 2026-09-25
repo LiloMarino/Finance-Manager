@@ -6,7 +6,14 @@ from decimal import Decimal
 from pydantic import field_validator
 
 from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
-from backend.core.enum import AssetClass, DarfStatus, LossPool, TradeType
+from backend.core.enum import (
+    AssetClass,
+    DarfStatus,
+    IncomeForm,
+    IncomeType,
+    LossPool,
+    TradeType,
+)
 
 
 class CategoryResultDTO(BaseDTO):
@@ -129,6 +136,20 @@ class IrpfVariableIncomeMonthDTO(BaseDTO):
     paid_amount: DecimalStr | None
 
 
+class IrpfIncomeDTO(BaseDTO):
+    """O líquido que um ativo pagou no ano num tipo de provento. `form` e `code` são
+    nulos quando o provento não tem ficha automática."""
+
+    asset_id: int
+    ticker: str
+    asset_class: AssetClass
+    cnpj: str | None
+    income_type: IncomeType
+    form: IncomeForm | None
+    code: str | None
+    amount: DecimalStr
+
+
 class IrpfLossDTO(BaseDTO):
     pool: LossPool
     amount: DecimalStr
@@ -142,3 +163,4 @@ class IrpfReportDTO(BaseDTO):
     exempt_total: DecimalStr
     variable_income: list[IrpfVariableIncomeMonthDTO]
     losses: list[IrpfLossDTO]
+    income: list[IrpfIncomeDTO]

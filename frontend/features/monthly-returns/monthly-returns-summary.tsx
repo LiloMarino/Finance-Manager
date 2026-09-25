@@ -4,7 +4,8 @@ import {
   positiveMonthsHint,
   worstMonthHint,
 } from "@/features/monthly-returns/hints";
-import { monthLabel, signClass } from "@/features/monthly-returns/months";
+import { signClass } from "@/features/monthly-returns/months";
+import { monthLabel } from "@/shared/lib/months";
 import type { MonthlyReturns } from "@/features/monthly-returns/use-monthly-returns";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { formatSignedPercent } from "@/types/decimal";

@@ -24,6 +24,19 @@ ZERO = Decimal(0)
 CORPORATE_EVENTS = frozenset(
     {OperationType.BONUS, OperationType.SPLIT, OperationType.REVERSE_SPLIT}
 )
+TRADES = frozenset({OperationType.BUY, OperationType.SELL})
+
+
+def check_quantity_and_price(
+    operation_type: OperationType, quantity: Decimal, unit_price: Decimal
+) -> None:
+    """As mesmas regras das CHECK de `operations`, com mensagem legível na borda."""
+    if quantity <= 0:
+        raise ValueError("A quantidade deve ser maior que zero.")
+    if operation_type in TRADES and unit_price <= 0:
+        raise ValueError("Compra e venda precisam de preço maior que zero.")
+    if operation_type in CORPORATE_EVENTS and unit_price != 0:
+        raise ValueError("Bonificação, desdobro e grupamento não têm preço.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

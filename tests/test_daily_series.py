@@ -186,6 +186,7 @@ def test_aggregate_sums_lines_from_the_first_day_with_activity() -> None:
         values=[Decimal(0), Decimal(100), Decimal(110)],
         inflows=[Decimal(0), Decimal(100), Decimal(0)],
         outflows=zero,
+        income=zero,
     )
     other = DailyLine(
         category=PortfolioCategory.FIXED_INCOME,
@@ -194,6 +195,7 @@ def test_aggregate_sums_lines_from_the_first_day_with_activity() -> None:
         values=[Decimal(0), Decimal(0), Decimal(50)],
         inflows=[Decimal(0), Decimal(0), Decimal(50)],
         outflows=zero,
+        income=zero,
     )
 
     points = aggregate(DAYS[:3], [line, other])

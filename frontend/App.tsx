@@ -11,12 +11,12 @@ import { EvolutionPage } from "@/pages/evolution";
 import { FixedIncomePage } from "@/pages/fixed-income";
 import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
 import { HomePage } from "@/pages/home";
-import { ImportOperationsPage } from "@/pages/import-operations";
+import { ImportPage } from "@/pages/import";
+import { IncomePage } from "@/pages/income";
 import { MarketPage } from "@/pages/market";
 import { MonthlyReturnsPage } from "@/pages/monthly-returns";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
-import { PlaceholderPage } from "@/pages/placeholder";
 import { SectorsPage } from "@/pages/sectors";
 import { TaxPage } from "@/pages/tax";
 import { queryClient } from "@/shared/lib/query-client";
@@ -32,7 +32,7 @@ export default function App() {
             <Route path="performance" element={<PerformancePage />} />
             <Route path="monthly-returns" element={<MonthlyReturnsPage />} />
             <Route path="operations" element={<OperationsPage />} />
-            <Route path="operations/import" element={<ImportOperationsPage />} />
+            <Route path="import" element={<ImportPage />} />
             <Route path="assets" element={<AssetsPage />} />
             <Route path="assets/:assetId" element={<AssetDetailPage />} />
             <Route path="sectors" element={<SectorsPage />} />
@@ -41,7 +41,7 @@ export default function App() {
             <Route path="market" element={<MarketPage />} />
             <Route
               path="income"
-              element={<PlaceholderPage title="Proventos" />}
+              element={<IncomePage />}
             />
             <Route path="tax" element={<TaxPage />} />
             <Route path="data-health" element={<DataHealthPage />} />

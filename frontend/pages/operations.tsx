@@ -28,7 +28,7 @@ export function OperationsPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
-            <Link to="/operations/import">
+            <Link to="/import">
               <FileUp />
               Importar
             </Link>

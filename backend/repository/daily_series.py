@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,6 +20,7 @@ from backend.domain.daily_series import ZERO, DailyLine, equity_line, flow_index
 from backend.domain.fixed_income import FixedIncomeTerms, Movement, daily_gross
 from backend.domain.market_data import DailyClose
 from backend.domain.position import OperationRecord
+from backend.repository.income import income_records
 from backend.repository.market import index_rates
 from backend.repository.operations import operation_records
 
@@ -68,6 +70,14 @@ def _days(calendar: BusinessCalendar, first: date, today: date) -> list[date]:
     return days
 
 
+def _income(session: Session, days: list[date]) -> dict[int, list[Decimal]]:
+    """O líquido de proventos de cada ativo em cada dia da série, pelo pagamento."""
+    income: defaultdict[int, list[Decimal]] = defaultdict(lambda: [ZERO] * len(days))
+    for record in income_records(session):
+        income[record.asset_id][flow_index(days, record.payment_date)] += record.amount
+    return income
+
+
 def daily_series(session: Session, today: date) -> DailySeries:
     records = operation_records(session)
     movements = _movements(session)
@@ -86,6 +96,7 @@ def daily_series(session: Session, today: date) -> DailySeries:
     for record in records:
         by_ticker[record.ticker].append(record)
     closes = _closes(session)
+    income = _income(session, days)
     lines: list[DailyLine] = []
     for asset in session.scalars(
         select(Asset).where(Asset.ticker.in_(by_ticker)).order_by(Asset.ticker)
@@ -101,6 +112,7 @@ def daily_series(session: Session, today: date) -> DailySeries:
                 values=values,
                 inflows=inflows,
                 outflows=outflows,
+                income=income.get(asset.id, [ZERO] * len(days)),
             )
         )
 
@@ -137,6 +149,7 @@ def daily_series(session: Session, today: date) -> DailySeries:
                 ),
                 inflows=inflows,
                 outflows=outflows,
+                income=[ZERO] * len(days),
             )
         )
     return DailySeries(days=days, lines=lines)

@@ -1,4 +1,4 @@
-import { AssetSelect } from "@/features/operations/asset-select";
+import { AssetSelect } from "@/shared/components/asset-select";
 import type { OperationFilters as Filters } from "@/features/operations/use-operations";
 import { Button } from "@/shared/components/ui/button";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
