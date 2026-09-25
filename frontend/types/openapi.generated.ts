@@ -329,6 +329,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/evolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evolution */
+        get: operations["get_evolution_api_evolution_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fixed-income": {
         parameters: {
             query?: never;
@@ -617,6 +634,15 @@ export interface components {
             /** Exempt */
             exempt: boolean;
         };
+        /** CategoryValueDTO */
+        CategoryValueDTO: {
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+        };
         /** DarfPaymentDTO */
         DarfPaymentDTO: {
             /**
@@ -678,6 +704,53 @@ export interface components {
         ErrorResponse: {
             /** Detail */
             detail: string;
+        };
+        /**
+         * EvolutionDTO
+         * @description `total` e o crescimento contam até hoje, e o crescimento é nulo quando a
+         *     carteira é mais nova que ele. As categorias são as da carteira toda, com o
+         *     valor de hoje.
+         */
+        EvolutionDTO: {
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            last_6_months: components["schemas"]["GrowthDTO"] | null;
+            last_12_months: components["schemas"]["GrowthDTO"] | null;
+            last_24_months: components["schemas"]["GrowthDTO"] | null;
+            /** Categories */
+            categories: components["schemas"]["CategoryValueDTO"][];
+            /** Points */
+            points: components["schemas"]["EvolutionPointDTO"][];
+        };
+        /**
+         * EvolutionPointDTO
+         * @description `invested` é o que entrou menos o que saiu até o dia, e `gain` é o
+         *     patrimônio menos ele.
+         */
+        EvolutionPointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gain
+             * Format: decimal
+             */
+            gain: DecimalString;
         };
         /**
          * FixedIncomeCreateDTO
@@ -888,6 +961,20 @@ export interface components {
          * @enum {string}
          */
         FixedIncomeType: "cdb" | "rdb" | "lc" | "lci" | "lca" | "cri" | "cra" | "debenture" | "incentivized_debenture" | "treasury_selic" | "treasury_prefixed" | "treasury_ipca";
+        /**
+         * GrowthDTO
+         * @description A variação do patrimônio, com os aportes e os resgates dentro; o retorno é
+         *     em fração e nulo quando o patrimônio de partida é zero.
+         */
+        GrowthDTO: {
+            /**
+             * Change
+             * Format: decimal
+             */
+            change: DecimalString;
+            /** Growth Return */
+            growth_return: DecimalString | null;
+        };
         /** HealthDTO */
         HealthDTO: {
             /** Status */
@@ -2666,6 +2753,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PerformanceDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_evolution_api_evolution_get: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvolutionDTO"];
                 };
             };
             /** @description Unprocessable Content */

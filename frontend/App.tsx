@@ -7,6 +7,7 @@ import { AssetDetailPage } from "@/pages/asset-detail";
 import { AssetsPage } from "@/pages/assets";
 import { DataHealthPage } from "@/pages/data-health";
 import { ErrorPage } from "@/pages/error";
+import { EvolutionPage } from "@/pages/evolution";
 import { FixedIncomePage } from "@/pages/fixed-income";
 import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
 import { HomePage } from "@/pages/home";
@@ -26,6 +27,7 @@ export default function App() {
         <Routes>
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
+            <Route path="evolution" element={<EvolutionPage />} />
             <Route path="performance" element={<PerformancePage />} />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="operations/import" element={<ImportOperationsPage />} />

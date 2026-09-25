@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   Activity,
   Boxes,
+  ChartArea,
   Coins,
   Landmark,
   LineChart,
@@ -36,6 +37,7 @@ import { TooltipProvider } from "@/shared/components/ui/tooltip";
 // Paths em inglês acompanham o código; o rótulo é o que aparece pro usuário.
 const navItems = [
   { to: "/", label: "Carteira", icon: PieChart },
+  { to: "/evolution", label: "Evolução", icon: ChartArea },
   { to: "/performance", label: "Rentabilidade", icon: TrendingUp },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },
