@@ -6,7 +6,8 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-from backend.core.enum import PortfolioCategory
+from backend.core.enum import IndexSeries, PortfolioCategory
+from backend.domain.benchmarks import BENCHMARKS, benchmark_levels
 from backend.domain.daily_series import (
     aggregate,
     chart_indices,
@@ -14,8 +15,15 @@ from backend.domain.daily_series import (
     on_or_before,
     period_bounds,
 )
-from backend.domain.performance import period_return, quota_series
+from backend.domain.index_growth import PublishedSeries
+from backend.domain.performance import (
+    YearReturns,
+    monthly_returns,
+    period_return,
+    quota_series,
+)
 from backend.repository.daily_series import daily_series, select_lines
+from backend.repository.market import index_rates
 
 RECENT_MONTHS = (6, 12, 24)
 
@@ -24,6 +32,17 @@ RECENT_MONTHS = (6, 12, 24)
 class ReturnPoint:
     day: date
     cumulative_return: Decimal
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class BenchmarkReturn:
+    """Uma referência no mesmo período e nos mesmos dias da carteira. `data_until` é
+    o último valor real da série; depois dele, o último valor se repete."""
+
+    series: IndexSeries
+    period: Decimal | None
+    data_until: date | None
+    points: list[ReturnPoint]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -42,6 +61,8 @@ class Performance:
     last_12_months: Decimal | None
     last_24_months: Decimal | None
     points: list[ReturnPoint]
+    cdi_share: Decimal | None
+    benchmarks: list[BenchmarkReturn]
 
 
 EMPTY = Performance(
@@ -54,6 +75,8 @@ EMPTY = Performance(
     last_12_months=None,
     last_24_months=None,
     points=[],
+    cdi_share=None,
+    benchmarks=[],
 )
 
 
@@ -75,6 +98,7 @@ def performance(
     days = [point.day for point in points]
     quotas = quota_series(points)
     last = len(points) - 1
+    rates = index_rates(session)
 
     recent: list[Decimal | None] = []
     for months in RECENT_MONTHS:
@@ -82,23 +106,47 @@ def performance(
         recent.append(None if base is None else period_return(quotas, base, last))
 
     bounds = period_bounds(days, start, end)
-    period_points: list[ReturnPoint] = []
     base: int | None = None
-    period: Decimal | None = None
+    period_end = last
+    sampled: list[int] = []
     if bounds is not None:
         first, period_end = bounds
         base = first - 1 if first else None
         indices = list(range(first, period_end + 1))
         if base is not None:
             indices.insert(0, base)
-        period = period_return(quotas, base, period_end)
-        period_points = [
-            ReturnPoint(
-                day=days[indices[position]],
-                cumulative_return=period_return(quotas, base, indices[position]),
-            )
+        sampled = [
+            indices[position]
             for position in chart_indices([days[index] for index in indices])
         ]
+
+    def returns(levels: list[Decimal]) -> tuple[Decimal | None, list[ReturnPoint]]:
+        """O retorno do período e os pontos do gráfico, da cota ou de uma referência."""
+        if bounds is None:
+            return None, []
+        return period_return(levels, base, period_end), [
+            ReturnPoint(
+                day=days[index], cumulative_return=period_return(levels, base, index)
+            )
+            for index in sampled
+        ]
+
+    period, period_points = returns(quotas)
+    benchmarks: list[BenchmarkReturn] = []
+    for benchmark in BENCHMARKS:
+        levels = benchmark_levels(benchmark, rates, days)
+        benchmark_period, benchmark_points = (
+            returns(levels) if levels is not None else (None, [])
+        )
+        benchmarks.append(
+            BenchmarkReturn(
+                series=benchmark,
+                period=benchmark_period,
+                data_until=PublishedSeries(rates[benchmark]).last_date,
+                points=benchmark_points,
+            )
+        )
+    cdi = benchmarks[BENCHMARKS.index(IndexSeries.CDI)].period
 
     return Performance(
         first_date=days[0],
@@ -110,4 +158,72 @@ def performance(
         last_12_months=recent[1],
         last_24_months=recent[2],
         points=period_points,
+        cdi_share=period / cdi if period is not None and cdi else None,
+        benchmarks=benchmarks,
+    )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class BenchmarkYears:
+    series: IndexSeries
+    years: list[YearReturns]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MonthReturn:
+    year: int
+    month: int
+    value: Decimal
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MonthlyPerformance:
+    """A rentabilidade de cada mês e de cada ano, da carteira e das referências nos
+    mesmos meses. As contagens são dos meses da carteira: `months` é o total, e o mês
+    com variação zero não conta como positivo nem como negativo."""
+
+    years: list[YearReturns]
+    benchmarks: list[BenchmarkYears]
+    best_month: MonthReturn | None
+    worst_month: MonthReturn | None
+    months: int
+    positive_months: int
+    negative_months: int
+
+
+def monthly_performance(
+    session: Session,
+    today: date,
+    *,
+    category: PortfolioCategory | None = None,
+    asset_id: int | None = None,
+) -> MonthlyPerformance:
+    series = daily_series(session, today)
+    points = aggregate(series.days, select_lines(series, category, asset_id))
+    days = [point.day for point in points]
+    rates = index_rates(session)
+    years = monthly_returns(days, quota_series(points))
+    months = [
+        MonthReturn(year=found.year, month=month, value=value)
+        for found in years
+        for month, value in enumerate(found.months, start=1)
+        if value is not None
+    ]
+    benchmarks: list[BenchmarkYears] = []
+    for benchmark in BENCHMARKS:
+        levels = benchmark_levels(benchmark, rates, days)
+        benchmarks.append(
+            BenchmarkYears(
+                series=benchmark,
+                years=monthly_returns(days, levels) if levels is not None else [],
+            )
+        )
+    return MonthlyPerformance(
+        years=years,
+        benchmarks=benchmarks,
+        best_month=max(months, key=lambda found: found.value, default=None),
+        worst_month=min(months, key=lambda found: found.value, default=None),
+        months=len(months),
+        positive_months=sum(1 for found in months if found.value > 0),
+        negative_months=sum(1 for found in months if found.value < 0),
     )

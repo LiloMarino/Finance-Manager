@@ -70,9 +70,9 @@ def list_indexes(session: SessionDep) -> list[LatestIndexDTO]:
 
 @router.post("/indexes/refresh")
 def refresh_index_series(
-    session: SessionDep, provider: IndexProviderDep
+    session: SessionDep, provider: IndexProviderDep, market: ProviderDep
 ) -> RefreshReportDTO:
     """Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
     fica como estava, e a série vai para `failed` quando a falta é problema novo."""
-    report = refresh_indexes(session, provider, datetime.now())
+    report = refresh_indexes(session, provider, market, datetime.now())
     return RefreshReportDTO.model_validate(report)

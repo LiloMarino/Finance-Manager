@@ -243,10 +243,12 @@ class FixedIncomeMovement(Base):
 
 
 class IndexHistory(Base):
-    """Cache das séries do BCB, refeito a partir do provider de séries.
+    """Cache das séries de juros, inflação e bolsa: as do BCB vêm do provider de
+    séries, e o IBOV, do provider de cotações.
 
     `value` é a taxa em % como o BCB publica: ao dia para CDI e Selic, ao mês para
-    o IPCA, gravado no primeiro dia do mês de referência.
+    o IPCA, gravado no primeiro dia do mês de referência. No IBOV, é o fechamento
+    em pontos.
     """
 
     __tablename__ = "index_history"

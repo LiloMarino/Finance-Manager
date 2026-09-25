@@ -11,7 +11,10 @@ fecham sem divisão por zero.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
+from itertools import groupby
 
 from backend.domain.daily_series import DailyPoint
 
@@ -39,3 +42,45 @@ def period_return(quotas: Sequence[Decimal], base: int | None, end: int) -> Deci
     antes do primeiro dia, quando a cota valia 1."""
     start = quotas[base] if base is not None else ONE
     return quotas[end] / start - ONE
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class YearReturns:
+    """`months` tem os 12 meses do ano, nulos fora da série. O ano e o acumulado
+    compõem os meses, que é como a cota compõe."""
+
+    year: int
+    months: list[Decimal | None]
+    year_return: Decimal
+    accumulated: Decimal
+
+
+def monthly_returns(
+    days: Sequence[date], quotas: Sequence[Decimal]
+) -> list[YearReturns]:
+    """A variação da cota em cada mês e em cada ano, de fechamento a fechamento: do
+    último dia do mês anterior ao último do mês. O primeiro mês parte de antes do
+    primeiro dia, e o mês corrente vai até o último dia da série."""
+    month_ends: dict[tuple[int, int], int] = {}
+    for index, day in enumerate(days):
+        month_ends[(day.year, day.month)] = index
+
+    years: list[YearReturns] = []
+    previous: int | None = None
+    for year, found in groupby(sorted(month_ends.items()), key=lambda item: item[0][0]):
+        ends = list(found)
+        year_base = previous
+        months: list[Decimal | None] = [None] * 12
+        for (_, month), end in ends:
+            months[month - 1] = period_return(quotas, previous, end)
+            previous = end
+        year_end = ends[-1][1]
+        years.append(
+            YearReturns(
+                year=year,
+                months=months,
+                year_return=period_return(quotas, year_base, year_end),
+                accumulated=period_return(quotas, None, year_end),
+            )
+        )
+    return years

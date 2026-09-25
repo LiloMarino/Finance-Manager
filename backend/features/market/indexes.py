@@ -14,6 +14,7 @@ from backend.core.enum import IndexSeries
 from backend.core.models.models import FetchLog, IndexHistory
 from backend.domain.coverage import DateRange, index_overdue, index_request
 from backend.domain.index_series import DailyRate, IndexSeriesProvider
+from backend.domain.market_data import MarketDataProvider
 from backend.features.market.service import RefreshReport
 from backend.repository.market import (
     business_calendar,
@@ -25,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 _refresh_lock = Lock()
 
+IBOV_TICKER = "^BVSP"
+# O primeiro pregão do IBOV no yfinance
+IBOV_FIRST_DATE = date(1993, 4, 27)
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class LatestIndex:
@@ -33,39 +38,57 @@ class LatestIndex:
     rate_date: date | None
 
 
+def _first_date(provider: IndexSeriesProvider, series: IndexSeries) -> date:
+    return (
+        IBOV_FIRST_DATE if series is IndexSeries.IBOV else provider.first_date(series)
+    )
+
+
 def _fetch(
-    provider: IndexSeriesProvider, series: IndexSeries, request: DateRange
+    provider: IndexSeriesProvider,
+    market: MarketDataProvider,
+    series: IndexSeries,
+    request: DateRange,
 ) -> list[DailyRate]:
-    """Falha do provider vira lista vazia: o cache fica como estava."""
+    """O IBOV vem do provider de cotações, e as séries do BCB, do de séries. Falha
+    do provider vira lista vazia: o cache fica como estava."""
+    name = market.name if series is IndexSeries.IBOV else provider.name
     logger.info(
-        "%s: consultando %s de %s a %s",
-        provider.name,
-        series,
-        request.start,
-        request.end,
+        "%s: consultando %s de %s a %s", name, series, request.start, request.end
     )
     try:
+        if series is IndexSeries.IBOV:
+            return [
+                DailyRate(rate_date=close.price_date, value=close.close)
+                for close in market.get_history(IBOV_TICKER, request.start, request.end)
+            ]
         return provider.get_series(series, request.start, request.end)
     except Exception:
-        logger.warning("%s falhou para %s", provider.name, series, exc_info=True)
+        logger.warning("%s falhou para %s", name, series, exc_info=True)
         return []
 
 
 def refresh_indexes(
-    session: Session, provider: IndexSeriesProvider, now: datetime
+    session: Session,
+    provider: IndexSeriesProvider,
+    market: MarketDataProvider,
+    now: datetime,
 ) -> RefreshReport:
     """Consulta a fonte só pelas séries a que falta a última publicação esperada.
 
     As séries ficam inteiras no cache, desde o início de cada uma, com ou sem renda
-    fixa cadastrada: servem a marcação, os benchmarks e as ferramentas. Um refresh
-    por vez, como o de cotações.
+    fixa cadastrada: servem a marcação, as referências da rentabilidade e as
+    ferramentas. Um refresh por vez, como o de cotações.
     """
     with _refresh_lock:
-        return _refresh_indexes(session, provider, now)
+        return _refresh_indexes(session, provider, market, now)
 
 
 def _refresh_indexes(
-    session: Session, provider: IndexSeriesProvider, now: datetime
+    session: Session,
+    provider: IndexSeriesProvider,
+    market: MarketDataProvider,
+    now: datetime,
 ) -> RefreshReport:
     today = now.date()
     calendar = business_calendar(session)
@@ -81,7 +104,7 @@ def _refresh_indexes(
             request := index_request(
                 series,
                 last_cached.get(series),
-                provider.first_date(series),
+                _first_date(provider, series),
                 last_fetch(logs.get(series)),
                 now,
                 calendar,
@@ -91,7 +114,9 @@ def _refresh_indexes(
     ]
     # A rede é consultada fora de transação, como no refresh de cotações
     session.commit()
-    fetched = [(series, _fetch(provider, series, request)) for series, request in plan]
+    fetched = [
+        (series, _fetch(provider, market, series, request)) for series, request in plan
+    ]
 
     upsert = insert(IndexHistory)
     upsert = upsert.on_conflict_do_update(

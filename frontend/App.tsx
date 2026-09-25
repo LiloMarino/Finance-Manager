@@ -13,6 +13,7 @@ import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
 import { HomePage } from "@/pages/home";
 import { ImportOperationsPage } from "@/pages/import-operations";
 import { MarketPage } from "@/pages/market";
+import { MonthlyReturnsPage } from "@/pages/monthly-returns";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
 import { PlaceholderPage } from "@/pages/placeholder";
@@ -29,6 +30,7 @@ export default function App() {
             <Route index element={<HomePage />} />
             <Route path="evolution" element={<EvolutionPage />} />
             <Route path="performance" element={<PerformancePage />} />
+            <Route path="monthly-returns" element={<MonthlyReturnsPage />} />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="operations/import" element={<ImportOperationsPage />} />
             <Route path="assets" element={<AssetsPage />} />

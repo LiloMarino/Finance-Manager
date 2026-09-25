@@ -21,7 +21,7 @@ class MarketDataProvider(Protocol):
 
     def get_history(self, ticker: str, start: date, end: date) -> list[DailyClose]:
         """Fechamentos de `start` a `end`, inclusive. `ticker` é o código da B3,
-        sem sufixo."""
+        sem sufixo, ou o símbolo de um índice, com `^`."""
         ...
 
 

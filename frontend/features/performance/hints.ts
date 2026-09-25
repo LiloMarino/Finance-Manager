@@ -4,6 +4,12 @@ export const quotaHint =
 export const periodHint =
   "A rentabilidade no período escolhido abaixo, a partir do fechamento da véspera do primeiro dia dele.";
 
+export const cdiShareHint =
+  "A rentabilidade do período dividida pela do CDI no mesmo período. Ex.: a carteira rendeu 12% e o CDI rendeu 10%: 120% do CDI, ou seja, 1,2 vez o que o CDI rendeu. Acima de 100% a carteira bateu o CDI; abaixo, ficou atrás. Com a carteira no negativo, fica negativo.";
+
+export const benchmarksHint =
+  "CDI é a taxa de referência da renda fixa, o que um título a 100% do CDI rende. IPCA é a inflação oficial: render acima dele é ganhar poder de compra. IBOV é o índice das principais ações da B3. Cada linha recomeça do zero no início do período, como a carteira.";
+
 export function recentHint(months: number): string {
   return `A rentabilidade dos últimos ${months} meses, até hoje. Fica vazia quando a carteira tem menos de ${months} meses.`;
 }

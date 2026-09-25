@@ -13,7 +13,8 @@ from backend.core.enum import IndexSeries
 @dataclass(frozen=True, slots=True, kw_only=True)
 class DailyRate:
     """Taxa em %, como a fonte publica: ao dia para CDI e Selic; ao mês para o
-    IPCA, datada no primeiro dia do mês de referência."""
+    IPCA, datada no primeiro dia do mês de referência. No IBOV, o fechamento em
+    pontos."""
 
     rate_date: date
     value: Decimal

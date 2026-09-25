@@ -329,6 +329,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/performance/monthly": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Monthly Performance */
+        get: operations["get_monthly_performance_api_performance_monthly_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/evolution": {
         parameters: {
             query?: never;
@@ -571,6 +588,26 @@ export interface components {
             close: DecimalString | null;
             /** Price Date */
             price_date: string | null;
+        };
+        /**
+         * BenchmarkReturnDTO
+         * @description A referência no mesmo período e nos mesmos dias da carteira, recomeçando do
+         *     zero na base dele. Depois de `data_until`, o último valor da série se repete.
+         */
+        BenchmarkReturnDTO: {
+            series: components["schemas"]["IndexSeries"];
+            /** Period */
+            period: DecimalString | null;
+            /** Data Until */
+            data_until: string | null;
+            /** Points */
+            points: components["schemas"]["ReturnPointDTO"][];
+        };
+        /** BenchmarkYearsDTO */
+        BenchmarkYearsDTO: {
+            series: components["schemas"]["IndexSeries"];
+            /** Years */
+            years: components["schemas"]["YearReturnsDTO"][];
         };
         /** Body_preview_api_operations_import_preview_post */
         Body_preview_api_operations_import_preview_post: {
@@ -1074,7 +1111,7 @@ export interface components {
          * IndexSeries
          * @enum {string}
          */
-        IndexSeries: "cdi" | "selic" | "ipca";
+        IndexSeries: "cdi" | "selic" | "ipca" | "ibov";
         /**
          * Indexer
          * @enum {string}
@@ -1200,6 +1237,37 @@ export interface components {
          * @enum {string}
          */
         LossPool: "common" | "day_trade" | "fii";
+        /** MonthReturnDTO */
+        MonthReturnDTO: {
+            /** Year */
+            year: number;
+            /** Month */
+            month: number;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+        };
+        /**
+         * MonthlyPerformanceDTO
+         * @description Retornos em fração, de fechamento a fechamento de cada mês. As contagens são
+         *     dos meses da carteira, de um total de `months`.
+         */
+        MonthlyPerformanceDTO: {
+            /** Years */
+            years: components["schemas"]["YearReturnsDTO"][];
+            /** Benchmarks */
+            benchmarks: components["schemas"]["BenchmarkYearsDTO"][];
+            best_month: components["schemas"]["MonthReturnDTO"] | null;
+            worst_month: components["schemas"]["MonthReturnDTO"] | null;
+            /** Months */
+            months: number;
+            /** Positive Months */
+            positive_months: number;
+            /** Negative Months */
+            negative_months: number;
+        };
         /**
          * MonthlyTaxDTO
          * @description A apuração do mês. `darf_amount` e `due_date` existem quando o imposto,
@@ -1371,6 +1439,7 @@ export interface components {
          *     resgates. `start` é o dia cujo fechamento é a base do período, nulo quando ele
          *     começa com a carteira, e os pontos acumulam desde essa base. Os retornos
          *     recentes contam até hoje e são nulos quando a carteira é mais nova que eles.
+         *     `cdi_share` é o retorno do período sobre o do CDI: 1,2 é 120% do CDI.
          */
         PerformanceDTO: {
             /** First Date */
@@ -1391,6 +1460,10 @@ export interface components {
             last_24_months: DecimalString | null;
             /** Points */
             points: components["schemas"]["ReturnPointDTO"][];
+            /** Cdi Share */
+            cdi_share: DecimalString | null;
+            /** Benchmarks */
+            benchmarks: components["schemas"]["BenchmarkReturnDTO"][];
         };
         /**
          * PeriodPositionDTO
@@ -1714,6 +1787,26 @@ export interface components {
          * @enum {string}
          */
         TradeType: "swing" | "day_trade";
+        /**
+         * YearReturnsDTO
+         * @description `months` tem 12 posições, de janeiro a dezembro, nulas fora da série.
+         */
+        YearReturnsDTO: {
+            /** Year */
+            year: number;
+            /** Months */
+            months: (DecimalString | null)[];
+            /**
+             * Year Return
+             * Format: decimal
+             */
+            year_return: DecimalString;
+            /**
+             * Accumulated
+             * Format: decimal
+             */
+            accumulated: DecimalString;
+        };
     };
     responses: never;
     parameters: never;
@@ -2753,6 +2846,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PerformanceDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_monthly_performance_api_performance_monthly_get: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                asset_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyPerformanceDTO"];
                 };
             };
             /** @description Unprocessable Content */

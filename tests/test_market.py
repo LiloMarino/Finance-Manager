@@ -31,7 +31,11 @@ from backend.core.models.models import (
 )
 from backend.domain.index_series import DailyRate
 from backend.domain.market_data import DailyClose, MarketDataProvider
-from backend.features.market.indexes import refresh_indexes
+from backend.features.market.indexes import (
+    IBOV_FIRST_DATE,
+    IBOV_TICKER,
+    refresh_indexes,
+)
 from backend.features.market.router import get_provider
 from backend.features.market.service import refresh_prices
 
@@ -398,6 +402,7 @@ def test_yfinance_close_is_rounded_to_cents() -> None:
 SERIES_START = date(2000, 1, 1)
 # Manhã da mesma sexta-feira, antes da abertura
 MORNING = datetime(2024, 2, 9, 8, 0)
+BCB_SERIES = [series for series in IndexSeries if series is not IndexSeries.IBOV]
 
 
 @dataclass
@@ -434,6 +439,11 @@ def _cached_rates(session: Session) -> dict[tuple[IndexSeries, date], Decimal]:
     }
 
 
+def _ibov(until: date) -> FakeProvider:
+    """Fechamentos do IBOV, em pontos, até `until`."""
+    return FakeProvider("fake-market", _closes(date(2024, 1, 2), until, "120000.00"))
+
+
 def _published(until: date) -> FakeIndexProvider:
     """CDI e Selic diários até `until`, e o IPCA de dezembro de 2023."""
     daily = _closes(date(2024, 1, 2), until, "0.043739")
@@ -451,14 +461,16 @@ def test_first_index_refresh_loads_whole_series(session: Session) -> None:
     """Sem cache, cada série é pedida desde o início dela na fonte, mesmo sem
     nenhum título de renda fixa cadastrado."""
     provider = _published(date(2024, 2, 8))
+    market = _ibov(date(2024, 2, 8))
 
-    report = refresh_indexes(session, provider, NOW)
+    report = refresh_indexes(session, provider, market, NOW)
 
     assert report.failed == ()
-    assert provider.calls == [(series, SERIES_START, TODAY) for series in IndexSeries]
-    assert _cached_rates(session)[(IndexSeries.IPCA, date(2023, 12, 1))] == Decimal(
-        "0.56"
-    )
+    assert provider.calls == [(series, SERIES_START, TODAY) for series in BCB_SERIES]
+    assert market.calls == [(IBOV_TICKER, IBOV_FIRST_DATE, TODAY)]
+    cached = _cached_rates(session)
+    assert cached[(IndexSeries.IPCA, date(2023, 12, 1))] == Decimal("0.56")
+    assert cached[(IndexSeries.IBOV, date(2024, 2, 8))] == Decimal("120000.00")
 
 
 def test_index_refresh_with_cache_up_to_date_fetches_nothing(
@@ -467,33 +479,38 @@ def test_index_refresh_with_cache_up_to_date_fetches_nothing(
     """Com o dia útil anterior no CDI e na Selic, e o IPCA esperado para antes do
     dia 15, recarregar não consulta a fonte."""
     provider = _published(date(2024, 2, 8))
-    refresh_indexes(session, provider, MORNING)
+    market = _ibov(date(2024, 2, 8))
+    refresh_indexes(session, provider, market, MORNING)
 
-    refresh_indexes(session, provider, NOW)
+    refresh_indexes(session, provider, market, NOW)
 
-    assert len(provider.calls) == len(IndexSeries)
+    assert len(provider.calls) == len(BCB_SERIES)
+    assert len(market.calls) == 1
 
 
 def test_index_refresh_resumes_from_month_of_last_cached_day(session: Session) -> None:
     """Faltando a última publicação, a série é pedida do dia 1 do mês do último
     valor em cache, e só ela."""
     provider = _published(date(2024, 2, 5))
-    refresh_indexes(session, provider, MORNING)
+    market = _ibov(date(2024, 2, 5))
+    refresh_indexes(session, provider, market, MORNING)
 
-    refresh_indexes(session, provider, NOW)
+    refresh_indexes(session, provider, market, NOW)
 
-    assert provider.calls[len(IndexSeries) :] == [
+    assert provider.calls[len(BCB_SERIES) :] == [
         (IndexSeries.CDI, date(2024, 2, 1), TODAY),
         (IndexSeries.SELIC, date(2024, 2, 1), TODAY),
     ]
+    assert market.calls[1:] == [(IBOV_TICKER, date(2024, 2, 1), TODAY)]
 
 
 def test_ipca_is_expected_from_day_15_of_the_next_month(session: Session) -> None:
     """O IPCA de janeiro passa a faltar no dia 15 de fevereiro."""
     provider = _published(date(2024, 2, 14))
-    refresh_indexes(session, provider, NOW)
+    market = _ibov(date(2024, 2, 14))
+    refresh_indexes(session, provider, market, NOW)
 
-    refresh_indexes(session, provider, datetime(2024, 2, 15, 9, 0))
+    refresh_indexes(session, provider, market, datetime(2024, 2, 15, 9, 0))
 
     ipca_calls = [call for call in provider.calls if call[0] is IndexSeries.IPCA]
     assert ipca_calls[-1] == (IndexSeries.IPCA, date(2023, 12, 1), date(2024, 2, 15))
@@ -502,16 +519,44 @@ def test_ipca_is_expected_from_day_15_of_the_next_month(session: Session) -> Non
 def test_offline_index_refresh_keeps_cache(session: Session) -> None:
     """Provider fora do ar deixa o cache como estava, e o aviso sai uma vez só."""
     provider = _published(date(2024, 2, 8))
-    refresh_indexes(session, provider, NOW)
+    market = _ibov(date(2024, 2, 8))
+    refresh_indexes(session, provider, market, NOW)
     cached = _cached_rates(session)
     provider.offline = True
+    market.offline = True
 
-    first = refresh_indexes(session, provider, datetime(2024, 2, 14, 9, 0))
-    second = refresh_indexes(session, provider, datetime(2024, 2, 14, 20, 0))
+    first = refresh_indexes(session, provider, market, datetime(2024, 2, 14, 9, 0))
+    second = refresh_indexes(session, provider, market, datetime(2024, 2, 14, 20, 0))
 
-    assert first.failed == ("CDI", "SELIC")
+    assert first.failed == ("CDI", "SELIC", "IBOV")
     assert second.failed == ()
     assert _cached_rates(session) == cached
+
+
+def test_ibov_is_fetched_from_market_provider_only(session: Session) -> None:
+    """O IBOV vai ao provider de cotações pelo símbolo do índice, e o provider de
+    séries do BCB nunca é consultado por ele."""
+    provider = _published(date(2024, 2, 8))
+    market = _ibov(date(2024, 2, 8))
+
+    refresh_indexes(session, provider, market, NOW)
+
+    assert all(series is not IndexSeries.IBOV for series, _, _ in provider.calls)
+    assert [ticker for ticker, _, _ in market.calls] == [IBOV_TICKER]
+
+
+def test_ibov_missing_last_close_is_reported_once(session: Session) -> None:
+    """Sem o fechamento do dia útil anterior depois da folga, o IBOV vai para
+    `failed` na primeira tentativa e não se repete na seguinte."""
+    provider = _published(date(2024, 2, 13))
+    market = _ibov(date(2024, 2, 8))
+    refresh_indexes(session, provider, market, NOW)
+
+    first = refresh_indexes(session, provider, market, datetime(2024, 2, 14, 9, 0))
+    second = refresh_indexes(session, provider, market, datetime(2024, 2, 14, 20, 0))
+
+    assert first.failed == ("IBOV",)
+    assert second.failed == ()
 
 
 def test_sgs_value_keeps_all_digits() -> None:

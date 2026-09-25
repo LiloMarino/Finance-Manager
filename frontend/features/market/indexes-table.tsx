@@ -16,6 +16,7 @@ const seriesLabels: Record<LatestIndex["series"], string> = {
   cdi: "CDI (% ao dia)",
   selic: "Selic (% ao dia)",
   ipca: "IPCA (% no mês)",
+  ibov: "IBOV (pontos)",
 };
 
 export function IndexesTable({ indexes }: { indexes: LatestIndex[] }) {

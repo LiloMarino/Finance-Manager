@@ -59,6 +59,12 @@ export function formatSignedPercent(value: DecimalString): string {
   return signedPercentFormatter.format(value);
 }
 
+/** O sinal lido da string: o backend manda ponto fixo, sem expoente. */
+export function decimalSign(value: DecimalString): -1 | 0 | 1 {
+  if (!/[1-9]/.test(value)) return 0;
+  return value.startsWith("-") ? -1 : 1;
+}
+
 /** Número para geometria de gráfico, onde a precisão acaba no pixel. */
 export function toChartNumber(value: DecimalString): number {
   return Number(value);

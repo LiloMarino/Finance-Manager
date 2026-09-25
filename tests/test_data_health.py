@@ -121,9 +121,10 @@ def test_late_series_are_listed(session: Session) -> None:
         "CDI",
         "Selic",
         "IPCA",
+        "IBOV",
     ]
 
-    for series in (IndexSeries.CDI, IndexSeries.SELIC):
+    for series in (IndexSeries.CDI, IndexSeries.SELIC, IndexSeries.IBOV):
         session.add_all(
             IndexHistory(series=series, rate_date=day, value=Decimal("0.04"))
             for day in _weekdays(date(2024, 2, 1), date(2024, 2, 8))

@@ -5,3 +5,4 @@ class IndexSeries(StrEnum):
     CDI = "cdi"
     SELIC = "selic"
     IPCA = "ipca"
+    IBOV = "ibov"

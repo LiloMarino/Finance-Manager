@@ -13,9 +13,11 @@ class YFinanceProvider:
     name = "yfinance"
 
     def get_history(self, ticker: str, start: date, end: date) -> list[DailyClose]:
-        # O `end` do yfinance é exclusivo, e o ticker da B3 leva o sufixo `.SA`.
-        # `auto_adjust=False` deixa o `Close` ajustado só por desdobramento.
-        frame = yf.Ticker(f"{ticker}.SA").history(
+        # O `end` do yfinance é exclusivo, e o ticker da B3 leva o sufixo `.SA`; o
+        # símbolo de índice (`^BVSP`) vai como está. `auto_adjust=False` deixa o
+        # `Close` ajustado só por desdobramento.
+        symbol = ticker if ticker.startswith("^") else f"{ticker}.SA"
+        frame = yf.Ticker(symbol).history(
             start=start,
             end=end + timedelta(days=1),
             auto_adjust=False,

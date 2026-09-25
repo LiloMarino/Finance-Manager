@@ -11,12 +11,14 @@ from backend.core.enum import (
     FixedIncomeMovementType,
     FixedIncomeType,
     Indexer,
+    IndexSeries,
     OperationType,
 )
 from backend.core.models.models import (
     Asset,
     FixedIncomeInvestment,
     FixedIncomeMovement,
+    IndexHistory,
     Operation,
     PriceHistory,
 )
@@ -172,3 +174,60 @@ def test_start_after_end_is_refused(api: TestClient, session: Session) -> None:
     )
 
     assert response.status_code == 422
+
+
+def _index(session: Session, series: IndexSeries, values: dict[date, str]) -> None:
+    session.add_all(
+        IndexHistory(series=series, rate_date=day, value=Decimal(value))
+        for day, value in values.items()
+    )
+    session.commit()
+
+
+def test_benchmarks_share_the_days_and_base_of_the_period(
+    api: TestClient, session: Session
+) -> None:
+    """Cada referência recomeça do zero na base do período e tem um ponto em cada
+    dia da carteira. O "% do CDI" é o retorno do período sobre o do CDI."""
+    _buy(session, "ABCD11", AssetClass.FII, DAY)
+    next_day = DAY + timedelta(days=1)
+    _index(session, IndexSeries.CDI, {DAY: "0.05", next_day: "0.05"})
+    _index(session, IndexSeries.IBOV, {DAY: "120000", next_day: "126000"})
+
+    body = api.get("/api/performance", params={"end": str(next_day)}).json()
+    benchmarks = {found["series"]: found for found in body["benchmarks"]}
+
+    cdi = benchmarks["cdi"]
+    assert [
+        (point["day"], Decimal(point["cumulative_return"])) for point in cdi["points"]
+    ] == [(str(DAY), 0), (str(next_day), Decimal("0.0005"))]
+    assert cdi["data_until"] == str(next_day)
+    assert Decimal(benchmarks["ibov"]["period"]) == Decimal("0.05")
+    assert benchmarks["ipca"]["period"] is None
+    assert benchmarks["ipca"]["points"] == []
+    assert Decimal(body["cdi_share"]) == Decimal(200)
+
+
+def test_benchmark_period_starts_at_the_close_before_it(
+    api: TestClient, session: Session
+) -> None:
+    """Com o período começando no segundo dia, o IBOV parte do fechamento da véspera,
+    como a carteira."""
+    _buy(session, "ABCD11", AssetClass.FII, DAY)
+    next_day = str(DAY + timedelta(days=1))
+    _index(
+        session,
+        IndexSeries.IBOV,
+        {DAY: "120000", DAY + timedelta(days=1): "114000"},
+    )
+
+    body = api.get(
+        "/api/performance", params={"start": next_day, "end": next_day}
+    ).json()
+    [ibov] = [found for found in body["benchmarks"] if found["series"] == "ibov"]
+
+    assert [Decimal(point["cumulative_return"]) for point in ibov["points"]] == [
+        0,
+        Decimal("-0.05"),
+    ]
+    assert body["cdi_share"] is None

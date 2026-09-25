@@ -29,6 +29,7 @@ SERIES_LABELS = {
     IndexSeries.CDI: "CDI",
     IndexSeries.SELIC: "Selic",
     IndexSeries.IPCA: "IPCA",
+    IndexSeries.IBOV: "IBOV",
 }
 SERIES_AFFECTS = {
     IndexSeries.CDI: (
@@ -37,6 +38,7 @@ SERIES_AFFECTS = {
     ),
     IndexSeries.SELIC: "Marcação dos títulos atrelados à Selic, que repete o último valor.",
     IndexSeries.IPCA: "Marcação dos títulos atrelados ao IPCA, que repete o último valor.",
+    IndexSeries.IBOV: "A referência IBOV na rentabilidade, que repete o último fechamento.",
 }
 
 

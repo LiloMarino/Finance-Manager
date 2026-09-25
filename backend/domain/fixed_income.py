@@ -8,11 +8,9 @@ existem só para o IR regressivo, que depende da idade de cada aplicação.
 
 from __future__ import annotations
 
-import calendar
-from bisect import bisect_right
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 
 from backend.core.enum import (
@@ -22,13 +20,14 @@ from backend.core.enum import (
     IndexSeries,
 )
 from backend.domain.business_days import BusinessCalendar
+from backend.domain.index_growth import (
+    PublishedSeries,
+    accumulation,
+    daily_factor,
+)
 from backend.domain.index_series import DailyRate
 
 ZERO = Decimal(0)
-ONE = Decimal(1)
-HUNDRED = Decimal(100)
-BUSINESS_DAYS_PER_YEAR = Decimal(252)
-DAY = timedelta(days=1)
 
 # IR regressivo: até N dias corridos da aplicação, a alíquota ao lado
 TAX_BRACKETS = (
@@ -112,95 +111,11 @@ class _Lot:
     principal: Decimal
 
 
-class _Series:
-    """Valor publicado de uma série numa data: o último até ela, inclusive."""
-
-    def __init__(self, rates: Sequence[DailyRate]) -> None:
-        self._dates = [rate.rate_date for rate in rates]
-        self._values = [rate.value for rate in rates]
-
-    def at(self, day: date) -> Decimal | None:
-        index = bisect_right(self._dates, day)
-        return self._values[index - 1] if index else None
-
-    @property
-    def last_date(self) -> date | None:
-        return self._dates[-1] if self._dates else None
-
-
 def tax_rate(days: int) -> Decimal:
     for limit, rate in TAX_BRACKETS:
         if days <= limit:
             return rate
     return LONG_TERM_TAX
-
-
-def _daily_factor(
-    terms: FixedIncomeTerms,
-    rates: Mapping[IndexSeries, Sequence[DailyRate]],
-    business: BusinessCalendar,
-) -> Callable[[date], Decimal]:
-    """O quanto o título rende do dia `d` para o dia seguinte. Um dia útil carrega
-    a taxa de um dia útil; o IPCA rende por dia corrido, pró-rata no mês."""
-    share = terms.rate / HUNDRED
-
-    match terms.indexer:
-        case Indexer.CDI:
-            cdi = _Series(rates.get(IndexSeries.CDI, ()))
-
-            def percentage(day: date) -> Decimal:
-                value = cdi.at(day)
-                if value is None or not business.is_business_day(day):
-                    return ONE
-                return ONE + value / HUNDRED * share
-
-            return percentage
-
-        case Indexer.SELIC:
-            selic = _Series(rates.get(IndexSeries.SELIC, ()))
-            spread = (ONE + share) ** (ONE / BUSINESS_DAYS_PER_YEAR)
-
-            def plus_spread(day: date) -> Decimal:
-                value = selic.at(day)
-                if value is None or not business.is_business_day(day):
-                    return ONE
-                return (ONE + value / HUNDRED) * spread
-
-            return plus_spread
-
-        case Indexer.PREFIXED:
-            prefixed = (ONE + share) ** (ONE / BUSINESS_DAYS_PER_YEAR)
-            return lambda day: prefixed if business.is_business_day(day) else ONE
-
-        case Indexer.IPCA:
-            ipca = _Series(rates.get(IndexSeries.IPCA, ()))
-            real = (ONE + share) ** (ONE / BUSINESS_DAYS_PER_YEAR)
-
-            def inflation(day: date) -> Decimal:
-                monthly = ipca.at(day)
-                factor = ONE
-                if monthly is not None:
-                    days_in_month = calendar.monthrange(day.year, day.month)[1]
-                    factor = (ONE + monthly / HUNDRED) ** (ONE / Decimal(days_in_month))
-                return factor * real if business.is_business_day(day) else factor
-
-            return inflation
-
-
-def _accumulation(
-    daily: Callable[[date], Decimal], start: date, end: date
-) -> Callable[[date], Decimal]:
-    """`F(d)`, com `F(start) = 1`. Fora de [start, end], vale o da ponta: depois do
-    vencimento o título para de render."""
-    cumulative = {start: ONE}
-    current = ONE
-    day = start
-    while day < end:
-        current *= daily(day)
-        day += DAY
-        cumulative[day] = current
-    last = max(start, end)
-    return lambda d: cumulative[min(max(d, start), last)]
 
 
 def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:
@@ -235,8 +150,10 @@ def daily_gross(
 
     last = min(days[-1], terms.maturity_date) if terms.maturity_date else days[-1]
     business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
-    factor = _accumulation(
-        _daily_factor(terms, rates, business), ordered[0].movement_date, last
+    factor = accumulation(
+        daily_factor(terms.indexer, terms.rate, rates, business),
+        ordered[0].movement_date,
+        last,
     )
     values: list[Decimal] = []
     units = ZERO
@@ -265,7 +182,7 @@ def mark(
     se ele já passou. `movements` vem na ordem de gravação; o IOF não entra."""
     as_of = min(today, terms.maturity_date) if terms.maturity_date else today
     series = INDEX_SERIES.get(terms.indexer)
-    series_date = _Series(rates.get(series, ())).last_date if series else None
+    series_date = PublishedSeries(rates.get(series, ())).last_date if series else None
 
     ordered = sorted(movements, key=lambda movement: movement.movement_date)
     if not ordered:
@@ -279,8 +196,10 @@ def mark(
         )
 
     business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
-    factor = _accumulation(
-        _daily_factor(terms, rates, business), ordered[0].movement_date, as_of
+    factor = accumulation(
+        daily_factor(terms.indexer, terms.rate, rates, business),
+        ordered[0].movement_date,
+        as_of,
     )
     lots: list[_Lot] = []
     for movement in ordered:
