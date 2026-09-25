@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluído o comparador de renda fixa (F47), com a projeção editável do CDI, da Selic e do IPCA e o IOF nas ferramentas.
+> **Última mudança (2026-09-25):** Concluído o simulador de à vista, parcelado ou adiantar a fatura (F49); a escada de títulos virou a F53.
 
 ## Glossário
 
@@ -24,7 +24,7 @@
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
-| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
+| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
 | **F24** | Rebalanceamento | — | ⏳ |
 | **F25** | Subcarteiras | — | ⏳ |
 | **F26** | Risco × retorno | — | 💤 |
@@ -42,13 +42,13 @@
 | **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
-| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ⏳ |
 | **F51** | Máscaras nos campos | — | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
+| **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (42 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (43 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -94,6 +94,7 @@
 | **F42** | Painel de saúde dos dados | — | ✅ |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
 | **F47** | Comparador de renda fixa | — | ✅ |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ |
 
 </details>
 
@@ -116,10 +117,10 @@
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | M9 | 0 | ⏳ |
-| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | M7 | 0 | ⏳ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | 0 | ⏳ |
 | **F51** | Máscaras nos campos | M9 | 0 | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
+| **F53** | Simulador: escada de títulos | M7 | 0 | ⏳ |
 
 ---
 
@@ -269,20 +270,21 @@
 >
 > **Serve:** N8, N9
 >
-> **Progresso:** 1/5 concluídas
+> **Progresso:** 2/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F26** | Risco × retorno | F10, F15 | 💤 |
 | **F27** | Ferramenta de correlação entre dois ativos | F10 | ⏳ |
 | **F39** | Correlação da carteira | F27 | ⏳ |
-| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ⏳ |
+| **F53** | Simulador: escada de títulos | F49 | ⏳ |
 
-<details><summary>Concluído (1 item)</summary>
+<details><summary>Concluído (2 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F47** | Comparador de renda fixa | F46 | ✅ |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ✅ |
 
 </details>
 
@@ -384,11 +386,12 @@
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
-| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
+| **F53** | Simulador: escada de títulos | N9 | — | M7 | F49 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -848,22 +851,23 @@ Plano:
 - a aba (Mensal, Anual, Todos os meses, IRPF), o ano e o mês ficam na URL (D13). Setas e teclado mudam a URL, e voltar no navegador e link direto funcionam;
 - a aba Anual e o IRPF usam o mesmo seletor, só de ano.
 
-**F49 — Simulador: à vista, parcelado ou adiantar a fatura.** Ferramenta para uma compra que dá para pagar à vista: compensa pegar o desconto à vista, parcelar deixando o dinheiro investido, ou adiantar as parcelas que faltam em troca de um desconto? Serve N9.
+**F49 — Simulador: à vista, parcelado ou adiantar a fatura.** Ferramenta para uma compra que dá para pagar à vista: compensa pegar o desconto à vista, parcelar deixando o dinheiro investido, ou adiantar as parcelas que faltam em troca de um desconto? Serve N9. A tela "À vista ou parcelado" tem duas abas, Compra (o preço dividido nas parcelas) e Adiantar a fatura (o valor de cada parcela que falta), o investimento onde o dinheiro fica e a projeção da F47. `POST /api/simulation/installments` faz a conta sem gravar nada.
 
-**Como a conta funciona.** No parcelado, o valor inteiro fica investido e cada parcela sai do investimento no mês dela: o montante vai diminuindo, e cada fatia rende só até o mês em que é paga, com o IR do prazo dela (22,5% até 180 dias, 20% até 360, e assim por diante). O que sobra no fim é o ganho de parcelar. À vista, o desconto é ganho na hora e pode ficar investido até o fim do mesmo prazo. Ganha a opção que termina com mais dinheiro. Exemplo com CDI de 14% a.a., R$ 1.000 em 10x sem juros e um CDB de 100% do CDI: parcelando sobram cerca de R$ 49, então o à vista compensa com desconto acima de uns 4,5%.
+**Como a conta funciona.** No parcelado, o valor inteiro fica aplicado desde hoje, e cada parcela sai do investimento no último dia útil até o vencimento, pelo bruto que deixa a parcela líquida de IR e IOF. A sobra é o líquido do que fica aplicado depois da última parcela. À vista, o desconto fica no mesmo investimento até a última parcela. Exemplo com CDI de 14% a.a., R$ 1.000 em 10x e um CDB de 100% do CDI: parcelando sobram cerca de R$ 52, então o à vista compensa com desconto acima de uns 4,8%.
 
-Plano:
-- **à vista × parcelado:** entrada com valor, número de parcelas, desconto à vista e o investimento onde o dinheiro fica (tipo, indexador e taxa, como no comparador da F47). Saída: quanto sobra em cada caminho e qual vence;
-- **a conta nos dois sentidos:**
-  - **do desconto para o investimento:** informado o desconto à vista, o app mostra os investimentos hipotéticos que, na estratégia parcelada, empatam com ele — um CDB a X% do CDI, uma LCI/LCA a Y% do CDI, um prefixado a Z% ao ano, um IPCA+ a W%. Qualquer taxa acima dessas faz o parcelado vencer. Exemplo com CDI de 14% a.a. e 10x: 20% de desconto só é batido por um CDB de cerca de 780% do CDI, uma LCA de 590% do CDI ou um prefixado de 109% a.a., ou seja, nunca; 5% de desconto é batido por um CDB de 112% do CDI, uma LCA de 88% do CDI ou um prefixado de 15,7% a.a., que existem;
-  - **do investimento para o desconto:** informados o parcelamento e o investimento, o app mostra o desconto à vista que empata, a resposta prática para "quanto de desconto eu devo pedir";
-- **adiantar a fatura:** o mesmo cálculo sobre as parcelas que faltam, com o desconto oferecido pelo adiantamento;
-- **gráficos:** o saldo do investimento caindo parcela a parcela até o fim, contra o do caminho à vista; e o ganho de cada caminho conforme o número de parcelas e o desconto variam, com a linha de empate;
-- **investimento sem liquidez diária:** a opção "escada", com um título por parcela vencendo antes de cada fatura (ou títulos agrupados por vencimento), cada um com a taxa e o IR do próprio prazo. Permite usar CDB ou prefixado de prazo maior no lugar do de liquidez diária, respeitando a carência mínima de cada produto;
-- IOF sobre o rendimento do que sai em menos de 30 dias, que pega a primeira parcela;
-- projeção do CDI e do IPCA como na F47: constante, editável, partindo do último valor em cache.
+- **Resultado:** a sobra de cada caminho, o vencedor e a diferença, o desconto que empata e o cronograma (vencimento, parcela, resgate bruto, IOF e IR).
+- **Do investimento para o desconto:** o desconto de empate sai direto, porque o à vista é linear no desconto: a sobra do parcelado sobre o que um real aplicado vira até o fim.
+- **Do desconto para o investimento:** com o desconto informado, as taxas que empatam, por bisseção, num CDB pós-fixado, numa LCA isenta, num CDB prefixado e num CDB IPCA+. No exemplo acima, 5% de desconto empatam com um CDB de cerca de 104% do CDI, uma LCA de 83% do CDI ou um prefixado de 14,7% a.a.; 20% pedem um CDB de 456% do CDI ou um prefixado de 82% a.a., ou seja, nunca.
+- **Gráficos:** o saldo do parcelado caindo parcela a parcela contra o do à vista, e a curva do desconto que empata de 1 a 24 parcelas (ou até o número informado), com a linha do desconto informado: acima da curva, o à vista vence.
+- IOF sobre o rendimento do que sai em menos de 30 dias, que pega a primeira parcela quando ela vence nesse prazo.
 
-Nada é gravado: a simulação é conta sobre valores digitados na hora.
+Decisões tomadas durante:
+- **O resgate parcial paga IR pelo rendimento proporcional:** cada real resgatado carrega o ganho médio da aplicação, com a alíquota da idade dela. Com a mesma taxa, dá exatamente o mesmo que um título por parcela comprado hoje, com o resto aplicado até o fim.
+- **Os números do exemplo do plano foram corrigidos pela conta exata:** a sobra é de cerca de R$ 52, e não R$ 49; o empate fica em 4,8%, e não 4,5%; e as taxas que empatam com 20% de desconto são menores que as estimadas, embora continuem fora do mercado.
+- **A escada de títulos saiu para a F53:** com a mesma taxa ela empata com a liquidez diária, e só muda o resultado com taxa diferente por degrau.
+- O dia da decisão é hoje e não entra na URL; o resto da simulação entra (`mode`, `amount`, `n`, `first_due`, `discount`, `type`, `indexer`, `rate` e a projeção editada).
+
+**Aceite verificado** no app de pé, numa cópia do banco migrado: o exemplo acima reproduzido na tela (sobra de R$ 52,57 e empate em 4,80%), com as taxas de empate, o cronograma e as duas curvas. Adiantar 10 parcelas de R$ 100 dá o mesmo resultado da compra de R$ 1.000 em 10x.
 
 **F50 — Tabelas: linha inteira clicável e dica no cabeçalho.** Dois defeitos das tabelas de hoje. Serve N2 e N3.
 
@@ -917,6 +921,15 @@ Achados:
 - **Chave natural:** `(ticker, data, tipo, quantidade, valor líquido)`, sem o valor por unidade, reconhece o mesmo provento nos dois relatórios. A mesma chave pode repetir no mesmo dia, por exemplo em dois rendimentos de centavos, e a multiplicidade da F6 cobre isso.
 
 **Decisão:** a fonte da F20 é a B3 pelos dois relatórios, com o cadastro manual para o que faltar. O de movimentação é o preferido: já alimenta os eventos, é um arquivo só para tudo e traz o valor por unidade em 3 casas.
+
+**F53 — Simulador: escada de títulos.** O parcelado do simulador supõe um investimento de liquidez diária. A escada troca ele por títulos sem liquidez, um por parcela, vencendo antes de cada fatura. Serve N9.
+
+Plano:
+- um degrau por parcela, que começa com o investimento base e tem tipo, indexador e taxa editáveis. Cada degrau compra hoje o bruto que, no vencimento, deixa a parcela líquida do IR do próprio prazo;
+- a sobra (o valor menos o custo dos degraus) fica no investimento base até a última parcela, e se compara com o à vista no mesmo dia;
+- carência numa tabela fixa, pela Resolução CMN 5.118/2024: LCI 12 meses e LCA 9 meses; os outros produtos, sem carência. O degrau que vence antes da carência do produto é recusado com o motivo.
+
+Com a mesma taxa em todos os degraus, a escada empata com a liquidez diária: cada real resgatado paga o IR da idade da aplicação nos dois casos. Ela só muda o resultado quando o degrau mais longo rende mais, como um CDB de prazo maior.
 
 ---
 ## 2. Nice-to-have
