@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { MainLayout } from "@/layouts/main-layout";
@@ -42,6 +43,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <ReactQueryDevtools buttonPosition="bottom-left" />
     </QueryClientProvider>
   );
 }
