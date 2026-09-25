@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluída a correlação entre dois ativos (F27), com o cache de cotação por ticker; com a F47 e a F49, a N9 tem as três ferramentas.
+> **Última mudança (2026-09-25):** A correlação (F27) virou matriz de 2 a 12 tickers e referências, com o par aberto embaixo; a F39 passa a reaproveitar a matriz com os ativos da carteira.
 
 ## Glossário
 
@@ -85,7 +85,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
-| **F27** | Ferramenta de correlação entre dois ativos | — | ✅ |
+| **F27** | Ferramenta de correlação entre ativos | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
 | **F38** | Desempenho e distribuição dos proventos | — | ✅ |
@@ -282,7 +282,7 @@
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F27** | Ferramenta de correlação entre dois ativos | F10 | ✅ |
+| **F27** | Ferramenta de correlação entre ativos | F10 | ✅ |
 | **F47** | Comparador de renda fixa | F46 | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ✅ |
 
@@ -367,7 +367,7 @@
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
-| **F27** | Ferramenta de correlação entre dois ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
+| **F27** | Ferramenta de correlação entre ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
@@ -643,20 +643,23 @@ Plano:
 - o ponto da carteira usa a cota da F15, e a volatilidade da carteira aparece como número no topo, com a mesma explicação;
 - cálculo em float no Python sobre `price_history` (D4).
 
-**F27 — Ferramenta de correlação entre dois ativos.** Para avaliar um ativo novo: escolhem-se dois tickers quaisquer, na carteira ou não, ou um ticker e o IBOV ou o CDI, e o app mostra o quanto eles andam juntos. Serve N9. A tela Correlação tem o ticker, o outro lado (outro ticker, IBOV ou CDI) e a janela (6 meses, 1, 3 ou 5 anos), tudo na URL. O resumo mostra a correlação, a leitura em palavras, os pregões que entraram na conta e o período. Os gráficos são as duas séries partindo de 100 e a correlação móvel de 60 pregões. `GET /api/correlation` faz a conta.
+**F27 — Ferramenta de correlação entre ativos.** Para avaliar um ativo novo: escolhem-se tickers quaisquer, na carteira ou não, e o IBOV ou o CDI, e o app mostra o quanto eles andam juntos. Serve N9. A tela Correlação tem os tickers, as referências e a janela (6 meses, 1, 3 ou 5 anos), tudo na URL.
 
+- **Matriz de correlação:** de 2 a 12 itens nas linhas e nas colunas, cada célula com a correlação do par e o fundo do verde (+1, andam juntos) ao vermelho (−1, sentidos opostos), neutro no 0, sobre os tokens de alta e baixa. Tooltip no visual dos gráficos, com a leitura e os pregões, destaque da linha e da coluna, e legenda da escala. O par sem retornos em comum suficientes fica sem valor, com o motivo no tooltip. `GET /api/correlation/matrix`.
+- **O par aberto:** clicar numa célula abre o par embaixo, também na URL: a correlação, a leitura em palavras, os pregões e o período, as duas séries partindo de 100 e a correlação móvel de 60 pregões. `GET /api/correlation/pair`.
 - **Correlação:** de Pearson, sobre os retornos diários nos pregões em comum, com `statistics.correlation`, em float (D4). Menos de 20 retornos em comum ou uma série que não varia viram 422 com o motivo.
 - **Cache por ticker:** a tabela `ticker_price_history` guarda os fechamentos de qualquer ticker, e o `fetch_log` ganhou o ticker como terceiro alvo, com o CHECK de exatamente um alvo. A consulta à fonte segue o `price_request` da F41, com a janela escolhida como período necessário e o fim no último pregão encerrado.
-- **O IBOV e o CDI saem do cache das séries:** o IBOV pelo fechamento em pontos, e o CDI como o nível de um título a 100% do CDI.
+- **O IBOV e o CDI saem do cache das séries:** o IBOV pelo fechamento em pontos, e o CDI como o nível de um título a 100% do CDI. Na lista, entram pelo nome, que nenhum ticker da B3 tem.
 
 Decisões tomadas durante:
 - **O cache próprio serve a todo ticker, inclusive os da carteira:** o `price_history` só cobre a janela de posição, e a correlação pede até 5 anos.
 - **Cada consulta traz a janela inteira e substitui o cache do ticker:** o fechamento vem ajustado pelos eventos que a fonte conhecia na hora, e emendar uma consulta nova num cache antigo criaria um salto falso num desdobramento. A consulta começa no que o cache já cobria, para não perder uma janela maior pedida antes.
 - **O IPCA fica fora das referências:** é mensal, e o retorno diário pró-rata daria uma correlação sem sentido.
 - Ticker desconhecido na fonte dá 404; a fonte fora do ar usa o cache e, sem cache, dá 503. O provider de cotações foi para `backend/features/providers.py`, que o mercado e a correlação usam.
-- O seletor de ticker é um campo de texto; o combobox de ativo fica com a F45.
+- **A matriz é desenhada na mão, sobre CSS grid:** o Recharts não tem heatmap, e o da Simplifying AI traria um segundo sistema de gráfico (d3, com `ChartContainer` próprio). A cor mistura em `oklab`, porque em `oklch` o neutro sem matiz faz a mistura passar pelo vermelho.
+- Os tickers são um campo de texto, separados por vírgula ou espaço; o combobox de ativo fica com a F45.
 
-**Aceite verificado** no app de pé, numa cópia do banco migrado: dois bancos grandes, fora da carteira, dão correlação perto de 0,77 em 1 ano, e um ticker contra o IBOV em 3 anos traz as duas séries e a correlação móvel. Recarregar reabre a mesma tela pela URL sem consultar a fonte de novo, conferido no log.
+**Aceite verificado** no app de pé, numa cópia do banco migrado: cinco tickers fora da carteira, o IBOV e o CDI numa matriz 7 × 7, nos temas claro e escuro. Dois bancos grandes dão perto de 0,77 entre si e passam de 0,8 contra o IBOV, e o CDI fica perto de 0 com todos. Clicar numa célula abre o par com as duas séries e a correlação móvel. Recarregar reabre a mesma tela pela URL sem consultar a fonte de novo, conferido no log.
 
 **F33 — Custo da bonificação.** Pela Receita (Perguntas e Respostas IRPF, pergunta 721), a ação recebida em bonificação tem custo: o valor do lucro ou da reserva capitalizado por ação, que a empresa informa no fato relevante. Hoje o CHECK `unit_price_by_type` obriga preço 0 na bonificação, e o motor só dilui o PM.
 
@@ -746,12 +749,13 @@ Sobre a liquidez no rebalanceamento: rebalancear pelo aporte, que é o caso comu
 
 Fica para quando o uso pedir: meta por camada (ex.: X% mexível).
 
-**F39 — Correlação da carteira.** A correlação entre os ativos que a carteira tem, sem precisar escolher o par. Serve N8.
+**F39 — Correlação da carteira.** A correlação entre os ativos que a carteira tem, sem precisar escolher cada um. Serve N8.
 
 Plano:
-- matriz com os ativos nas linhas e nas colunas, cada célula colorida pela correlação do par: o mesmo cálculo da F27, sobre `price_history`, com janela de 12 meses por padrão;
+- a matriz da F27, preenchida com os ativos da carteira: o mesmo cálculo e o mesmo componente, com janela de 12 meses por padrão. O componente sobe de `features/correlation` para o ancestral comum quando a segunda tela passar a usá-lo;
 - os pares mais correlacionados em destaque: são os ativos que se sobrepõem na carteira;
-- filtro de categoria, e o de carteira quando a F25 existir.
+- filtro de categoria, e o de carteira quando a F25 existir;
+- a matriz passa de 12 itens com a carteira inteira: o limite da F27 é revisto aqui, junto com o tamanho da célula.
 
 **F25 — Subcarteiras.** Grupos nomeados de ativos, como pastas: a carteira geral tem tudo, e cada subcarteira tem só o que é dela, com cada ativo em no máximo uma (D12). Serve N7.
 
