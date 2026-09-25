@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-24):** Simulador de à vista × parcelado × adiantar fatura registrado como ferramenta da N9; séries do BCB inteiras no cache; troca de ticker confirmada, com o IRPF antigo mostrando o ticker da época.
+> **Última mudança (2026-09-25):** Marco de qualidade dos dados concluído: cache externo idempotente, troca de ticker como renomeação (a transferência saiu) e painel de saúde dos dados; o item de setor e segmento do painel entra com F37.
 
 ## Glossário
 
@@ -48,9 +48,6 @@
 | **F37** | Setor e segmento cadastrados | — | ⏳ |
 | **F38** | Desempenho e distribuição dos proventos | — | ⏳ |
 | **F39** | Correlação da carteira | — | ⏳ |
-| **F40** | Troca de ticker como renomeação | — | ⏳ |
-| **F41** | Cache de dados externos idempotente | — | ⏳ |
-| **F42** | Painel de saúde dos dados | — | ⏳ |
 | **F43** | Sidebar | — | ⏳ |
 | **F44** | Carteira: gráfico, tooltip e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
@@ -60,7 +57,7 @@
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (27 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (30 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -91,6 +88,9 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
+| **F40** | Troca de ticker como renomeação | — | ✅ |
+| **F41** | Cache de dados externos idempotente | — | ✅ |
+| **F42** | Painel de saúde dos dados | — | ✅ |
 
 </details>
 
@@ -106,7 +106,6 @@
 | **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | M2 | 2 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
-| **F41** | Cache de dados externos idempotente | M8 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -114,7 +113,6 @@
 | **F33** | Custo da bonificação | M5 | 0 | ⏳ |
 | **F36** | Posição por categoria com variação do dia | M2 | 0 | ⏳ |
 | **F37** | Setor e segmento cadastrados | M2 | 0 | ⏳ |
-| **F40** | Troca de ticker como renomeação | M8 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: gráfico, tooltip e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
@@ -267,13 +265,21 @@
 >
 > **Serve:** N2, N3
 >
-> **Progresso:** 0/3 concluídas
+> **Progresso:** 3/3 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F40** | Troca de ticker como renomeação | F9 | ⏳ |
-| **F41** | Cache de dados externos idempotente | F10, F12 | ⏳ |
-| **F42** | Painel de saúde dos dados | F41 | ⏳ |
+| — | *(nada em aberto)* | — | — |
+
+<details><summary>Concluído (3 itens)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F40** | Troca de ticker como renomeação | F9 | ✅ |
+| **F41** | Cache de dados externos idempotente | F10, F12 | ✅ |
+| **F42** | Painel de saúde dos dados | F41 | ✅ |
+
+</details>
 
 ### M9 — Conforto de uso
 
@@ -340,9 +346,9 @@
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ⏳ Pendente |
-| **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ⏳ Pendente |
-| **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ⏳ Pendente |
-| **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
+| **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ✅ Concluído |
+| **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F44** | Carteira: gráfico, tooltip e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ⏳ Pendente |
@@ -645,7 +651,8 @@ Plano:
 - tabelas `sectors` (nome único) e `segments` (nome único dentro do setor, FK para ele). O ativo aponta para um segmento, e o setor vem por ele. Com o nome escolhido de uma lista, "Bancos" e "Banco" não viram dois setores;
 - a coluna de texto `sector` de `assets` sai. Ela está vazia no banco real, então o dry run da migration aceita;
 - cadastro de setores e segmentos, e um select no formulário do ativo, com "sem classificação" para o que não tiver;
-- distribuição do patrimônio por setor e por segmento: gráfico e tabela de valores.
+- distribuição do patrimônio por setor e por segmento: gráfico e tabela de valores;
+- o painel de saúde dos dados (F42) ganha o tipo "ativo sem setor ou segmento", que afeta a distribuição por setor.
 
 Sobre a fonte: o yfinance traz `sector` e `industry` para ações, em inglês e na taxonomia do Yahoo (ex.: "Financial Services / Banks - Regional"); para FII traz só "Real Estate", e para ETF nada. Serve, no máximo, de sugestão no cadastro, e o cadastro é a fonte.
 
@@ -696,45 +703,44 @@ Plano:
 
 Sem histórico de pertença: mover um ativo de subcarteira muda também o passado dela, porque a subcarteira é o conjunto de ativos de hoje.
 
-**F40 — Troca de ticker como renomeação.** Quando um ativo muda de ticker (conversão de BDR, mudança de nome da empresa), ele continua sendo o mesmo ativo: o histórico do ticker antigo é o histórico do novo. A troca é uma renomeação, sem operação, sem mexer em posição, PM ou apuração fiscal. Serve N3 e N2.
+**F40 — Troca de ticker como renomeação.** A tabela `asset_ticker_history` (ativo, ticker antigo, vigente até) fica ao lado do `ticker` atual. `backend/repository/tickers.py` concentra o ticker vigente numa data, a resolução de um ticker antigo para o atual e a regra de que nenhum ticker, antigo ou atual, é de dois ativos. `POST /api/assets/{id}/ticker-change` recebe o ticker novo e a data desde a qual ele vale. Quando o ticker novo já é um ativo, a troca junta os dois: as operações do antigo passam para o novo e o ativo antigo sai. Operações, posições do fiscal e Bens e Direitos mostram o ticker vigente na data; Carteira e Mercado, o atual. O detalhe do ativo ganhou "Trocar ticker", a lista dos tickers antigos e o botão Editar. Os importadores passam cada ticker pela resolução antes da chave natural. A transferência entre ativos saiu: endpoint, tela, tipos `transfer_in`/`transfer_out` e os dois `CHECK` de `operations`, numa migration própria.
 
-Plano:
-- tabela `asset_ticker_history` (ativo, ticker antigo, válido até), ao lado do `ticker` atual de `assets`; nenhum ticker, antigo ou atual, aponta para dois ativos;
-- ação "Trocar ticker" no detalhe do ativo, com o ticker novo e a data. Se o ticker novo já existe como ativo (o caso que a migração trouxe como par de transferência), a ação junta os dois: as operações do antigo passam para o novo, e o par de transferência entre eles naquela data é apagado;
-- troca com proporção diferente de 1:1 é a renomeação mais um desdobro ou grupamento na mesma data, com os eventos que já existem;
-- a cotação vem do ticker atual para o histórico inteiro: o yfinance guarda o histórico anterior à troca sob o ticker novo (conferido no caso real);
-- operações, fiscal (mensal, anual, todos os meses) e IRPF mostram o ticker vigente na data: o IRPF de um ano anterior à troca traz o ticker antigo em Bens e Direitos, como foi declarado. As outras telas mostram o atual, e o detalhe do ativo lista os antigos;
-- os importadores acham o ativo pelo ticker antigo: reimportar uma nota anterior à troca não cria ativo novo;
-- com a renomeação, a transferência entre ativos perde o único uso real: o endpoint, a tela e os tipos `transfer_in`/`transfer_out` saem, numa migration que troca o `CHECK` de tipos.
+Decisões tomadas durante:
+- **A transferência saiu em dois passos.** Primeiro a renomeação com os tipos de transferência ainda no schema. Depois o par real foi juntado pela própria troca de ticker, e só então veio a migration que tira os tipos, que o dry run recusaria com o par no banco.
+- **Junção só com as operações do lado certo:** o ativo antigo sem operação a partir da data, e o novo sem operação antes dela; senão, 422 com o motivo.
+- **Editar o ticker no cadastro segue sendo correção de digitação**, sem histórico. A troca com data é a ação própria.
+- O `position_at` saiu junto: a transferência era o único uso.
 
-**Aceite:** posição e PM de todos os meses iguais aos de antes da troca, e o refresh deixa de pedir o ticker antigo.
+**Aceite verificado:** numa cópia do banco migrado, a junção do par que a migração trouxe manteve quantidade e PM de abertura e fechamento de todos os meses (0 divergências) e a apuração idêntica. Depois ela foi feita no banco real, com snapshot antes. O refresh passou a pedir só o ticker atual, e a nota anterior à troca volta no preview como já existente.
 
-**F41 — Cache de dados externos idempotente.** O cache em três camadas da D6: a tela lê o banco, e o backend só vai ao yfinance ou ao BCB quando falta um dado que já devia existir. Hoje todo refresh consulta a fonte para todos os ativos com operação e todas as séries, a cada abertura do app. Serve N2 e N1.
+**F41 — Cache de dados externos idempotente.** O cache em três camadas da D6. `backend/domain/coverage.py`, puro, decide o que falta e quando ir à fonte. A tabela `fetch_log` guarda, por ativo ou série, a última tentativa, o último sucesso e se a falta persistiu. Os dois refreshes viraram plano e execução: o plano sai do cache, da janela de posição e do log, a rede é consultada fora da transação, e cada consulta externa vai para o log.
+- **Cotação:** a janela vem de `holding_windows` (no motor de posição): da primeira operação até a que zerou a posição, ou aberta. O esperado é o último pregão encerrado dentro dela, com o fechamento às 18h30. A fonte é consultada quando o cache não cobre o começo da janela (operação retroativa) ou o esperado, quando o último pregão foi gravado antes do fechamento (preço parcial) e, com o pregão aberto e posição no ativo, para o preço do dia.
+- **Séries do BCB:** inteiras no cache, desde o primeiro valor de cada uma no SGS, com ou sem renda fixa. O esperado é o dia útil anterior para CDI e Selic e, para o IPCA, o mês anterior a partir do dia 15.
+- **Intervalo:** 15 minutos para cotação e 6 horas para o BCB, contando a tentativa que falhou. Um refresh por vez: o concorrente espera o lock e refaz o plano, que sai vazio.
 
-Plano:
-- **janela necessária por ativo:** da primeira operação até a data em que a posição zerou, ou até hoje se ainda há posição. Ativo zerado com o cache cobrindo a janela não é mais consultado;
-- **dado esperado:** o último pregão fechado, para cotação; o último dia útil publicado, para CDI e Selic; o mês anterior, para o IPCA. Com o esperado já em cache, nada é consultado;
-- **pregão em andamento e publicação atrasada:** tabela `fetch_log` (ticker ou série, horário da última consulta); o fechamento parcial do dia e o dado esperado que ainda não saiu são reconsultados no máximo a cada intervalo (proposta: 15 minutos com o pregão aberto, 6 horas para o BCB);
-- **séries do BCB inteiras:** CDI, Selic e IPCA desde o início de cada série no SGS, independente de haver título de renda fixa. A primeira carga vem em janelas de 10 anos, o limite do SGS, e depois o cache só recebe a última publicação. Hoje as séries partem da primeira movimentação de renda fixa, e sem título com aplicação a tela Mercado fica sem juros e sem inflação;
-- **uma consulta por vez:** refresh concorrente (o StrictMode dispara dois em dev) espera o que está rodando e lê o cache;
-- o front segue pedindo o refresh ao abrir o app e pelo botão da tela Mercado; com o cache em dia, a resposta volta sem sair da máquina;
-- o aviso de falha só aparece quando o buraco cai dentro de uma janela necessária; a lista fica na F42.
+Decisões tomadas durante:
+- **Falta vira problema só depois da folga de publicação:** um pregão para cotação (a fonte demora a publicar o dia) e um dia útil para CDI e Selic (o valor do dia sai na manhã seguinte). O IPCA já tem a folga no esperado.
+- **`failed` traz só o problema novo:** a falta que passou da folga nesta tentativa e não tinha sido avisada na anterior. O resto fica no painel da F42.
+- **Quando a fonte responde e o buraco fica, a próxima tentativa espera um dia:** é a fonte que não tem o dado (um ativo com cotação no yfinance só a partir de uma data posterior à compra). A falha de rede segue no intervalo curto.
+- A navegação por dia útil (anterior, na data ou depois) foi para o `BusinessCalendar`. Com o CDI inteiro em cache, ele conhece os feriados passados.
 
-**Aceite:** recarregar a página com o cache em dia não faz nenhuma chamada externa, conferido no log.
+**Aceite verificado:** numa cópia do banco migrado, a primeira chamada a cada refresh consultou o que faltava. A segunda, logo depois, fez 0 chamadas externas, conferido no log. A carga inicial das três séries leva alguns minutos, uma vez só.
 
-**F42 — Painel de saúde dos dados.** Uma tela que lista os problemas de dado que de fato afetam algum número, com o que falta, o que isso afeta e a ação que resolve. Substitui o aviso repetido a cada abertura. Serve N3 e N2.
+**Limitações residuais:** feriado do dia corrente, que o CDI ainda não publicou, conta como dia útil e custa uma consulta por intervalo. Ativo com posição e ticker sem cotação (deslistado) segue consultado a cada intervalo, e aparece no painel.
 
-Plano:
-- os problemas são derivados a cada consulta, sem tabela própria (D2):
-  - cotação faltando dentro da janela necessária de um ativo (F41), com a ação "trocar ticker" (F40) ou "ver ativo";
-  - série do BCB atrasada além do esperado;
-  - título de renda fixa sem aplicação;
-  - ativo sem CNPJ num ano em que ele entra na ficha de Bens e Direitos do IRPF;
-  - ativo sem setor ou segmento (F37);
-- cada item diz o que está faltando, que tela ou número fica errado por causa disso, e leva à correção;
-- contador de problemas no item do painel na sidebar; o toast do refresh aparece só quando surge um problema novo.
+**F42 — Painel de saúde dos dados.** `GET /api/data-health` deriva os problemas a cada consulta, sem tabela (D2). Cada um traz o tipo, o item, o que falta, o que fica errado e a tela que corrige:
+- **cotação faltando** dentro da janela de posição, pela mesma conta da F41 (`price_gaps`), com os trechos exatos. Com posição e o fim faltando, afeta o valor a mercado na Carteira (último preço ou custo); só o começo, o histórico do ativo. Leva ao ativo, onde está "Trocar ticker";
+- **série do BCB atrasada** além da folga, com o que fica na marcação da renda fixa;
+- **título de renda fixa sem aplicação**, que entra com valor zero no patrimônio;
+- **ativo sem CNPJ** nos anos-base em que ele entra em Bens e Direitos. A regra de quem entra na ficha foi para `backend/domain/irpf.py`, usada pelo relatório e pelo painel.
 
-Um ativo que saiu da bolsa depois da venda não aparece aqui: a janela dele está coberta, então nada falta. Por isso o painel não precisa de uma ação de desligar a busca de um ativo.
+Tela "Saúde dos dados" com uma seção por tipo, a explicação e a ação de cada item. A sidebar mostra o contador, e o toast dos refreshes aparece só com problema novo, com o atalho para o painel. Toda escrita em ativo, operação ou renda fixa e todo refresh invalidam o painel.
+
+Decisões tomadas durante:
+- **Ativo sem setor ou segmento entra com a F37**, que cria o cadastro.
+- O item do menu passou a ter o link dentro do `SidebarMenuButton` (`asChild`), que é o que o badge do shadcn espera para se posicionar.
+
+**Aceite verificado** no app de pé, com dado fictício: um ativo sem cotação, um título sem aplicação e um ativo sem CNPJ aparecem cada um na sua seção. Recarregar não repete o toast. Preencher o CNPJ pelo "Editar ativo" do painel baixa o contador na hora.
 
 **F44 — Carteira: gráfico, tooltip e cor.** A tela da Carteira é monocromática: resultado positivo e negativo têm a mesma cor, a classe do ativo é texto cinza, e o donut divide a tela com uma tabela esticada. Serve N2.
 
