@@ -11,6 +11,7 @@ import {
   LineChart,
   PieChart,
   Receipt,
+  Scale,
   Shapes,
   TrendingUp,
 } from "lucide-react";
@@ -46,6 +47,7 @@ const navItems = [
   { to: "/sectors", label: "Setores", icon: Shapes },
   { to: "/fixed-income", label: "Renda fixa", icon: Landmark },
   { to: "/market", label: "Mercado", icon: LineChart },
+  { to: "/fixed-income-comparator", label: "Comparador de RF", icon: Scale },
   { to: "/income", label: "Proventos", icon: Coins },
   { to: "/tax", label: "Fiscal", icon: Receipt },
   { to: "/data-health", label: "Saúde dos dados", icon: Activity },

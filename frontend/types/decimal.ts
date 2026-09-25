@@ -40,6 +40,11 @@ const quantityFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 8,
 });
 
+const rateFormatter = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 // O Intl aceita string desde o ES2023 justamente para não passar por float: a
 // dízima de 28 dígitos de um preço médio chega inteira até aqui.
 export function formatBRL(value: DecimalString): string {
@@ -74,6 +79,11 @@ export function formatQuantity(value: DecimalString): string {
   return quantityFormatter.format(value);
 }
 
+/** Taxa já em % (110 é 110%), em duas casas: "110,00". */
+export function formatRate(value: DecimalString): string {
+  return rateFormatter.format(value);
+}
+
 /** Zero em qualquer escala: "0", "0.00", "-0". */
 export function isZero(value: DecimalString): boolean {
   return /^-?0*(\.0*)?$/.test(value);
@@ -99,6 +109,12 @@ export function parseDecimalInput(value: string): DecimalString | null {
     ? text.replaceAll(".", "").replace(",", ".")
     : text;
   return toDecimalString(normalized);
+}
+
+/** O texto que preenche um campo: vírgula decimal, sem separador de milhar, que o
+`parseDecimalInput` lê de volta como o mesmo valor. */
+export function toDecimalInput(value: DecimalString): string {
+  return value.replace(".", ",");
 }
 
 /** Como o `parseDecimalInput`, aceitando também o sinal de menos. */

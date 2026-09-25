@@ -7,29 +7,10 @@ import {
 import { signClass } from "@/features/monthly-returns/months";
 import { monthLabel } from "@/shared/lib/months";
 import type { MonthlyReturns } from "@/features/monthly-returns/use-monthly-returns";
-import { MetricHint } from "@/shared/components/metric-hint";
+import { Metric } from "@/shared/components/metric";
 import { formatSignedPercent } from "@/types/decimal";
 
 type MonthReturn = NonNullable<MonthlyReturns["best_month"]>;
-
-function Metric({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <MetricHint hint={hint}>
-        <span className="text-muted-foreground text-sm">{label}</span>
-      </MetricHint>
-      {children}
-    </div>
-  );
-}
 
 function MonthValue({ month }: { month: MonthReturn | null }) {
   if (!month) return <span className="text-xl font-semibold">—</span>;

@@ -17,6 +17,7 @@ from backend.features.operations.router import router as operations_router
 from backend.features.performance.router import router as performance_router
 from backend.features.portfolio.router import router as portfolio_router
 from backend.features.sectors.router import router as sectors_router
+from backend.features.simulation.router import router as simulation_router
 from backend.features.tax.router import router as tax_router
 
 
@@ -34,3 +35,4 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(fixed_income_router, responses=ERROR_RESPONSES)
     app.include_router(tax_router, responses=ERROR_RESPONSES)
     app.include_router(data_health_router, responses=ERROR_RESPONSES)
+    app.include_router(simulation_router, responses=ERROR_RESPONSES)

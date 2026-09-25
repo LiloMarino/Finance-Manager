@@ -28,6 +28,7 @@ from backend.domain.index_growth import (
 from backend.domain.index_series import DailyRate
 
 ZERO = Decimal(0)
+ONE = Decimal(1)
 
 # IR regressivo: até N dias corridos da aplicação, a alíquota ao lado
 TAX_BRACKETS = (
@@ -36,6 +37,17 @@ TAX_BRACKETS = (
     (720, Decimal("0.175")),
 )
 LONG_TERM_TAX = Decimal("0.15")
+
+# IOF regressivo sobre o rendimento: no dia N corrido da aplicação, o N-ésimo valor;
+# do dia 30 em diante, zero
+IOF_TABLE = tuple(
+    Decimal(percent) / 100
+    for percent in (
+        *(96, 93, 90, 86, 83, 80, 76, 73, 70, 66),
+        *(63, 60, 56, 53, 50, 46, 43, 40, 36, 33),
+        *(30, 26, 23, 20, 16, 13, 10, 6, 3),
+    )
+)
 
 INDEX_SERIES = {
     Indexer.CDI: IndexSeries.CDI,
@@ -77,6 +89,19 @@ class FixedIncomeTerms:
         return self.product_type in TAX_EXEMPT_TYPES
 
 
+def terms_problem(
+    product_type: FixedIncomeType, indexer: Indexer, rate: Decimal
+) -> str | None:
+    """O motivo de os termos não fecharem, ou nulo. Na Selic, `rate` é o spread,
+    que pode ser zero ou negativo; nos outros indexadores, é maior que zero."""
+    treasury = TREASURY_INDEXER.get(product_type)
+    if treasury is not None and indexer is not treasury:
+        return "O título do Tesouro tem o indexador do próprio nome."
+    if indexer is not Indexer.SELIC and rate <= 0:
+        return "A taxa deve ser maior que zero."
+    return None
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Movement:
     movement_date: date
@@ -116,6 +141,74 @@ def tax_rate(days: int) -> Decimal:
         if days <= limit:
             return rate
     return LONG_TERM_TAX
+
+
+def iof_rate(days: int) -> Decimal:
+    if days >= len(IOF_TABLE) + 1:
+        return ZERO
+    return IOF_TABLE[max(days, 1) - 1]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Redemption:
+    """Um resgate: o IR incide sobre o rendimento menos o IOF."""
+
+    gross: Decimal
+    iof: Decimal
+    income_tax: Decimal
+
+    @property
+    def net(self) -> Decimal:
+        return self.gross - self.iof - self.income_tax
+
+
+class Application:
+    """Uma aplicação só, resgatada de uma vez ou aos poucos. O fator acumulado vale 1
+    no dia da aplicação, então cada real bruto resgatado no dia `t` carrega o ganho
+    `1 - 1/F(t)`, com o IOF e o IR da idade da aplicação. Depois do vencimento, ou de
+    `until`, o título para de render."""
+
+    def __init__(
+        self,
+        terms: FixedIncomeTerms,
+        applied_on: date,
+        rates: Mapping[IndexSeries, Sequence[DailyRate]],
+        until: date,
+    ) -> None:
+        end = min(until, terms.maturity_date) if terms.maturity_date else until
+        business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+        self._terms = terms
+        self._applied_on = applied_on
+        self.factor = accumulation(
+            daily_factor(terms.indexer, terms.rate, rates, business), applied_on, end
+        )
+
+    def _rates(self, day: date) -> tuple[Decimal, Decimal]:
+        days = (day - self._applied_on).days
+        income = ZERO if self._terms.tax_exempt else tax_rate(days)
+        return iof_rate(days), income
+
+    def redeem(self, gross: Decimal, day: date) -> Redemption:
+        gain = gross * (ONE - ONE / self.factor(day))
+        if gain <= ZERO:
+            return Redemption(gross=gross, iof=ZERO, income_tax=ZERO)
+        iof, income = self._rates(day)
+        iof_amount = gain * iof
+        return Redemption(
+            gross=gross, iof=iof_amount, income_tax=(gain - iof_amount) * income
+        )
+
+    def value_at(self, amount: Decimal, day: date) -> Redemption:
+        """O resgate total, no dia, de `amount` aplicado."""
+        return self.redeem(amount * self.factor(day), day)
+
+    def gross_for_net(self, net: Decimal, day: date) -> Decimal:
+        """O bruto que, resgatado no dia, deixa `net` depois do IOF e do IR."""
+        gain_share = ONE - ONE / self.factor(day)
+        if gain_share <= ZERO:
+            return net
+        iof, income = self._rates(day)
+        return net / (ONE - gain_share * (iof + income * (ONE - iof)))
 
 
 def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:

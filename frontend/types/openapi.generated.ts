@@ -590,6 +590,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/simulation/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current
+         * @description O ponto de partida da projeção: o último valor real de cada série.
+         */
+        get: operations["current_api_simulation_rates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/simulation/fixed-income": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fixed Income
+         * @description Conta sobre os valores enviados, sem gravar nada.
+         */
+        post: operations["fixed_income_api_simulation_fixed_income_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -766,6 +806,132 @@ export interface components {
              * Format: decimal
              */
             value: DecimalString;
+        };
+        /**
+         * ComparisonDTO
+         * @description `best` é a posição da opção de maior líquido.
+         */
+        ComparisonDTO: {
+            /** Results */
+            results: components["schemas"]["ComparisonResultDTO"][];
+            /** Best */
+            best: number | null;
+            /** Points */
+            points: components["schemas"]["ComparisonPointDTO"][];
+        };
+        /** ComparisonInDTO */
+        ComparisonInDTO: {
+            /** Options */
+            options: components["schemas"]["ComparisonOptionInDTO"][];
+            projection: components["schemas"]["ProjectionInDTO"];
+        };
+        /** ComparisonOptionInDTO */
+        ComparisonOptionInDTO: {
+            product_type: components["schemas"]["FixedIncomeType"];
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /** Label */
+            label: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Application Date
+             * Format: date
+             */
+            application_date: string;
+            /**
+             * Redemption Date
+             * Format: date
+             */
+            redemption_date: string;
+        };
+        /**
+         * ComparisonPointDTO
+         * @description O líquido de cada opção, na ordem das opções: nulo antes da aplicação.
+         */
+        ComparisonPointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Net Values */
+            net_values: (DecimalString | null)[];
+        };
+        /**
+         * ComparisonResultDTO
+         * @description `income_tax_rate` nulo no título isento. `cdi_equivalent` em % do CDI: o de
+         *     um CDB tributado, nas mesmas datas, que entrega o mesmo líquido.
+         */
+        ComparisonResultDTO: {
+            /** Label */
+            label: string;
+            /** Calendar Days */
+            calendar_days: number;
+            /** Business Days */
+            business_days: number;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Iof
+             * Format: decimal
+             */
+            iof: DecimalString;
+            /**
+             * Income Tax
+             * Format: decimal
+             */
+            income_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * Net Gain
+             * Format: decimal
+             */
+            net_gain: DecimalString;
+            /** Income Tax Rate */
+            income_tax_rate: DecimalString | null;
+            /**
+             * Iof Rate
+             * Format: decimal
+             */
+            iof_rate: DecimalString;
+            /** Net Annual Return */
+            net_annual_return: DecimalString | null;
+            /** Cdi Equivalent */
+            cdi_equivalent: DecimalString | null;
+        };
+        /**
+         * CurrentRatesDTO
+         * @description O último valor real de cada série, em % ao ano: o CDI e a Selic do último
+         *     dia, anualizados, e o IPCA dos últimos 12 meses. Nulo sem dado no cache.
+         */
+        CurrentRatesDTO: {
+            /** Cdi */
+            cdi: DecimalString | null;
+            /** Cdi Date */
+            cdi_date: string | null;
+            /** Selic */
+            selic: DecimalString | null;
+            /** Selic Date */
+            selic_date: string | null;
+            /** Ipca */
+            ipca: DecimalString | null;
+            /** Ipca Date */
+            ipca_date: string | null;
         };
         /** DarfPaymentDTO */
         DarfPaymentDTO: {
@@ -2064,6 +2230,27 @@ export interface components {
              * Format: date
              */
             valid_until: string;
+        };
+        /**
+         * ProjectionInDTO
+         * @description As taxas ao ano, em %, que valem depois do último dado real de cada série.
+         */
+        ProjectionInDTO: {
+            /**
+             * Cdi
+             * Format: decimal
+             */
+            cdi: DecimalString;
+            /**
+             * Selic
+             * Format: decimal
+             */
+            selic: DecimalString;
+            /**
+             * Ipca
+             * Format: decimal
+             */
+            ipca: DecimalString;
         };
         /** RefreshReportDTO */
         RefreshReportDTO: {
@@ -4077,6 +4264,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataIssueDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    current_api_simulation_rates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentRatesDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    fixed_income_api_simulation_fixed_income_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComparisonInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonDTO"];
                 };
             };
             /** @description Unprocessable Content */

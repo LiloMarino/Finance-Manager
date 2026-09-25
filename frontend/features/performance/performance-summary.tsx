@@ -5,27 +5,8 @@ import {
   recentHint,
 } from "@/features/performance/hints";
 import type { Performance } from "@/features/performance/use-performance";
-import { MetricHint } from "@/shared/components/metric-hint";
+import { Metric } from "@/shared/components/metric";
 import { type DecimalString, formatPercent, formatSignedPercent } from "@/types/decimal";
-
-function Metric({
-  label,
-  hint,
-  value,
-}: {
-  label: string;
-  hint: string;
-  value: string | null;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <MetricHint hint={hint}>
-        <span className="text-muted-foreground text-sm">{label}</span>
-      </MetricHint>
-      <span className="text-xl font-semibold tabular-nums">{value ?? "—"}</span>
-    </div>
-  );
-}
 
 function signed(value: DecimalString | null): string | null {
   return value === null ? null : formatSignedPercent(value);

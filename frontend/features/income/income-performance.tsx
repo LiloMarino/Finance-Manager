@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { netHint, recentHint } from "@/features/income/hints";
 import { type IncomePerformance, useIncomePerformance } from "@/features/income/use-income";
-import { MetricHint } from "@/shared/components/metric-hint";
+import { Metric } from "@/shared/components/metric";
 import { PeriodSelect } from "@/shared/components/period-select";
 import {
   ChartContainer,
@@ -44,17 +44,6 @@ const axisMoney = new Intl.NumberFormat("pt-BR", {
 function periodLabel(period: string): string {
   const [year, month] = period.split("-");
   return month ? monthLabel(Number(year), Number(month)) : period;
-}
-
-function Metric({ label, hint, value }: { label: string; hint: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <MetricHint hint={hint}>
-        <span className="text-muted-foreground text-sm">{label}</span>
-      </MetricHint>
-      <span className="text-xl font-semibold tabular-nums">{value}</span>
-    </div>
-  );
 }
 
 function Summary({ performance }: { performance: IncomePerformance }) {

@@ -8,7 +8,7 @@ from pydantic import field_validator, model_validator
 
 from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
 from backend.core.enum import FixedIncomeMovementType, FixedIncomeType, Indexer
-from backend.domain.fixed_income import TREASURY_INDEXER
+from backend.domain.fixed_income import terms_problem
 
 
 class FixedIncomeInDTO(BaseDTO):
@@ -32,11 +32,9 @@ class FixedIncomeInDTO(BaseDTO):
 
     @model_validator(mode="after")
     def _terms_match(self) -> Self:
-        treasury = TREASURY_INDEXER.get(self.product_type)
-        if treasury is not None and self.indexer is not treasury:
-            raise ValueError("O título do Tesouro tem o indexador do próprio nome.")
-        if self.indexer is not Indexer.SELIC and self.rate <= 0:
-            raise ValueError("A taxa deve ser maior que zero.")
+        problem = terms_problem(self.product_type, self.indexer, self.rate)
+        if problem is not None:
+            raise ValueError(problem)
         return self
 
 

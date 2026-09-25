@@ -9,6 +9,7 @@ import { DataHealthPage } from "@/pages/data-health";
 import { ErrorPage } from "@/pages/error";
 import { EvolutionPage } from "@/pages/evolution";
 import { FixedIncomePage } from "@/pages/fixed-income";
+import { FixedIncomeComparatorPage } from "@/pages/fixed-income-comparator";
 import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
 import { HomePage } from "@/pages/home";
 import { ImportPage } from "@/pages/import";
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="fixed-income" element={<FixedIncomePage />} />
             <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
             <Route path="market" element={<MarketPage />} />
+            <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
             <Route
               path="income"
               element={<IncomePage />}
