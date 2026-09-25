@@ -1,11 +1,25 @@
 from __future__ import annotations
 
-from sqlalchemy import exists, select
+from datetime import date, timedelta
+
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
+from backend.core.enum import OperationType
 from backend.core.errors import FinanceError
-from backend.core.models.models import Asset, Operation
-from backend.features.assets.dto import AssetInDTO
+from backend.core.models.models import Asset, AssetTickerHistory, Operation
+from backend.features.assets.dto import (
+    AssetDTO,
+    AssetInDTO,
+    PreviousTickerDTO,
+    TickerChangeInDTO,
+)
+from backend.repository.operations import check_positions
+from backend.repository.tickers import (
+    TickerHistory,
+    ensure_ticker_free,
+    ticker_history,
+)
 
 
 class AssetNotFoundError(FinanceError):
@@ -16,27 +30,49 @@ class AssetConflictError(FinanceError):
     status = 409
 
 
-def list_assets(session: Session) -> list[Asset]:
-    return list(session.scalars(select(Asset).order_by(Asset.ticker)))
+class InvalidTickerChangeError(FinanceError):
+    status = 422
 
 
-def get_asset(session: Session, asset_id: int) -> Asset:
+def _to_dto(asset: Asset, history: TickerHistory) -> AssetDTO:
+    return AssetDTO(
+        id=asset.id,
+        ticker=asset.ticker,
+        asset_class=asset.asset_class,
+        cnpj=asset.cnpj,
+        sector=asset.sector,
+        previous_tickers=[
+            PreviousTickerDTO(ticker=entry.ticker, valid_until=entry.valid_until)
+            for entry in history.previous(asset.id)
+        ],
+    )
+
+
+def _dto(session: Session, asset: Asset) -> AssetDTO:
+    return _to_dto(asset, ticker_history(session))
+
+
+def _asset(session: Session, asset_id: int) -> Asset:
     asset = session.get(Asset, asset_id)
     if asset is None:
         raise AssetNotFoundError("Ativo não encontrado.")
     return asset
 
 
-def _ensure_unique_ticker(
-    session: Session, ticker: str, asset_id: int | None = None
-) -> None:
-    clash = session.scalar(select(Asset.id).where(Asset.ticker == ticker))
-    if clash is not None and clash != asset_id:
-        raise AssetConflictError(f"Já existe um ativo {ticker}.")
+def list_assets(session: Session) -> list[AssetDTO]:
+    history = ticker_history(session)
+    return [
+        _to_dto(asset, history)
+        for asset in session.scalars(select(Asset).order_by(Asset.ticker))
+    ]
 
 
-def create_asset(session: Session, payload: AssetInDTO) -> Asset:
-    _ensure_unique_ticker(session, payload.ticker)
+def get_asset(session: Session, asset_id: int) -> AssetDTO:
+    return _dto(session, _asset(session, asset_id))
+
+
+def create_asset(session: Session, payload: AssetInDTO) -> AssetDTO:
+    ensure_ticker_free(session, payload.ticker, None)
     asset = Asset(
         ticker=payload.ticker,
         asset_class=payload.asset_class,
@@ -45,26 +81,120 @@ def create_asset(session: Session, payload: AssetInDTO) -> Asset:
     )
     session.add(asset)
     session.commit()
-    return asset
+    return _dto(session, asset)
 
 
-def update_asset(session: Session, asset_id: int, payload: AssetInDTO) -> Asset:
-    asset = get_asset(session, asset_id)
-    _ensure_unique_ticker(session, payload.ticker, asset_id)
+def update_asset(session: Session, asset_id: int, payload: AssetInDTO) -> AssetDTO:
+    """Corrige o cadastro. Mudar o ticker aqui corrige o nome em todo o histórico;
+    a troca de ticker com data é `change_ticker`."""
+    asset = _asset(session, asset_id)
+    ensure_ticker_free(session, payload.ticker, asset_id)
     asset.ticker = payload.ticker
     asset.asset_class = payload.asset_class
     asset.cnpj = payload.cnpj
     asset.sector = payload.sector
     session.commit()
-    return asset
+    return _dto(session, asset)
 
 
 def delete_asset(session: Session, asset_id: int) -> None:
     """Ativo com operação fica: a FK é RESTRICT, e a mensagem diz o porquê."""
-    asset = get_asset(session, asset_id)
+    asset = _asset(session, asset_id)
     if session.scalar(select(exists().where(Operation.asset_id == asset_id))):
         raise AssetConflictError(
             f"{asset.ticker} tem operações: apague as operações antes do ativo."
         )
     session.delete(asset)
     session.commit()
+
+
+def change_ticker(
+    session: Session, asset_id: int, payload: TickerChangeInDTO
+) -> AssetDTO:
+    """O ativo passa a se chamar `payload.ticker` a partir da data, sem operação e
+    sem mexer em posição, PM ou apuração. Se o ticker novo já é um ativo, os dois
+    se juntam nele."""
+    asset = _asset(session, asset_id)
+    if payload.ticker == asset.ticker:
+        raise InvalidTickerChangeError(f"{asset.ticker} já é o ticker atual.")
+    last_change = session.scalar(
+        select(func.max(AssetTickerHistory.valid_until)).where(
+            AssetTickerHistory.asset_id == asset.id
+        )
+    )
+    valid_until = payload.effective_date - timedelta(days=1)
+    if last_change is not None and valid_until <= last_change:
+        raise InvalidTickerChangeError(
+            f"A troca precisa ser depois da anterior, em "
+            f"{last_change + timedelta(days=1):%d/%m/%Y}."
+        )
+
+    target = session.scalar(select(Asset).where(Asset.ticker == payload.ticker))
+    if target is not None:
+        return _merge(session, asset, target, payload.effective_date)
+
+    ensure_ticker_free(session, payload.ticker, asset.id)
+    session.add(
+        AssetTickerHistory(
+            asset_id=asset.id, ticker=asset.ticker, valid_until=valid_until
+        )
+    )
+    asset.ticker = payload.ticker
+    session.commit()
+    return _dto(session, asset)
+
+
+def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDTO:
+    """Junta em `target` o ativo que a transferência registrava como dois: as
+    operações de `source` passam para `target`, e o par de transferência entre eles
+    no dia da troca sai, porque a posição agora continua no mesmo ativo."""
+    source_operations = list(
+        session.scalars(select(Operation).where(Operation.asset_id == source.id))
+    )
+    target_operations = list(
+        session.scalars(select(Operation).where(Operation.asset_id == target.id))
+    )
+    pair = [
+        operation
+        for operation, operation_type in [
+            *((op, OperationType.TRANSFER_OUT) for op in source_operations),
+            *((op, OperationType.TRANSFER_IN) for op in target_operations),
+        ]
+        if operation.operation_type is operation_type
+        and operation.operation_date == day
+    ]
+    paired = {operation.id for operation in pair}
+    if any(op.operation_date >= day for op in source_operations if op.id not in paired):
+        raise InvalidTickerChangeError(
+            f"{source.ticker} tem operação a partir de {day:%d/%m/%Y}: com a troca, "
+            f"ela seria de {target.ticker}. Mova a operação antes de trocar o ticker."
+        )
+    if any(op.operation_date < day for op in target_operations if op.id not in paired):
+        raise InvalidTickerChangeError(
+            f"{target.ticker} tem operação antes de {day:%d/%m/%Y}, quando o ativo "
+            f"ainda se chamava {source.ticker}."
+        )
+
+    for operation in pair:
+        session.delete(operation)
+    for operation in source_operations:
+        if operation.id not in paired:
+            operation.asset_id = target.id
+    for entry in session.scalars(
+        select(AssetTickerHistory).where(AssetTickerHistory.asset_id == source.id)
+    ):
+        entry.asset_id = target.id
+    target.cnpj = target.cnpj or source.cnpj
+    old_ticker = source.ticker
+    # As operações saem de `source` antes de apagá-lo: a FK delas é RESTRICT
+    session.flush()
+    session.delete(source)
+    session.flush()
+    session.add(
+        AssetTickerHistory(
+            asset_id=target.id, ticker=old_ticker, valid_until=day - timedelta(days=1)
+        )
+    )
+    check_positions(session, [target.ticker])
+    session.commit()
+    return _dto(session, target)

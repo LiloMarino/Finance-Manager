@@ -37,3 +37,19 @@ export function useDeleteAsset() {
     onError: (error) => toast.error(getApiErrorMessage(error)),
   });
 }
+
+type TickerChangeInput = components["schemas"]["TickerChangeInDTO"];
+
+export function useChangeTicker(assetId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: TickerChangeInput) =>
+      post("/api/assets/{asset_id}/ticker-change", { path: { asset_id: assetId }, body }),
+    onSuccess: (asset) => {
+      toast.success(`Ticker trocado para ${asset.ticker}.`);
+      return invalidatePortfolioData(queryClient);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  });
+}

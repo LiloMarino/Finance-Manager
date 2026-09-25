@@ -27,6 +27,7 @@ from backend.features.tax.dto import (
 )
 from backend.features.tax.service import assessments, payments
 from backend.repository.operations import operation_records
+from backend.repository.tickers import ticker_history
 
 # (grupo, código, substantivo da discriminação)
 ASSET_CODES: dict[AssetClass, tuple[str, str, str]] = {
@@ -53,18 +54,20 @@ def _cost(position: Position) -> Decimal:
     return position.total_cost.quantize(CENT, ROUND_HALF_UP)
 
 
-def _description(asset: Asset, position: Position) -> str:
+def _description(asset: Asset, ticker: str, position: Position) -> str:
     _, _, noun = ASSET_CODES[asset.asset_class]
     if position.quantity == 0:
-        return f"{asset.ticker}: posição encerrada no ano."
+        return f"{ticker}: posição encerrada no ano."
     return (
-        f"{_quantity(position.quantity)} {noun} {asset.ticker}, custo médio de "
+        f"{_quantity(position.quantity)} {noun} {ticker}, custo médio de "
         f"R$ {_brazilian(position.average_price, 2)}."
     )
 
 
 def _bens_e_direitos(session: Session, year: int) -> list[IrpfAssetDTO]:
+    """Cada item com o ticker vigente em 31/12 do ano-base, como foi declarado."""
     operations = operation_records(session)
+    history = ticker_history(session)
     previous = current_positions(
         op for op in operations if op.operation_date <= date(year - 1, 12, 31)
     )
@@ -78,20 +81,21 @@ def _bens_e_direitos(session: Session, year: int) -> list[IrpfAssetDTO]:
         if before.quantity == 0 and after.quantity == 0:
             continue
         group, code, _ = ASSET_CODES[asset.asset_class]
+        ticker = history.on(asset.id, date(year, 12, 31), asset.ticker)
         items.append(
             IrpfAssetDTO(
                 asset_id=asset.id,
-                ticker=asset.ticker,
+                ticker=ticker,
                 asset_class=asset.asset_class,
                 group=group,
                 code=code,
                 cnpj=asset.cnpj,
-                description=_description(asset, after),
+                description=_description(asset, ticker, after),
                 previous_value=_cost(before),
                 current_value=_cost(after),
             )
         )
-    return sorted(items, key=lambda item: (item.group, item.code))
+    return sorted(items, key=lambda item: (item.group, item.code, item.ticker))
 
 
 def irpf_report(session: Session, year: int, today: date) -> IrpfReportDTO:

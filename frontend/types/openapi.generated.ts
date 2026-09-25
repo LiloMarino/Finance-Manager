@@ -221,6 +221,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/assets/{asset_id}/ticker-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ticker Change
+         * @description Devolve o ativo que ficou: com junção, é o que já tinha o ticker novo.
+         */
+        post: operations["ticker_change_api_assets__asset_id__ticker_change_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolio": {
         parameters: {
             query?: never;
@@ -398,6 +418,8 @@ export interface components {
             cnpj: string | null;
             /** Sector */
             sector: string | null;
+            /** Previous Tickers */
+            previous_tickers: components["schemas"]["PreviousTickerDTO"][];
         };
         /** AssetInDTO */
         AssetInDTO: {
@@ -1233,12 +1255,39 @@ export interface components {
             file: string;
             status: components["schemas"]["ImportStatus"];
         };
+        /**
+         * PreviousTickerDTO
+         * @description Um ticker antigo, vigente até `valid_until`, inclusive.
+         */
+        PreviousTickerDTO: {
+            /** Ticker */
+            ticker: string;
+            /**
+             * Valid Until
+             * Format: date
+             */
+            valid_until: string;
+        };
         /** RefreshReportDTO */
         RefreshReportDTO: {
             /** Updated */
             updated: string[];
             /** Failed */
             failed: string[];
+        };
+        /**
+         * TickerChangeInDTO
+         * @description A troca de ticker: o ativo passa a se chamar `ticker` a partir de
+         *     `effective_date`, inclusive.
+         */
+        TickerChangeInDTO: {
+            /** Ticker */
+            ticker: string;
+            /**
+             * Effective Date
+             * Format: date
+             */
+            effective_date: string;
         };
         /**
          * TradeType
@@ -1936,6 +1985,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ticker_change_api_assets__asset_id__ticker_change_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TickerChangeInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDTO"];
+                };
             };
             /** @description Unprocessable Content */
             422: {

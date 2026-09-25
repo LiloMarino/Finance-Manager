@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -40,6 +40,7 @@ from backend.features.operations.dto import (
 )
 from backend.features.operations.nubank_note import parse_nubank_note
 from backend.repository.operations import check_positions, operation_records
+from backend.repository.tickers import resolve_tickers
 
 type Key = tuple[str, date, OperationType, Decimal, Decimal]
 type Day = tuple[str, date, OperationType]
@@ -140,7 +141,23 @@ def _known_tickers(session: Session, tickers: Iterable[str]) -> set[str]:
     return set(session.scalars(select(Asset.ticker).where(Asset.ticker.in_(tickers))))
 
 
+def _current_tickers[T: ImportedOperationDTO](
+    session: Session, operations: Sequence[T]
+) -> list[T]:
+    """Cada operação com o ticker atual do ativo: a nota anterior a uma troca de
+    ticker traz o antigo, e ela é do mesmo ativo."""
+    resolved = resolve_tickers(session, {op.ticker for op in operations})
+    return [
+        op.model_copy(update={"ticker": resolved.get(op.ticker, op.ticker)})
+        for op in operations
+    ]
+
+
 def preview_import(session: Session, files: Sequence[ParsedFile]) -> ImportPreviewDTO:
+    files = [
+        replace(file, operations=_current_tickers(session, file.operations))
+        for file in files
+    ]
     operations = [op for file in files for op in file.operations]
     tickers = {op.ticker for op in operations}
     existing = operation_records(session, tickers)
@@ -193,7 +210,8 @@ def confirm_import(session: Session, payload: ImportConfirmDTO) -> ImportResultD
     A regra de multiplicidade roda de novo aqui: confirmar duas vezes o mesmo preview
     grava na segunda vez zero operações.
     """
-    tickers = {op.ticker for op in payload.operations}
+    operations = _current_tickers(session, payload.operations)
+    tickers = {op.ticker for op in operations}
     assets = {
         asset.ticker: asset
         for asset in session.scalars(select(Asset).where(Asset.ticker.in_(tickers)))
@@ -213,7 +231,7 @@ def confirm_import(session: Session, payload: ImportConfirmDTO) -> ImportResultD
 
     remaining = Counter(_key(op) for op in operation_records(session, tickers))
     created = 0
-    for op in payload.operations:
+    for op in operations:
         key = _key(op)
         if remaining[key] > 0:
             remaining[key] -= 1

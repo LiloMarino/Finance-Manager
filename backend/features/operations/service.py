@@ -16,6 +16,7 @@ from backend.features.operations.dto import (
     TransferInDTO,
 )
 from backend.repository.operations import check_positions, operation_records
+from backend.repository.tickers import TickerHistory, ticker_history
 
 
 class OperationNotFoundError(FinanceError):
@@ -48,7 +49,8 @@ def list_operations(
     start: date | None = None,
     end: date | None = None,
 ) -> list[OperationDTO]:
-    """Mais recentes primeiro; no mesmo dia, a última gravada primeiro."""
+    """Mais recentes primeiro; no mesmo dia, a última gravada primeiro. Cada uma
+    com o ticker vigente na data dela."""
     statement = (
         select(Operation, Asset)
         .join(Asset, Asset.id == Operation.asset_id)
@@ -62,17 +64,18 @@ def list_operations(
         statement = statement.where(Operation.operation_date >= start)
     if end is not None:
         statement = statement.where(Operation.operation_date <= end)
+    history = ticker_history(session)
     return [
-        _to_dto(operation, asset)
+        _to_dto(operation, asset, history)
         for operation, asset in session.execute(statement).tuples()
     ]
 
 
-def _to_dto(operation: Operation, asset: Asset) -> OperationDTO:
+def _to_dto(operation: Operation, asset: Asset, history: TickerHistory) -> OperationDTO:
     return OperationDTO(
         id=operation.id,
         asset_id=asset.id,
-        ticker=asset.ticker,
+        ticker=history.on(asset.id, operation.operation_date, asset.ticker),
         asset_class=asset.asset_class,
         operation_date=operation.operation_date,
         operation_type=operation.operation_type,
@@ -93,7 +96,7 @@ def create_operation(session: Session, payload: OperationInDTO) -> OperationDTO:
     session.add(operation)
     check_positions(session, [asset.ticker])
     session.commit()
-    return _to_dto(operation, asset)
+    return _to_dto(operation, asset, ticker_history(session))
 
 
 def update_operation(
@@ -113,7 +116,7 @@ def update_operation(
     operation.unit_price = payload.unit_price
     check_positions(session, {previous.ticker, asset.ticker})
     session.commit()
-    return _to_dto(operation, asset)
+    return _to_dto(operation, asset, ticker_history(session))
 
 
 def delete_operation(session: Session, operation_id: int) -> None:
@@ -155,4 +158,5 @@ def create_transfer(session: Session, payload: TransferInDTO) -> list[OperationD
     session.add_all(pair)
     check_positions(session, [source.ticker, target.ticker])
     session.commit()
-    return [_to_dto(pair[0], source), _to_dto(pair[1], target)]
+    history = ticker_history(session)
+    return [_to_dto(pair[0], source, history), _to_dto(pair[1], target, history)]

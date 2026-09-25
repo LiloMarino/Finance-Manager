@@ -23,6 +23,7 @@ from backend.features.tax.dto import (
 )
 from backend.repository.market import index_rates
 from backend.repository.operations import operation_records
+from backend.repository.tickers import ticker_history
 
 
 class TaxPeriodNotFoundError(FinanceError):
@@ -82,27 +83,25 @@ def list_months(session: Session, today: date) -> list[MonthlyTaxDTO]:
 
 
 def positions_at(session: Session, day: date) -> list[PeriodPositionDTO]:
-    """Posições com quantidade no fim de `day`, por classe e ticker."""
+    """Posições com quantidade no fim de `day`, por classe e pelo ticker vigente
+    nesse dia."""
     positions = current_positions(
         op for op in operation_records(session) if op.operation_date <= day
     )
-    assets = session.scalars(
-        select(Asset)
-        .where(Asset.ticker.in_(positions))
-        .order_by(Asset.asset_class, Asset.ticker)
-    )
-    return [
+    history = ticker_history(session)
+    items = [
         PeriodPositionDTO(
             asset_id=asset.id,
-            ticker=asset.ticker,
+            ticker=history.on(asset.id, day, asset.ticker),
             asset_class=asset.asset_class,
             quantity=position.quantity,
             average_price=position.average_price,
             total_cost=position.total_cost,
         )
-        for asset in assets
+        for asset in session.scalars(select(Asset).where(Asset.ticker.in_(positions)))
         if (position := positions[asset.ticker]).quantity != 0
     ]
+    return sorted(items, key=lambda item: (item.asset_class, item.ticker))
 
 
 def period_report(

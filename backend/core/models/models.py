@@ -91,6 +91,21 @@ class Asset(Base):
     sector: Mapped[str | None] = mapped_column(String, default=None)
 
 
+class AssetTickerHistory(Base):
+    """Um ticker que o ativo já teve, vigente até `valid_until`, inclusive. A troca de
+    ticker é o mesmo ativo com outro nome: o atual fica em `assets`, e nenhum ticker,
+    antigo ou atual, é de dois ativos."""
+
+    __tablename__ = "asset_ticker_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    asset_id: Mapped[int] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"), index=True
+    )
+    ticker: Mapped[str] = mapped_column(String, unique=True)
+    valid_until: Mapped[date]
+
+
 class Operation(Base):
     """Dado primário: posição, PM e fiscal são recalculados a partir daqui.
 

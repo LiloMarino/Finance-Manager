@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 
+import { TickerChangeDialog } from "@/features/assets/ticker-change-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
@@ -8,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAsset } from "@/shared/hooks/use-assets";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { formatDate } from "@/shared/lib/format";
 import { assetClassLabels } from "@/shared/lib/labels";
 import { formatBRL, formatQuantity, formatSignedBRL } from "@/types/decimal";
 
@@ -28,9 +30,23 @@ export function AssetDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold">{asset.data.ticker}</h1>
-        <Badge variant="secondary">{assetClassLabels[asset.data.asset_class]}</Badge>
+      {/* Cabeçalho */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold">{asset.data.ticker}</h1>
+            <Badge variant="secondary">{assetClassLabels[asset.data.asset_class]}</Badge>
+          </div>
+          {asset.data.previous_tickers.length > 0 && (
+            <p className="text-muted-foreground text-sm">
+              Antes:{" "}
+              {asset.data.previous_tickers
+                .map(({ ticker, valid_until }) => `${ticker} (até ${formatDate(valid_until)})`)
+                .join(", ")}
+            </p>
+          )}
+        </div>
+        <TickerChangeDialog asset={asset.data} />
       </div>
 
       <Card className="max-w-xl">
