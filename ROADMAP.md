@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Concluído o simulador de à vista, parcelado ou adiantar a fatura (F49); a escada de títulos virou a F53.
+> **Última mudança (2026-09-25):** Concluída a correlação entre dois ativos (F27), com o cache de cotação por ticker; com a F47 e a F49, a N9 tem as três ferramentas.
 
 ## Glossário
 
@@ -28,7 +28,6 @@
 | **F24** | Rebalanceamento | — | ⏳ |
 | **F25** | Subcarteiras | — | ⏳ |
 | **F26** | Risco × retorno | — | 💤 |
-| **F27** | Ferramenta de correlação entre dois ativos | — | ⏳ |
 | **F28** | Alerta de rebalanceamento com o app fechado | — | ⏳ |
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
@@ -48,7 +47,7 @@
 | **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (43 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (44 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -86,6 +85,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
+| **F27** | Ferramenta de correlação entre dois ativos | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
 | **F38** | Desempenho e distribuição dos proventos | — | ✅ |
@@ -107,12 +107,12 @@
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
 | **F25** | Subcarteiras | M6 | 2 | ⏳ |
-| **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 | **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
 | **F33** | Custo da bonificação | M5 | 0 | ⏳ |
+| **F39** | Correlação da carteira | M7 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
@@ -270,19 +270,19 @@
 >
 > **Serve:** N8, N9
 >
-> **Progresso:** 2/6 concluídas
+> **Progresso:** 3/6 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F26** | Risco × retorno | F10, F15 | 💤 |
-| **F27** | Ferramenta de correlação entre dois ativos | F10 | ⏳ |
 | **F39** | Correlação da carteira | F27 | ⏳ |
 | **F53** | Simulador: escada de títulos | F49 | ⏳ |
 
-<details><summary>Concluído (2 itens)</summary>
+<details><summary>Concluído (3 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
+| **F27** | Ferramenta de correlação entre dois ativos | F10 | ✅ |
 | **F47** | Comparador de renda fixa | F46 | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ✅ |
 
@@ -367,7 +367,7 @@
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
-| **F27** | Ferramenta de correlação entre dois ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F27** | Ferramenta de correlação entre dois ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
@@ -643,13 +643,20 @@ Plano:
 - o ponto da carteira usa a cota da F15, e a volatilidade da carteira aparece como número no topo, com a mesma explicação;
 - cálculo em float no Python sobre `price_history` (D4).
 
-**F27 — Ferramenta de correlação entre dois ativos.** Para avaliar um ativo novo: escolhem-se dois tickers quaisquer, na carteira ou não, ou um ticker e um benchmark, e o app mostra o quanto eles andam juntos. Serve N9.
+**F27 — Ferramenta de correlação entre dois ativos.** Para avaliar um ativo novo: escolhem-se dois tickers quaisquer, na carteira ou não, ou um ticker e o IBOV ou o CDI, e o app mostra o quanto eles andam juntos. Serve N9. A tela Correlação tem o ticker, o outro lado (outro ticker, IBOV ou CDI) e a janela (6 meses, 1, 3 ou 5 anos), tudo na URL. O resumo mostra a correlação, a leitura em palavras, os pregões que entraram na conta e o período. Os gráficos são as duas séries partindo de 100 e a correlação móvel de 60 pregões. `GET /api/correlation` faz a conta.
 
-Plano:
-- a **correlação** é um número de −1 a 1 calculado sobre os retornos diários. Perto de 1, os dois sobem e caem juntos, e um não diversifica o outro. Perto de 0, não há relação. Negativa, quando um sobe o outro tende a cair. Para diversificar, quer-se correlação baixa. A dica da tela traz essa leitura;
-- o histórico de um ticker fora da carteira vem pelo `MarketDataProvider`, num cache próprio por ticker, separado de `price_history`, que é dos ativos da carteira;
-- cálculo com `statistics.correlation`, da stdlib, sobre os dias com pregão nos dois; janela escolhida na tela (6 meses, 1, 3 ou 5 anos);
-- gráfico das duas séries partindo do mesmo ponto, e o da correlação móvel: a correlação recalculada numa janela que desliza (ex.: 60 pregões), que mostra se a relação mudou com o tempo.
+- **Correlação:** de Pearson, sobre os retornos diários nos pregões em comum, com `statistics.correlation`, em float (D4). Menos de 20 retornos em comum ou uma série que não varia viram 422 com o motivo.
+- **Cache por ticker:** a tabela `ticker_price_history` guarda os fechamentos de qualquer ticker, e o `fetch_log` ganhou o ticker como terceiro alvo, com o CHECK de exatamente um alvo. A consulta à fonte segue o `price_request` da F41, com a janela escolhida como período necessário e o fim no último pregão encerrado.
+- **O IBOV e o CDI saem do cache das séries:** o IBOV pelo fechamento em pontos, e o CDI como o nível de um título a 100% do CDI.
+
+Decisões tomadas durante:
+- **O cache próprio serve a todo ticker, inclusive os da carteira:** o `price_history` só cobre a janela de posição, e a correlação pede até 5 anos.
+- **Cada consulta traz a janela inteira e substitui o cache do ticker:** o fechamento vem ajustado pelos eventos que a fonte conhecia na hora, e emendar uma consulta nova num cache antigo criaria um salto falso num desdobramento. A consulta começa no que o cache já cobria, para não perder uma janela maior pedida antes.
+- **O IPCA fica fora das referências:** é mensal, e o retorno diário pró-rata daria uma correlação sem sentido.
+- Ticker desconhecido na fonte dá 404; a fonte fora do ar usa o cache e, sem cache, dá 503. O provider de cotações foi para `backend/features/providers.py`, que o mercado e a correlação usam.
+- O seletor de ticker é um campo de texto; o combobox de ativo fica com a F45.
+
+**Aceite verificado** no app de pé, numa cópia do banco migrado: dois bancos grandes, fora da carteira, dão correlação perto de 0,77 em 1 ano, e um ticker contra o IBOV em 3 anos traz as duas séries e a correlação móvel. Recarregar reabre a mesma tela pela URL sem consultar a fonte de novo, conferido no log.
 
 **F33 — Custo da bonificação.** Pela Receita (Perguntas e Respostas IRPF, pergunta 721), a ação recebida em bonificação tem custo: o valor do lucro ou da reserva capitalizado por ação, que a empresa informa no fato relevante. Hoje o CHECK `unit_price_by_type` obriga preço 0 na bonificação, e o motor só dilui o PM.
 
