@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Registrados os problemas do uso da Carteira: layout da página e seções fechadas (F44), linha clicável e a dica do cabeçalho (F50), máscaras nos campos (F51) e a sugestão de setor e segmento pelo yfinance (F52).
+> **Última mudança (2026-09-25):** Concluídas a série diária (F14, recalculada a cada request, sem tabela), a rentabilidade por cota (F15) e a evolução do patrimônio (F17).
 
 ## Glossário
 
@@ -25,10 +25,7 @@
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
-| **F14** | Série diária por ativo | — | ⏳ |
-| **F15** | Desempenho de rentabilidade | — | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | — | ⏳ |
-| **F17** | Evolução do patrimônio | — | ⏳ |
 | **F18** | Comparação ano a ano | — | ⏳ |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | — | 🔍 |
 | **F20** | Proventos: registro e histórico | — | ⏳ |
@@ -57,7 +54,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (33 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (36 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -66,7 +63,7 @@
 | **D3** | Um único SQLite, com snapshot e migration testada | F4 | ✅ |
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5, F26, F36 | ✅ |
 | **D5** | Rentabilidade medida por cota (TWR) | F15, F18 | ✅ |
-| **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F16, F41, F52 | ✅ |
+| **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F14, F16, F41, F52 | ✅ |
 | **D8** | IR-Helper aposentado; o banco dele é oráculo de posição e PM | F1, F7, F8, F21, F23 | ✅ |
 | **D10** | Roteamento: React Router 7 | F2 | ✅ |
 | **D11** | Tipagem: Pydantic nas bordas, dataclass no domínio, pyright strict | F3 | ✅ |
@@ -85,6 +82,9 @@
 | **F11** | Carteira: patrimônio total, por categoria e posição | — | ✅ |
 | **F12** | Renda fixa: cadastro e marcação por indexador | — | ✅ |
 | **F13** | Caixa e reserva | — | 🚫 |
+| **F14** | Série diária por ativo | — | ✅ |
+| **F15** | Desempenho de rentabilidade | — | ✅ |
+| **F17** | Evolução do patrimônio | — | ✅ |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
@@ -105,8 +105,9 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F14** | Série diária por ativo | M3 | 8 | ⏳ |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | M4 | 2 | 🔍 |
+| **F25** | Subcarteiras | M6 | 2 | ⏳ |
+| **F16** | Benchmarks: CDI, IPCA e IBOV | M3 | 1 | ⏳ |
 | **F27** | Ferramenta de correlação entre dois ativos | M7 | 1 | ⏳ |
 | **F47** | Comparador de renda fixa | M7 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
@@ -185,15 +186,22 @@
 >
 > **Serve:** N1, N2
 >
-> **Progresso:** 0/5 concluídas
+> **Progresso:** 3/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F14** | Série diária por ativo | F11, F12 | ⏳ |
-| **F15** | Desempenho de rentabilidade | F14 | ⏳ |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | F15 | ⏳ |
-| **F17** | Evolução do patrimônio | F14 | ⏳ |
 | **F18** | Comparação ano a ano | F15, F16 | ⏳ |
+
+<details><summary>Concluído (3 itens)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F14** | Série diária por ativo | F11, F12 | ✅ |
+| **F15** | Desempenho de rentabilidade | F14 | ✅ |
+| **F17** | Evolução do patrimônio | F14 | ✅ |
+
+</details>
 
 ### M4 — Proventos
 
@@ -332,10 +340,10 @@
 | **F10** | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 | F5 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F11** | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 | F9, F10 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
 | **F12** | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 | F10 | Alto | Médio | Alto | Bom | ✅ Concluído |
-| **F14** | Série diária por ativo | N1, N2 | D2 | M3 | F11, F12 | Alto | Alto | Alto | Bom | ⏳ Pendente |
-| **F15** | Desempenho de rentabilidade | N1 | D5 | M3 | F14 | Médio | Médio | Alto | Excelente | ⏳ Pendente |
+| **F14** | Série diária por ativo | N1, N2 | D2, D6 | M3 | F11, F12 | Alto | Alto | Alto | Bom | ✅ Concluído |
+| **F15** | Desempenho de rentabilidade | N1 | D5 | M3 | F14 | Médio | Médio | Alto | Excelente | ✅ Concluído |
 | **F16** | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 | F15 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F17** | Evolução do patrimônio | N2, N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F17** | Evolução do patrimônio | N2, N1 | D2 | M3 | F14 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F18** | Comparação ano a ano | N1 | D5 | M3 | F15, F16 | Médio | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F20** | Proventos: registro e histórico | N4, N5 | D2 | M4 | F19 | Médio | Médio | Alto | Bom | ⏳ Pendente |
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
@@ -469,31 +477,29 @@ Decisões tomadas durante:
 
 **Limitações residuais:** IOF de menos de 30 dias fora da estimativa de IR. IPCA+ pela curva, pró-rata por dia corrido no mês civil, sem o aniversário do dia 15 do Tesouro nem a marcação a mercado. Tesouro Selic sem o ágio/deságio de compra.
 
-**F14 — Série diária por ativo.** Infraestrutura das visões no tempo: o valor de cada ativo e de cada título de renda fixa em cada dia do histórico, com o dinheiro que entrou ou saiu dele naquele dia. Sozinha não aparece na tela. É dela que a evolução do patrimônio (F17), a rentabilidade (F15) e a comparação ano a ano (F18) leem, e somar as linhas certas dá a carteira geral, uma categoria ou uma subcarteira. Serve N1 e N2.
+**F14 — Série diária por ativo.** `backend/domain/daily_series.py`, puro: uma `DailyLine` por ativo e por título, com o valor no fim de cada dia útil e a entrada e a saída do dia em reais. `aggregate` soma as linhas escolhidas, a partir do primeiro dia com valor ou fluxo. Na renda variável, a quantidade vem da posição assentada pelo motor de posição, com o day trade pareado. A entrada e a saída são cada compra e cada venda pelo valor dela, e o valor do dia é a quantidade vezes o último fechamento até ele. Na renda fixa, `daily_gross` em `backend/domain/fixed_income.py` reaproveita a acumulação da marcação: uma acumulação só serve a série toda. `backend/repository/daily_series.py` monta as linhas do banco, e a rentabilidade, a evolução e a comparação ano a ano leem dali. Serve N1 e N2.
 
-Plano:
-- tabela materializada `daily_values` (data, ativo ou título, quantidade, valor, fluxo do dia), cache descartável (D2);
-- renda variável: a quantidade do motor de posição × o fechamento de `price_history`; o fluxo é compra menos venda, em reais;
-- renda fixa: o bruto marcado do dia; o fluxo é aplicação menos resgate;
-- dia sem pregão repete o último fechamento;
-- reconstrução a partir da data mais antiga que mudou: operação retroativa recalcula dali em diante, e um comando reconstrói do zero.
+Decisões tomadas durante:
+- **A série é recalculada a cada request, sem tabela materializada.** Ela sai das operações, das movimentações e dos dois caches de mercado, que já estão salvos. Uma tabela ficaria desatualizada em toda escrita de operação, importação, renda fixa e refresh de preço e de índice. Sobre o banco migrado, os dois endpoints respondem abaixo de 200 ms.
+- **O ajuste de evento vem de `operations`.** Conferido nos eventos do banco: o fechamento em cache é ajustado por desdobro, grupamento e bonificação, e a fonte aplica o ajuste 1 dia útil antes da data gravada. A quantidade de um dia é multiplicada pelo fator de cada evento com data posterior, e isso deixa correto também o dia entre as duas datas. Na carteira real, nenhum salto nos eventos.
+- **Gravar, editar ou apagar um evento apaga o cache de cotação do ativo** (e o registro da última consulta), e o próximo refresh busca a janela inteira na base nova.
+- Antes do primeiro fechamento em cache, o ativo vale o custo, como na carteira de hoje. Um fluxo em dia não útil entra no dia útil seguinte.
 
-**A conferir aqui:** o `price_history` guarda o fechamento ajustado por desdobramento e grupamento, então a quantidade de uma data anterior ao evento é convertida para a base atual pelos eventos de `operations`. Conferir contra a carteira real antes de confiar na série anterior a um evento.
+**Limitações residuais:**
+- Um buraco da fonte no começo da posição aparece como um degrau na série, porque o ativo vale o custo até o primeiro fechamento. O painel de saúde já mostra o buraco.
+- Um evento que a fonte aplica depois de a posição zerar, e que por isso não está em `operations`, escala o histórico inteiro do ativo. O efeito aparece só nos dias de compra e de venda.
+- Se o evento for gravado antes de a fonte ajustar o histórico, o cache rebuscado continua sem ajuste até ser apagado de novo.
 
-Gatilho: é a primeira do M3 e destrava as outras.
+**F15 — Desempenho de rentabilidade.** `backend/domain/performance.py`: a cota começa em 1 e, a cada dia, é multiplicada por `(valor de hoje + saídas) / (valor da véspera + entradas)`. A entrada soma embaixo e a saída em cima, para a primeira compra e a venda total fecharem sem divisão por zero. `GET /api/performance` (categoria, ativo, início e fim) devolve o retorno desde o início, o do período e os dos últimos 6, 12 e 24 meses, nulos quando a carteira é mais nova que eles. Devolve também os pontos acumulados desde a base do período: todo dia até um ano, e acima disso o último dia de cada mês. Tela Rentabilidade com os cinco números, cada um com a dica, o filtro de categoria, o seletor de período (6, 12 e 24 meses, este ano, desde o início, personalizado) e o gráfico. O detalhe do ativo ganhou o mesmo painel, filtrado por ele. Serve N1, pela cota de D5.
 
-**F15 — Desempenho de rentabilidade.** Gráfico da rentabilidade acumulada por cota (D5) no período escolhido, para a carteira geral, uma categoria (ações, ETF, FII, BDR, renda fixa) ou um ativo. Serve N1.
+Decisões tomadas durante:
+- **O período conta a partir do fechamento da véspera do primeiro dia dele.** Por isso "12 meses" no seletor bate com o card de 12 meses, e "este ano" parte de 31/12.
+- O seletor usa o ToggleGroup do shadcn, e o intervalo livre, dois campos de data. O seletor, o filtro de categoria, a dica de métrica e os rótulos e cores de categoria subiram para `shared/`, porque carteira, rentabilidade e evolução usam.
+- As chaves das duas visões ficam debaixo de `portfolio` no TanStack Query: toda escrita que invalida a carteira invalida o passado dela.
 
-Plano:
-- cota diária calculada sobre a F14 para qualquer conjunto de linhas: a carteira, uma categoria, um ativo;
-- tela com seletor de período (6, 12 e 24 meses, ano corrente, desde o início, intervalo livre) e filtro de categoria;
-- no topo: a rentabilidade desde o início, a do período escolhido e a dos últimos 6, 12 e 24 meses;
-- a rentabilidade de um ativo aparece também no detalhe dele;
-- dica na tela explicando o que é a rentabilidade por cota e por que ela não conta os aportes.
+**Limitações residuais:** sem proventos, a rentabilidade é só a variação de preço, e a tela diz isso. Num FII, isso deixa de fora a maior parte do retorno.
 
-Com proventos registrados (F20), o provento entra na cota no dia do pagamento, e a rentabilidade passa a ser o retorno total. Até lá, é só a variação de preço, e a tela diz isso.
-
-**Aceite:** a rentabilidade de um período conhecido bate com a de uma fonte externa que também mede por cota, com diferença de até 0,1 p.p.
+**Aceite:** a rentabilidade de um período conhecido bate com a de uma fonte externa que também mede por cota, com diferença de até 0,1 p.p. Fica com o usuário, e a comparação só fecha depois dos proventos (F20), porque a fonte externa conta o retorno total.
 
 **F16 — Benchmarks: CDI, IPCA e IBOV.** As referências no mesmo gráfico da F15, escolhidas num seletor e recomeçando do zero no início do período escolhido. Serve N1.
 
@@ -504,15 +510,15 @@ Plano:
 
 **Aceite:** o usuário responde "rendi mais que o CDI este ano?" olhando uma tela só.
 
-**F17 — Evolução do patrimônio.** Gráfico de área do patrimônio no tempo, filtrável por categoria e período, com o total atual, o crescimento dos últimos 6, 12 e 24 meses e o total de cada categoria. Serve N2 e N1.
+**F17 — Evolução do patrimônio.** `GET /api/evolution` (categoria, início e fim) soma a série diária por dia. Por ponto, devolve o patrimônio, o aplicado (entradas menos saídas acumuladas) e o ganho (o patrimônio menos o aplicado). Devolve também o total de hoje, o crescimento dos últimos 6, 12 e 24 meses em reais e em percentual, e o valor de hoje de cada categoria. A tela Evolução tem esses números, cada um com a dica, a tabela por categoria, os mesmos filtros da rentabilidade e o gráfico de área. A chave "Composição" divide a área em aplicado e ganho empilhados. Serve N2 e N1.
 
-Plano:
-- a série vem da F14, somada por dia: ponto mensal no período longo, diário no curto;
-- "crescimento" é a variação do patrimônio e inclui os aportes. A dica da tela diz isso e aponta a rentabilidade (F15), que não conta os aportes;
-- chave "composição": a mesma área, com a mesma altura, dividida em duas faixas empilhadas: o dinheiro aplicado (aportes menos resgates acumulados) e o ganho (o patrimônio menos o aplicado). Mostra quanto do patrimônio de cada data é valorização. O ganho é valor em reais, então continua visível com os anos mesmo quando o aplicado domina a área;
-- provento recebido sai da carteira, porque o app não acompanha o saldo em conta: a faixa de ganho é valorização, e o retorno com proventos fica na F15.
+Decisões tomadas durante:
+- **Num dia de perda, a área inteira é aplicado**, e uma linha tracejada marca o aplicado acima dela: a altura continua sendo o patrimônio. O front escolhe a faixa pelo sinal do ganho, sem conta.
+- O crescimento inclui os aportes, e a dica dele diz isso e aponta a rentabilidade.
 
-**Aceite:** no último dia, a faixa de ganho é igual ao resultado não realizado da carteira somado ao resultado das vendas.
+**Limitações residuais:** entre dois pontos mensais o gráfico interpola, então um aporte aparece como rampa, e não como degrau.
+
+**Aceite verificado:** no último dia, a faixa de ganho é igual ao resultado não realizado da carteira somado ao resultado das vendas, na cópia do banco migrado e num teste com dado fictício. O total da evolução é o total da carteira.
 
 **F18 — Comparação ano a ano.** A visão mais consultada de N1: uma tabela com um ano por linha e as colunas de janeiro a dezembro, mais o ano e o acumulado, e um gráfico de barras com os mesmos números. Serve N1.
 

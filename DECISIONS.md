@@ -4,7 +4,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-24):** D6 ganhou o cache em três camadas, idempotente com o cache em dia; D13 põe o estado da tela na URL; N9 separa as ferramentas de decisão (comparador de renda fixa, correlação de ativo novo, simulação de parcelamento) das análises da carteira; as séries do BCB ficam inteiras no cache.
+> **Última mudança (2026-09-25):** D6 inclui a bonificação no ajuste do fechamento, e um evento gravado apaga o cache de cotação do ativo.
 
 ---
 
@@ -154,7 +154,7 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 - O `create_app` não toca no banco: o refresh é uma chamada como as outras.
 - Ativo vendido deixa de ser consultado assim que o cache cobre o período em que houve posição, então um ticker que sai da bolsa depois da venda não gera aviso.
 - Falta de dado só vira aviso quando cai dentro de um período necessário.
-- O fechamento é ajustado por desdobramento e grupamento, não por provento: a série histórica converte a quantidade pelos eventos de `operations`.
+- O fechamento é ajustado por desdobramento, grupamento e bonificação, não por provento: a série histórica converte a quantidade pelos eventos de `operations`. O ajuste é o que a fonte conhecia quando buscou o fechamento, então gravar, editar ou apagar um evento apaga o cache de cotação do ativo, e o próximo refresh busca a janela inteira na base nova.
 - Dia útil é dia com CDI publicado; depois do último dado, dia de semana.
 - Se o yfinance quebrar, a alternativa gratuita é o arquivo de cotações históricas da B3 (COTAHIST), atrás da mesma interface.
 
