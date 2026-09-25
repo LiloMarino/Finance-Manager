@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** Marco do patrimônio atual concluído: posição por categoria com variação do dia, setor e segmento cadastrados, e renda fixa com tipo do produto, Selic + spread e aplicação no cadastro.
+> **Última mudança (2026-09-25):** Registrados os problemas do uso da Carteira: layout da página e seções fechadas (F44), linha clicável e a dica do cabeçalho (F50), máscaras nos campos (F51) e a sugestão de setor e segmento pelo yfinance (F52).
 
 ## Glossário
 
@@ -17,10 +17,10 @@
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
-| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46 | — |
-| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45 | — |
+| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52 | — |
+| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51 | — |
 | **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F20, F38 | — |
-| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48 | — |
+| **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48, F51 | — |
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
@@ -47,11 +47,14 @@
 | **F38** | Desempenho e distribuição dos proventos | — | ⏳ |
 | **F39** | Correlação da carteira | — | ⏳ |
 | **F43** | Sidebar | — | ⏳ |
-| **F44** | Carteira: gráfico, tooltip e cor | — | ⏳ |
+| **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
 | **F47** | Comparador de renda fixa | — | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ⏳ |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ⏳ |
+| **F51** | Máscaras nos campos | — | ⏳ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
 <summary><strong>Concluído / decidido / descartado (33 itens — clique pra expandir)</strong></summary>
@@ -63,7 +66,7 @@
 | **D3** | Um único SQLite, com snapshot e migration testada | F4 | ✅ |
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5, F26, F36 | ✅ |
 | **D5** | Rentabilidade medida por cota (TWR) | F15, F18 | ✅ |
-| **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F16, F41 | ✅ |
+| **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F16, F41, F52 | ✅ |
 | **D8** | IR-Helper aposentado; o banco dele é oráculo de posição e PM | F1, F7, F8, F21, F23 | ✅ |
 | **D10** | Roteamento: React Router 7 | F2 | ✅ |
 | **D11** | Tipagem: Pydantic nas bordas, dataclass no domínio, pyright strict | F3 | ✅ |
@@ -112,9 +115,12 @@
 | **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
 | **F33** | Custo da bonificação | M5 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
-| **F44** | Carteira: gráfico, tooltip e cor | M9 | 0 | ⏳ |
+| **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | M9 | 0 | ⏳ |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | 0 | ⏳ |
+| **F51** | Máscaras nos campos | M9 | 0 | ⏳ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
 
 ---
 
@@ -286,15 +292,18 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 0/5 concluídas
+> **Progresso:** 0/8 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
 | **F43** | Sidebar | F2 | ⏳ |
-| **F44** | Carteira: gráfico, tooltip e cor | F11 | ⏳ |
+| **F44** | Carteira: layout, gráfico e cor | F11 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | F9 | ⏳ |
 | **F48** | Fiscal: navegação por mês na URL | F23 | ⏳ |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | F36 | ⏳ |
+| **F51** | Máscaras nos campos | F46 | ⏳ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | F37 | ⏳ |
 
 ### Sem marco
 
@@ -348,12 +357,15 @@
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ✅ Concluído |
 | **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ✅ Concluído |
-| **F44** | Carteira: gráfico, tooltip e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F44** | Carteira: layout, gráfico e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -740,14 +752,22 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, com dado fictício: um ativo sem cotação, um título sem aplicação e um ativo sem CNPJ aparecem cada um na sua seção. Recarregar não repete o toast. Preencher o CNPJ pelo "Editar ativo" do painel baixa o contador na hora.
 
-**F44 — Carteira: gráfico, tooltip e cor.** A tela da Carteira é monocromática: resultado positivo e negativo têm a mesma cor, a classe do ativo é texto cinza, e o donut divide a tela com uma tabela esticada. Serve N2.
+**F44 — Carteira: layout, gráfico e cor.** A página da Carteira não se arruma como um todo. O card do patrimônio tem textos soltos acima do gráfico. As seções por categoria abrem todas expandidas e são um accordion solto entre dois cards. E tudo é monocromático: resultado positivo e negativo têm a mesma cor, a classe do ativo é texto cinza, e o donut divide a tela com uma tabela esticada. Serve N2.
 
 Plano:
+- **layout da página**, de cima para baixo:
+  - uma faixa de indicadores, cada um num card pequeno com rótulo, número e dica: patrimônio total, variação do dia e variação total. As datas dos dois pregões comparados saem do meio do card e vão para a dica da variação do dia;
+  - a composição por categoria num card próprio, com o donut e a legenda;
+  - as posições por categoria no mesmo idioma visual dos cards: cada seção um card recolhível, ou o accordion inteiro dentro de um card "Posições". A escolha sai na implementação, com os candidatos dos registries;
+  - a distribuição por setor e segmento como está;
+- **as seções começam fechadas:** o cabeçalho de cada uma já traz o resumo (valor, fração e as duas variações), e a tabela abre quando pedida;
 - gráfico e legenda na proporção do donut do SimuladorFinanceiro (`portfolio-pie-chart`, com legenda e tooltip próprios), que é a referência;
-- tooltip próprio: marcador com a cor da categoria, nome, valor e fração, em fonte proporcional com números `tabular-nums`, e num tamanho legível;
+- tooltip do gráfico próprio: marcador com a cor da categoria, nome, valor e fração, em fonte proporcional com números `tabular-nums`, e num tamanho legível;
 - tokens semânticos de alta e baixa (`--gain`, `--loss`) no `index.css`, usados em todo resultado com sinal. A F30 ajusta o tom, e o uso já fica certo;
 - **cor da categoria em todo lugar:** cada categoria tem uma cor fixa, a do gráfico, repetida no badge de classe, no cabeçalho das seções da F36 e nas barras de fração. A cor passa a identificar a categoria em qualquer tela. O `Badge` ganha a variante por categoria no próprio componente;
 - a paleta das categorias fica longe do verde e do vermelho, que são de alta e baixa: um badge de categoria não pode ser lido como resultado.
+
+Referências para a faixa de indicadores: o bloco `dashboard-01` do shadcn (cards de indicador com a tendência) e a Carteira do SimuladorFinanceiro.
 
 **F45 — Operações: filtros e seletor de ativo.** A lista de ativos é um select comum que exige rolar até achar o ticker, e ela só cresce com o tempo. O "Limpar filtros" é um botão grande que pesa mais que os próprios filtros. Serve N3.
 
@@ -798,6 +818,48 @@ Plano:
 - projeção do CDI e do IPCA como na F47: constante, editável, partindo do último valor em cache.
 
 Nada é gravado: a simulação é conta sobre valores digitados na hora.
+
+**F50 — Tabelas: linha inteira clicável e dica no cabeçalho.** Dois defeitos das tabelas de hoje. Serve N2 e N3.
+
+Plano:
+- **linha clicável:** nas tabelas em que a linha é um item com detalhe, só o nome é link, e o clique precisa cair exatamente em cima do texto. São elas: as posições da Carteira (renda variável e renda fixa), a lista de ativos, a lista de renda fixa e as posições do fiscal. A linha inteira passa a levar ao detalhe, com cursor de link e destaque ao passar o mouse:
+  - o link no nome continua, para o teclado e para abrir em outra aba;
+  - clique em botão ou menu dentro da linha não navega;
+  - o comportamento mora num lugar só, como variante do `TableRow`, e as tabelas o usam;
+  - na tabela de operações a linha é a operação, não o ativo, e ela fica como está;
+- **dica que não abre:** o "i" da variação do dia e da variação total, no cabeçalho das tabelas ordenáveis, não mostra a dica. O ícone está dentro do botão de ordenar, e o `Button` do shadcn desliga o ponteiro de todo ícone dentro dele (`[&_svg]:pointer-events-none`), então o mouse nunca chega ao ícone. A dica sai do botão e fica ao lado dele, e clicar nela não ordena a coluna. No card do patrimônio, fora de botão, a mesma dica funciona.
+
+**F51 — Máscaras nos campos.** Os campos de número são texto livre: o valor aceita "1.234,56" ou "1234.56", mas nada formata enquanto se digita, e o CNPJ e o ticker entram como vierem. Serve N3 e N5.
+
+Plano:
+- `shared/lib/mask.ts` com as máscaras num arquivo só, cada uma uma função de texto para texto aplicada no `onChange`, como o `format.ts` do SimuladorFinanceiro;
+- **dinheiro** (aplicação e resgate da renda fixa, DARF pago): digitação da direita para a esquerda, em centavos, com "R$ 1.234,56" na tela;
+- **preço unitário da operação:** separador de milhar e vírgula, com as casas que vierem. Não é em centavos: o leilão de fração chega com três casas;
+- **quantidade:** inteiro com separador de milhar, e casas decimais só no tipo que admite fração (bonificação e o fator do grupamento);
+- **taxa e spread:** percentual com vírgula; o spread da Selic aceita negativo;
+- **CNPJ:** os 14 dígitos com os pontos, a barra e o hífen, e os dígitos verificadores conferidos na validação;
+- **ticker:** maiúsculo e sem espaço;
+- a máscara só formata. Quem lê o valor segue sendo o `parseDecimalInput`, que já aceita o formato pt-BR, e a API continua recebendo Decimal como string;
+- o formulário de edição abre com o valor já formatado.
+
+**F52 — Setor e segmento sugeridos pelo yfinance.** Classificar cada ativo à mão é o que enche o painel de saúde de "ativos sem setor". O yfinance traz o setor e a indústria da empresa, e o app pode sugerir a classificação. Serve N2.
+
+O que o yfinance entrega (conferido): ação tem setor e indústria, em inglês ("Financial Services" e "Banks - Regional"); FII traz só o setor "Real Estate"; ETF não traz nada.
+
+Plano:
+- a sugestão aparece e o usuário confirma: nada é gravado sem ele escolher;
+- onde ela aparece:
+  - no cadastro de ativo novo, ao digitar o ticker;
+  - no "Editar ativo";
+  - no painel de saúde, com as sugestões de todos os ativos sem classificação numa lista, para aceitar de uma vez;
+- **inglês contra o cadastro próprio** (a decidir na implementação). O setor e o segmento são nomes do usuário (F37), e o yfinance fala inglês. Opções:
+  - **tradução fixa:** uma tabela no código com os setores e as indústrias do Yahoo em português; a sugestão escolhe o segmento com aquele nome ou oferece criá-lo;
+  - **par aprendido:** na primeira vez que uma indústria do Yahoo aparece, o usuário escolhe ou cria o segmento dele, e o app guarda o par. Dali em diante, todo ativo da mesma indústria já chega com a sugestão;
+  - recomendação: o par aprendido, que respeita os nomes que o usuário já deu e dispensa traduzir mais de cem indústrias. A tradução fixa pode entrar só para os 11 setores, como texto inicial;
+- FII: o yfinance não diz o segmento (tijolo, papel, logística...), e a sugestão para no setor. ETF fica sem sugestão;
+- a consulta é uma por ativo e fica em cache (D6), sem repetir a cada abertura.
+
+Alternativa a conferir: a classificação setorial da B3, em português e oficial para as empresas listadas (setor econômico, subsetor e segmento), num arquivo baixável. Conferir se ela cobre BDR e FII antes de trocar de fonte.
 
 ---
 ## 2. Nice-to-have
