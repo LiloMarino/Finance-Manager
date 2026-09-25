@@ -8,11 +8,13 @@ import pytest
 
 from backend.core.enum import OperationType
 from backend.domain.position import (
+    HoldingWindow,
     NegativePositionError,
     OperationRecord,
     Position,
     check_non_negative,
     current_positions,
+    holding_windows,
     position_at,
     settle_day_trades,
 )
@@ -176,3 +178,20 @@ def test_day_trade_pairs_first_buy_with_first_sell() -> None:
     assert trade.proceeds == Decimal(195)
     [remaining] = settled
     assert (remaining.quantity, remaining.unit_price) == (Decimal(5), Decimal(12))
+
+
+def test_holding_window_ends_when_the_position_is_closed() -> None:
+    """A janela de um ativo zerado vai da primeira operação até a que zerou a
+    posição; a de um ativo com posição fica aberta."""
+    windows = holding_windows(
+        [
+            _op(OperationType.BUY, "10", "10", day=date(2024, 2, 5)),
+            _op(OperationType.SELL, "10", "12", day=date(2024, 3, 5)),
+            _op(OperationType.BUY, "5", "10", ticker="WXYZ3", day=date(2024, 2, 6)),
+        ]
+    )
+
+    assert windows == {
+        "ABCD11": HoldingWindow(start=date(2024, 2, 5), end=date(2024, 3, 5)),
+        "WXYZ3": HoldingWindow(start=date(2024, 2, 6), end=None),
+    }

@@ -22,6 +22,10 @@ class DailyRate:
 class IndexSeriesProvider(Protocol):
     name: str
 
+    def first_date(self, series: IndexSeries) -> date:
+        """O primeiro dia com valor publicado na fonte."""
+        ...
+
     def get_series(
         self, series: IndexSeries, start: date, end: date
     ) -> list[DailyRate]:

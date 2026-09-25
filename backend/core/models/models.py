@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import override
@@ -203,6 +203,31 @@ class IndexHistory(Base):
     )
     rate_date: Mapped[date] = mapped_column(primary_key=True)
     value: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class FetchLog(Base):
+    """A última consulta à fonte externa de um ativo ou de uma série. É o que limita a
+    rede a uma consulta por intervalo e separa um problema de dado novo de um que já
+    tinha sido avisado.
+
+    `gap` diz se, depois da tentativa, ainda faltava dado além da folga de publicação.
+    """
+
+    __tablename__ = "fetch_log"
+    __table_args__ = (
+        CheckConstraint("(asset_id IS NULL) <> (series IS NULL)", name="one_target"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    attempted_at: Mapped[datetime]
+    succeeded_at: Mapped[datetime | None]
+    gap: Mapped[bool]
+    asset_id: Mapped[int | None] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"), unique=True, default=None
+    )
+    series: Mapped[IndexSeries | None] = mapped_column(
+        _enum_column(IndexSeries, "series"), unique=True, default=None
+    )
 
 
 class DarfPayment(Base):

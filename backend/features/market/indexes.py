@@ -2,19 +2,28 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
+from threading import Lock
 
 from sqlalchemy import func, select
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from backend.core.enum import IndexSeries
-from backend.core.models.models import FixedIncomeMovement, IndexHistory
+from backend.core.models.models import FetchLog, IndexHistory
+from backend.domain.coverage import DateRange, index_overdue, index_request
 from backend.domain.index_series import DailyRate, IndexSeriesProvider
 from backend.features.market.service import RefreshReport
+from backend.repository.market import (
+    business_calendar,
+    last_cached_indexes,
+    last_fetch,
+)
 
 logger = logging.getLogger(__name__)
+
+_refresh_lock = Lock()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -25,62 +34,104 @@ class LatestIndex:
 
 
 def _fetch(
-    provider: IndexSeriesProvider, series: IndexSeries, start: date, end: date
+    provider: IndexSeriesProvider, series: IndexSeries, request: DateRange
 ) -> list[DailyRate]:
     """Falha do provider vira lista vazia: o cache fica como estava."""
+    logger.info(
+        "%s: consultando %s de %s a %s",
+        provider.name,
+        series,
+        request.start,
+        request.end,
+    )
     try:
-        return provider.get_series(series, start, end)
+        return provider.get_series(series, request.start, request.end)
     except Exception:
         logger.warning("%s falhou para %s", provider.name, series, exc_info=True)
         return []
 
 
 def refresh_indexes(
-    session: Session, provider: IndexSeriesProvider, today: date
+    session: Session, provider: IndexSeriesProvider, now: datetime
 ) -> RefreshReport:
-    """Busca o que falta de cada série, desde o primeiro dia do mês da última data
-    em cache, ou da primeira movimentação de renda fixa quando não há cache.
+    """Consulta a fonte só pelas séries a que falta a última publicação esperada.
 
-    Começar no dia 1 é o que traz o IPCA do mês, datado nesse dia, e regrava os
-    valores recentes, que o BCB ainda pode corrigir.
+    As séries ficam inteiras no cache, desde o início de cada uma, com ou sem renda
+    fixa cadastrada: servem a marcação, os benchmarks e as ferramentas. Um refresh
+    por vez, como o de cotações.
     """
-    first_movement = session.scalar(select(func.min(FixedIncomeMovement.movement_date)))
-    last_cached = {
-        series: last_date
-        for series, last_date in session.execute(
-            select(IndexHistory.series, func.max(IndexHistory.rate_date)).group_by(
-                IndexHistory.series
-            )
-        ).tuples()
+    with _refresh_lock:
+        return _refresh_indexes(session, provider, now)
+
+
+def _refresh_indexes(
+    session: Session, provider: IndexSeriesProvider, now: datetime
+) -> RefreshReport:
+    today = now.date()
+    calendar = business_calendar(session)
+    last_cached = last_cached_indexes(session)
+    logs = {
+        log.series: log
+        for log in session.scalars(select(FetchLog).where(FetchLog.series.is_not(None)))
     }
+    plan = [
+        (series, request)
+        for series in IndexSeries
+        if (
+            request := index_request(
+                series,
+                last_cached.get(series),
+                provider.first_date(series),
+                last_fetch(logs.get(series)),
+                now,
+                calendar,
+            )
+        )
+        is not None
+    ]
     # A rede é consultada fora de transação, como no refresh de cotações
     session.commit()
-    fetched = [
-        (series, _fetch(provider, series, start.replace(day=1), today))
-        for series in IndexSeries
-        if (start := last_cached.get(series) or first_movement) is not None
-    ]
+    fetched = [(series, _fetch(provider, series, request)) for series, request in plan]
 
     upsert = insert(IndexHistory)
     upsert = upsert.on_conflict_do_update(
         index_elements=[IndexHistory.series, IndexHistory.rate_date],
         set_={"value": upsert.excluded.value},
     )
+    for series, rates in fetched:
+        if rates:
+            session.execute(
+                upsert,
+                [
+                    {"series": series, "rate_date": rate.rate_date, "value": rate.value}
+                    for rate in rates
+                ],
+            )
+    session.flush()
 
+    last_cached = last_cached_indexes(session)
     updated: list[str] = []
     failed: list[str] = []
     for series, rates in fetched:
-        if not rates:
+        gap = index_overdue(series, last_cached.get(series), today, calendar)
+        log = logs.get(series)
+        if gap and not (log and log.gap):
             failed.append(series.upper())
-            continue
-        session.execute(
-            upsert,
-            [
-                {"series": series, "rate_date": rate.rate_date, "value": rate.value}
-                for rate in rates
-            ],
-        )
-        updated.append(series.upper())
+        if rates:
+            updated.append(series.upper())
+        if log is None:
+            session.add(
+                FetchLog(
+                    attempted_at=now,
+                    succeeded_at=now if rates else None,
+                    gap=gap,
+                    series=series,
+                )
+            )
+        else:
+            log.attempted_at = now
+            log.succeeded_at = now if rates else log.succeeded_at
+            log.gap = gap
 
     session.commit()
     return RefreshReport(updated=tuple(updated), failed=tuple(failed))

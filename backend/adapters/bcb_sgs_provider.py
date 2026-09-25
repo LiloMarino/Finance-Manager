@@ -11,6 +11,12 @@ from backend.core.enum import IndexSeries
 from backend.domain.index_series import DailyRate
 
 SGS_CODES = {IndexSeries.CDI: 12, IndexSeries.SELIC: 11, IndexSeries.IPCA: 433}
+# O primeiro valor publicado de cada série no SGS
+SGS_FIRST_DATES = {
+    IndexSeries.CDI: date(1986, 3, 6),
+    IndexSeries.SELIC: date(1986, 6, 4),
+    IndexSeries.IPCA: date(1980, 1, 1),
+}
 
 # O SGS recusa (406) janela de série diária maior que 10 anos
 MAX_WINDOW = timedelta(days=3650)
@@ -27,6 +33,9 @@ _rows = TypeAdapter(list[SgsRow])
 
 class BcbSgsProvider:
     name = "bcb-sgs"
+
+    def first_date(self, series: IndexSeries) -> date:
+        return SGS_FIRST_DATES[series]
 
     def get_series(
         self, series: IndexSeries, start: date, end: date

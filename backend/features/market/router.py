@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -57,8 +57,9 @@ def list_prices(session: SessionDep) -> list[AssetPriceDTO]:
 
 @router.post("/prices/refresh")
 def refresh(session: SessionDep, provider: ProviderDep) -> RefreshReportDTO:
-    """Sem rede não é erro: o ticker vai para `failed` e o cache fica como estava."""
-    report = refresh_prices(session, provider, date.today())
+    """Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
+    fica como estava, e o ticker vai para `failed` quando a falta é problema novo."""
+    report = refresh_prices(session, provider, datetime.now())
     return RefreshReportDTO.model_validate(report)
 
 
@@ -71,6 +72,7 @@ def list_indexes(session: SessionDep) -> list[LatestIndexDTO]:
 def refresh_index_series(
     session: SessionDep, provider: IndexProviderDep
 ) -> RefreshReportDTO:
-    """Sem rede não é erro: a série vai para `failed` e o cache fica como estava."""
-    report = refresh_indexes(session, provider, date.today())
+    """Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
+    fica como estava, e a série vai para `failed` quando a falta é problema novo."""
+    report = refresh_indexes(session, provider, datetime.now())
     return RefreshReportDTO.model_validate(report)

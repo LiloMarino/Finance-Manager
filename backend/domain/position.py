@@ -199,6 +199,34 @@ def current_positions(operations: Iterable[OperationRecord]) -> dict[str, Positi
     return {operation.ticker: position for operation, position in replay(operations)}
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class HoldingWindow:
+    """Os dias em que houve posição no ativo: da primeira operação até a data em que
+    a posição zerou, ou até hoje (`end` nulo) enquanto ela existe."""
+
+    start: date
+    end: date | None
+
+
+def holding_windows(operations: Iterable[OperationRecord]) -> dict[str, HoldingWindow]:
+    ordered = _chronological(operations)
+    positions = current_positions(ordered)
+    first: dict[str, date] = {}
+    last: dict[str, date] = {}
+    for operation in ordered:
+        first.setdefault(operation.ticker, operation.operation_date)
+        last[operation.ticker] = operation.operation_date
+    return {
+        ticker: HoldingWindow(
+            start=start,
+            end=None
+            if positions.get(ticker, Position()).quantity != ZERO
+            else last[ticker],
+        )
+        for ticker, start in first.items()
+    }
+
+
 def position_at(
     operations: Iterable[OperationRecord], ticker: str, until: date
 ) -> Position:

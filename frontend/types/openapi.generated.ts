@@ -46,7 +46,8 @@ export interface paths {
         put?: never;
         /**
          * Refresh
-         * @description Sem rede não é erro: o ticker vai para `failed` e o cache fica como estava.
+         * @description Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
+         *     fica como estava, e o ticker vai para `failed` quando a falta é problema novo.
          */
         post: operations["refresh_api_market_prices_refresh_post"];
         delete?: never;
@@ -83,7 +84,8 @@ export interface paths {
         put?: never;
         /**
          * Refresh Index Series
-         * @description Sem rede não é erro: a série vai para `failed` e o cache fica como estava.
+         * @description Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
+         *     fica como estava, e a série vai para `failed` quando a falta é problema novo.
          */
         post: operations["refresh_index_series_api_market_indexes_refresh_post"];
         delete?: never;
