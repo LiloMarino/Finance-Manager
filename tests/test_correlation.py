@@ -16,7 +16,12 @@ from backend.app import create_app
 from backend.core.database.session import get_session
 from backend.core.enum import CorrelationWindow, IndexSeries
 from backend.core.models.models import FetchLog, IndexHistory, TickerPriceHistory
-from backend.domain.correlation import ROLLING_WINDOW, CorrelationError, correlate
+from backend.domain.correlation import (
+    ROLLING_WINDOW,
+    CorrelationError,
+    correlate,
+    correlation_matrix,
+)
 from backend.domain.market_data import DailyClose
 from backend.features.correlation.service import (
     SourceUnavailableError,
@@ -149,6 +154,23 @@ def test_flat_series_has_no_correlation() -> None:
         correlate(moving, flat)
 
 
+def test_matrix_is_symmetric_and_marks_short_pairs() -> None:
+    """A matriz repete o par dos dois lados da diagonal, e o par com poucos pregões em
+    comum fica sem valor, com o número de retornos que tinha."""
+    days = _weekdays(START, date(2024, 3, 29))
+    first = _prices(days, _returns(len(days) - 1))
+    mirrored = _prices(days, [-change for change in _returns(len(days) - 1)])
+    short = {day: price for day, price in first.items() if day < date(2024, 1, 20)}
+
+    cells = correlation_matrix([first, mirrored, short])
+
+    assert cells[0][1] == cells[1][0]
+    assert cells[0][1].value == pytest.approx(-1)
+    assert cells[0][0].value == 1
+    assert cells[0][2].value is None
+    assert cells[0][2].returns == len(short) - 1
+
+
 def _provider(*tickers: str) -> FakeProvider:
     days = _weekdays(date(2023, 1, 2), NOW.date())
     provider = FakeProvider("fake")
@@ -178,7 +200,6 @@ def test_second_query_stays_on_the_machine(session: Session) -> None:
         provider,
         first="abcd11.sa",
         second="EFGH3",
-        benchmark=None,
         window=CorrelationWindow.SIX_MONTHS,
         now=NOW,
     )
@@ -188,7 +209,6 @@ def test_second_query_stays_on_the_machine(session: Session) -> None:
         provider,
         first="ABCD11",
         second="EFGH3",
-        benchmark=None,
         window=CorrelationWindow.SIX_MONTHS,
         now=NOW + timedelta(hours=1),
     )
@@ -230,7 +250,6 @@ def test_offline_source_uses_the_cache(session: Session) -> None:
         provider,
         first="ABCD11",
         second="EFGH3",
-        benchmark=None,
         window=CorrelationWindow.SIX_MONTHS,
         now=NOW,
     )
@@ -242,7 +261,6 @@ def test_offline_source_uses_the_cache(session: Session) -> None:
         provider,
         first="ABCD11",
         second="EFGH3",
-        benchmark=None,
         window=CorrelationWindow.SIX_MONTHS,
         now=later,
     )
@@ -268,8 +286,7 @@ def test_benchmark_comes_from_the_series_cache(session: Session) -> None:
         session,
         provider,
         first="ABCD11",
-        second=None,
-        benchmark=IndexSeries.IBOV,
+        second="ibov",
         window=CorrelationWindow.ONE_YEAR,
         now=NOW,
     )
@@ -323,7 +340,7 @@ def test_unknown_ticker_is_not_found(
     client, _ = correlation_client
 
     response = client.get(
-        "/api/correlation",
+        "/api/correlation/pair",
         params={"first": "ABCD11", "second": "ZZZZ3", "window": "1y"},
     )
 
@@ -331,25 +348,53 @@ def test_unknown_ticker_is_not_found(
     assert "ZZZZ3" in response.json()["detail"]
 
 
-def test_correlation_needs_exactly_one_comparison(
+def test_matrix_needs_two_to_twelve_symbols(
     correlation_client: tuple[TestClient, FakeProvider],
 ) -> None:
-    """Sem o segundo ticker nem a referência, ou com os dois, é 422 com o motivo."""
+    """A matriz pede de 2 a 12 itens diferentes: o repetido conta uma vez só."""
     client, _ = correlation_client
 
-    neither = client.get("/api/correlation", params={"first": "ABCD11", "window": "1y"})
-    both = client.get(
-        "/api/correlation",
-        params={
-            "first": "ABCD11",
-            "second": "ABCD11",
-            "benchmark": "ibov",
-            "window": "1y",
-        },
+    repeated = client.get(
+        "/api/correlation/matrix",
+        params={"symbols": ["ABCD11", "abcd11.sa"], "window": "1y"},
+    )
+    too_many = client.get(
+        "/api/correlation/matrix",
+        params={"symbols": [f"T{index:03d}3" for index in range(13)], "window": "1y"},
     )
 
-    assert neither.status_code == 422
-    assert both.status_code == 422
+    assert repeated.status_code == 422
+    assert "de 2 a 12" in repeated.json()["detail"]
+    assert too_many.status_code == 422
+
+
+def test_matrix_endpoint_mixes_tickers_and_benchmarks(
+    correlation_client: tuple[TestClient, FakeProvider],
+    session: Session,
+) -> None:
+    """A lista mistura ticker e referência pelo nome, e a matriz sai simétrica, com
+    1 na diagonal."""
+    client, provider = correlation_client
+    session.add_all(
+        IndexHistory(
+            series=IndexSeries.IBOV, rate_date=day, value=Decimal(close) * 1000
+        )
+        for day, close in provider.closes["ABCD11"].items()
+    )
+    session.commit()
+
+    response = client.get(
+        "/api/correlation/matrix",
+        params={"symbols": ["abcd11", "IBOV"], "window": "1y"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["symbols"] == ["ABCD11", "IBOV"]
+    cells = body["cells"]
+    assert cells[0][0]["value"] == 1
+    assert cells[0][1] == cells[1][0]
+    assert cells[0][1]["value"] == pytest.approx(1, abs=1e-4)
 
 
 def test_correlation_endpoint_returns_both_series(
@@ -359,7 +404,7 @@ def test_correlation_endpoint_returns_both_series(
     client, _ = correlation_client
 
     response = client.get(
-        "/api/correlation",
+        "/api/correlation/pair",
         params={"first": "ABCD11", "second": "ABCD11", "window": "1y"},
     )
 

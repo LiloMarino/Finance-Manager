@@ -650,7 +650,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/correlation": {
+    "/api/correlation/pair": {
         parameters: {
             query?: never;
             header?: never;
@@ -658,12 +658,31 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get
-         * @description Compara `first` com outro ticker (`second`) ou com uma referência
-         *     (`benchmark`, IBOV ou CDI). Grava no cache o que a fonte trouxer; com o cache em
-         *     dia, responde sem sair da máquina.
+         * Pair
+         * @description Cada lado é um ticker da B3 ou uma referência (`IBOV`, `CDI`). Grava no cache
+         *     o que a fonte trouxer; com o cache em dia, responde sem sair da máquina.
          */
-        get: operations["get_api_correlation_get"];
+        get: operations["pair_api_correlation_pair_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/correlation/matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Correlation Matrix
+         * @description A correlação de cada par entre 2 e 12 tickers ou referências.
+         */
+        get: operations["correlation_matrix_api_correlation_matrix_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1013,6 +1032,16 @@ export interface components {
             points: components["schemas"]["NormalizedPointDTO"][];
             /** Rolling */
             rolling: components["schemas"]["RollingPointDTO"][];
+        };
+        /**
+         * CorrelationMatrixDTO
+         * @description `cells[i][j]` é a correlação entre `symbols[i]` e `symbols[j]`.
+         */
+        CorrelationMatrixDTO: {
+            /** Symbols */
+            symbols: string[];
+            /** Cells */
+            cells: components["schemas"]["MatrixCellDTO"][][];
         };
         /**
          * CorrelationWindow
@@ -1974,6 +2003,17 @@ export interface components {
          * @enum {string}
          */
         LossPool: "common" | "day_trade" | "fii";
+        /**
+         * MatrixCellDTO
+         * @description Nula quando o par não tem retornos em comum suficientes ou quando um dos
+         *     dois não variou.
+         */
+        MatrixCellDTO: {
+            /** Value */
+            value: number | null;
+            /** Returns */
+            returns: number;
+        };
         /** MonthReturnDTO */
         MonthReturnDTO: {
             /** Year */
@@ -4666,13 +4706,12 @@ export interface operations {
             };
         };
     };
-    get_api_correlation_get: {
+    pair_api_correlation_pair_get: {
         parameters: {
             query: {
                 first: string;
+                second: string;
                 window: components["schemas"]["CorrelationWindow"];
-                second?: string | null;
-                benchmark?: components["schemas"]["IndexSeries"] | null;
             };
             header?: never;
             path?: never;
@@ -4687,6 +4726,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CorrelationDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    correlation_matrix_api_correlation_matrix_get: {
+        parameters: {
+            query: {
+                symbols: string[];
+                window: components["schemas"]["CorrelationWindow"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrelationMatrixDTO"];
                 };
             };
             /** @description Unprocessable Content */

@@ -1,4 +1,4 @@
-"""A correlação entre um ticker e outro ticker ou uma referência.
+"""A correlação entre tickers e referências: de um par, ou de todos os pares de uma lista.
 
 O histórico de um ticker vem do cache próprio das ferramentas, `ticker_price_history`,
 que serve a qualquer ticker, na carteira ou não. Ele segue a mesma regra do cache de
@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import calendar
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from threading import Lock
@@ -20,7 +21,13 @@ from sqlalchemy.orm import Session
 from backend.core.enum import CorrelationWindow, IndexSeries
 from backend.core.errors import FinanceError
 from backend.core.models.models import FetchLog, TickerPriceHistory
-from backend.domain.correlation import Correlation, CorrelationError, correlate
+from backend.domain.correlation import (
+    Correlation,
+    CorrelationError,
+    MatrixCell,
+    correlate,
+    correlation_matrix,
+)
 from backend.domain.coverage import CachedRange, price_gaps, price_request
 from backend.domain.market_data import DailyClose, MarketDataProvider
 from backend.domain.position import HoldingWindow
@@ -36,7 +43,11 @@ WINDOW_MONTHS = {
     CorrelationWindow.THREE_YEARS: 36,
     CorrelationWindow.FIVE_YEARS: 60,
 }
-BENCHMARK_LABELS = {IndexSeries.IBOV: "IBOV", IndexSeries.CDI: "CDI"}
+# As referências entram na lista pelo nome, que nenhum ticker da B3 tem: quatro
+# letras e um número
+BENCHMARKS = {"IBOV": IndexSeries.IBOV, "CDI": IndexSeries.CDI}
+MIN_SYMBOLS = 2
+MAX_SYMBOLS = 12
 
 
 class TickerNotFoundError(FinanceError):
@@ -48,15 +59,21 @@ class SourceUnavailableError(FinanceError):
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class TickerCorrelation:
+class PairCorrelation:
     first: str
     second: str
     correlation: Correlation
 
 
-def normalize_ticker(text: str) -> str:
-    ticker = text.strip().upper()
-    return ticker.removesuffix(".SA")
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SymbolMatrix:
+    symbols: list[str]
+    cells: list[list[MatrixCell]]
+
+
+def normalize_symbol(text: str) -> str:
+    """Um ticker da B3, sem o sufixo do yfinance, ou o nome de uma referência."""
+    return text.strip().upper().removesuffix(".SA")
 
 
 def window_start(today: date, window: CorrelationWindow) -> date:
@@ -179,8 +196,6 @@ def benchmark_closes(
             for rate in rates
             if rate.rate_date >= start
         }
-    if benchmark is not IndexSeries.CDI:
-        raise CorrelationError("A referência da correlação é o IBOV ou o CDI.")
     levels: dict[date, float] = {}
     level = 1.0
     for rate in rates:
@@ -190,29 +205,54 @@ def benchmark_closes(
     return levels
 
 
+def symbol_closes(
+    session: Session,
+    provider: MarketDataProvider,
+    symbol: str,
+    start: date,
+    now: datetime,
+) -> dict[date, float]:
+    benchmark = BENCHMARKS.get(symbol)
+    if benchmark is not None:
+        return benchmark_closes(session, benchmark, start)
+    return ticker_closes(session, provider, symbol, start, now)
+
+
 def correlation(
     session: Session,
     provider: MarketDataProvider,
     *,
     first: str,
-    second: str | None,
-    benchmark: IndexSeries | None,
+    second: str,
     window: CorrelationWindow,
     now: datetime,
-) -> TickerCorrelation:
+) -> PairCorrelation:
     start = window_start(now.date(), window)
-    first_ticker = normalize_ticker(first)
-    if second is not None and benchmark is None:
-        second_label = normalize_ticker(second)
-        second_closes = ticker_closes(session, provider, second_label, start, now)
-    elif benchmark is not None and second is None:
-        second_label = BENCHMARK_LABELS.get(benchmark, benchmark.value.upper())
-        second_closes = benchmark_closes(session, benchmark, start)
-    else:
-        raise CorrelationError("Compare com outro ticker ou com uma referência.")
-    first_closes = ticker_closes(session, provider, first_ticker, start, now)
-    return TickerCorrelation(
-        first=first_ticker,
-        second=second_label,
-        correlation=correlate(first_closes, second_closes),
+    first_symbol, second_symbol = normalize_symbol(first), normalize_symbol(second)
+    return PairCorrelation(
+        first=first_symbol,
+        second=second_symbol,
+        correlation=correlate(
+            symbol_closes(session, provider, first_symbol, start, now),
+            symbol_closes(session, provider, second_symbol, start, now),
+        ),
     )
+
+
+def matrix(
+    session: Session,
+    provider: MarketDataProvider,
+    *,
+    symbols: Sequence[str],
+    window: CorrelationWindow,
+    now: datetime,
+) -> SymbolMatrix:
+    """A correlação de cada par entre os `symbols`, sem repetir, na ordem dada."""
+    unique = list(dict.fromkeys(normalize_symbol(symbol) for symbol in symbols))
+    if not MIN_SYMBOLS <= len(unique) <= MAX_SYMBOLS:
+        raise CorrelationError(
+            f"A matriz compara de {MIN_SYMBOLS} a {MAX_SYMBOLS} ativos diferentes."
+        )
+    start = window_start(now.date(), window)
+    series = [symbol_closes(session, provider, symbol, start, now) for symbol in unique]
+    return SymbolMatrix(symbols=unique, cells=correlation_matrix(series))

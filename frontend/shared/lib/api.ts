@@ -79,7 +79,7 @@ export function getApiErrorMessage(error: unknown): string {
   return "Erro inesperado.";
 }
 
-/** Path e query só carregam primitivos; vazio é parâmetro ausente. */
+/** Path e query carregam primitivos; vazio é parâmetro ausente. */
 function toParam(value: unknown): string | null {
   if (typeof value === "string") return value || null;
   if (typeof value === "number" || typeof value === "boolean") return String(value);
@@ -91,10 +91,13 @@ function buildUrl(url: string, { path, query }: RawOptions): string {
     encodeURIComponent(toParam(path?.[name]) ?? ""),
   );
   const search = new URLSearchParams();
+  // A lista na query repete o parâmetro, um por item
   for (const [key, value] of Object.entries(query ?? {})) {
-    const param = toParam(value);
-    if (param !== null) {
-      search.append(key, param);
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const param = toParam(item);
+      if (param !== null) {
+        search.append(key, param);
+      }
     }
   }
   const queryString = search.toString();

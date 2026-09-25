@@ -66,23 +66,71 @@ def _correlation(first: Sequence[float], second: Sequence[float]) -> float | Non
         return None
 
 
-def correlate(first: Mapping[date, float], second: Mapping[date, float]) -> Correlation:
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MatrixCell:
+    """A correlação de um par, nula quando ele não tem retornos em comum suficientes
+    ou quando um dos dois não variou. Na diagonal, cada série consigo mesma."""
+
+    value: float | None
+    returns: int
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class _Pair:
+    days: list[date]
+    first_closes: list[float]
+    second_closes: list[float]
+    first_returns: list[float]
+    second_returns: list[float]
+    value: float | None
+
+
+def _pair(first: Mapping[date, float], second: Mapping[date, float]) -> _Pair:
     days = sorted(first.keys() & second.keys())
-    if len(days) < MIN_RETURNS + 1:
-        raise CorrelationError(
-            f"Só {max(len(days) - 1, 0)} retornos diários em comum no período; "
-            f"a correlação pede pelo menos {MIN_RETURNS}."
-        )
     first_closes = [first[day] for day in days]
     second_closes = [second[day] for day in days]
     first_returns = _returns(first_closes)
     second_returns = _returns(second_closes)
+    enough = len(first_returns) >= MIN_RETURNS
+    return _Pair(
+        days=days,
+        first_closes=first_closes,
+        second_closes=second_closes,
+        first_returns=first_returns,
+        second_returns=second_returns,
+        value=_correlation(first_returns, second_returns) if enough else None,
+    )
 
-    value = _correlation(first_returns, second_returns)
-    if value is None:
+
+def correlation_matrix(
+    series: Sequence[Mapping[date, float]],
+) -> list[list[MatrixCell]]:
+    """A correlação de cada par, com a mesma matriz dos dois lados da diagonal."""
+    cells = [[MatrixCell(value=None, returns=0) for _ in series] for _ in series]
+    for row, first in enumerate(series):
+        cells[row][row] = MatrixCell(value=1.0, returns=max(len(first) - 1, 0))
+        for column in range(row + 1, len(series)):
+            pair = _pair(first, series[column])
+            cell = MatrixCell(value=pair.value, returns=len(pair.first_returns))
+            cells[row][column] = cells[column][row] = cell
+    return cells
+
+
+def correlate(first: Mapping[date, float], second: Mapping[date, float]) -> Correlation:
+    pair = _pair(first, second)
+    if len(pair.first_returns) < MIN_RETURNS:
+        raise CorrelationError(
+            f"Só {len(pair.first_returns)} retornos diários em comum no período; "
+            f"a correlação pede pelo menos {MIN_RETURNS}."
+        )
+    if pair.value is None:
         raise CorrelationError(
             "Um dos dois não variou no período, e a correlação não existe."
         )
+    value = pair.value
+    days = pair.days
+    first_closes, second_closes = pair.first_closes, pair.second_closes
+    first_returns, second_returns = pair.first_returns, pair.second_returns
 
     # O retorno de índice `i` termina no dia `i + 1`
     rolling = [

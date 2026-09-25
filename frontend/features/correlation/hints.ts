@@ -19,3 +19,6 @@ export function describeCorrelation(value: number): string {
   if (value > -0.7) return "Tendem a ir em sentidos opostos.";
   return "Andam em sentidos opostos: quando um sobe, o outro costuma cair.";
 }
+
+export const matrixHint =
+  "Cada célula é a correlação entre o ativo da linha e o da coluna, a mesma dos dois lados da diagonal. Verde forte é perto de +1 (andam juntos), neutro é perto de 0 (sem relação) e vermelho forte é perto de −1 (sentidos opostos). Clique numa célula para ver o par embaixo.";

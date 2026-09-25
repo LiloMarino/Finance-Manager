@@ -1,17 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import {
-  type CorrelationQuery,
+  type Benchmark,
+  type CorrelationState,
   type CorrelationWindow,
-  benchmarkLabels,
+  MAX_SYMBOLS,
+  benchmarks,
   isBenchmark,
   isCorrelationWindow,
   windowLabels,
 } from "@/features/correlation/correlation-params";
 import { Button } from "@/shared/components/ui/button";
-import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import {
   Select,
@@ -22,97 +29,91 @@ import {
 } from "@/shared/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 
-// O segundo lado é outro ticker ou uma referência
-type SecondKind = "ticker" | "ibov" | "cdi";
-
-const OTHER_TICKER: SecondKind = "ticker";
-
-function isSecondKind(value: string): value is SecondKind {
-  return value === "ticker" || isBenchmark(value);
-}
+// Vírgula, ponto e vírgula e espaço separam os tickers digitados
+const SEPARATOR = /[\s,;]+/;
 
 const schema = z
   .object({
-    first: z.string().trim().min(1, "Informe o ticker."),
-    kind: z.custom<SecondKind>((value) => typeof value === "string" && isSecondKind(value)),
-    second: z.string().trim(),
+    tickers: z.string(),
+    benchmarks: z.array(
+      z.custom<Benchmark>((value) => typeof value === "string" && isBenchmark(value)),
+    ),
     window: z.custom<CorrelationWindow>(
       (value) => typeof value === "string" && isCorrelationWindow(value),
     ),
   })
-  .transform((values, context): CorrelationQuery => {
-    const first = values.first.toUpperCase();
-    if (values.kind !== "ticker") {
-      return { first, benchmark: values.kind, window: values.window };
-    }
-    if (!values.second) {
-      context.addIssue({ code: "custom", path: ["second"], message: "Informe o ticker." });
+  .transform((values, context) => {
+    const tickers = values.tickers
+      .split(SEPARATOR)
+      .map((ticker) => ticker.trim().toUpperCase())
+      .filter(Boolean);
+    const symbols = [...new Set([...tickers, ...values.benchmarks])];
+    if (symbols.length < 2 || symbols.length > MAX_SYMBOLS) {
+      context.addIssue({
+        code: "custom",
+        path: ["tickers"],
+        message: `Escolha de 2 a ${MAX_SYMBOLS} itens, contando o IBOV e o CDI.`,
+      });
       return z.NEVER;
     }
-    return { first, second: values.second.toUpperCase(), window: values.window };
+    return { symbols, window: values.window };
   });
 
 interface CorrelationFormProps {
-  query: CorrelationQuery | null;
-  onSubmit: (query: CorrelationQuery) => void;
+  state: CorrelationState;
+  onSubmit: (symbols: string[], window: CorrelationWindow) => void;
 }
 
-export function CorrelationForm({ query, onSubmit }: CorrelationFormProps) {
-  const benchmark = query?.benchmark;
+export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
   const form = useForm({
     resolver: zodResolver(schema),
     values: {
-      first: query?.first ?? "",
-      kind: benchmark && isBenchmark(benchmark) ? benchmark : OTHER_TICKER,
-      second: query?.second ?? "",
-      window: query?.window ?? "1y",
+      tickers: state.symbols.filter((symbol) => !isBenchmark(symbol)).join(", "),
+      benchmarks: state.symbols.filter(isBenchmark),
+      window: state.window,
     },
   });
   const { errors } = form.formState;
-  const kind = useWatch({ control: form.control, name: "kind" });
 
   return (
     <form
       className="flex flex-wrap items-start gap-4"
-      onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+      onSubmit={(event) =>
+        void form.handleSubmit(({ symbols, window }) => onSubmit(symbols, window))(event)
+      }
     >
-      <Field className="w-36" data-invalid={Boolean(errors.first)}>
-        <FieldLabel htmlFor="correlation-first">Ticker</FieldLabel>
-        <Input id="correlation-first" placeholder="ABCD11" {...form.register("first")} />
-        <FieldError errors={[errors.first]} />
+      <Field className="min-w-64 flex-1" data-invalid={Boolean(errors.tickers)}>
+        <FieldLabel htmlFor="correlation-tickers">Tickers</FieldLabel>
+        <Input
+          id="correlation-tickers"
+          placeholder="ABCD11, EFGH3, IJKL4"
+          {...form.register("tickers")}
+        />
+        <FieldDescription>Separados por vírgula ou espaço, na carteira ou não.</FieldDescription>
+        <FieldError errors={[errors.tickers]} />
       </Field>
       <Field className="w-auto">
-        <FieldLabel>Comparar com</FieldLabel>
+        <FieldLabel>Referências</FieldLabel>
         <Controller
           control={form.control}
-          name="kind"
+          name="benchmarks"
           render={({ field }) => (
             <ToggleGroup
-              type="single"
+              type="multiple"
               variant="outline"
               spacing={0}
               value={field.value}
-              onValueChange={(next) => {
-                if (isSecondKind(next)) field.onChange(next);
-              }}
+              onValueChange={(next) => field.onChange(next.filter(isBenchmark))}
             >
-              <ToggleGroupItem value="ticker">Outro ticker</ToggleGroupItem>
-              {Object.entries(benchmarkLabels).map(([value, label]) => (
-                <ToggleGroupItem key={value} value={value}>
-                  {label}
+              {benchmarks.map((benchmark) => (
+                <ToggleGroupItem key={benchmark} value={benchmark}>
+                  {benchmark}
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
           )}
         />
       </Field>
-      {kind === "ticker" && (
-        <Field className="w-36" data-invalid={Boolean(errors.second)}>
-          <FieldLabel htmlFor="correlation-second">Segundo ticker</FieldLabel>
-          <Input id="correlation-second" placeholder="EFGH3" {...form.register("second")} />
-          <FieldError errors={[errors.second]} />
-        </Field>
-      )}
       <Field className="w-36">
         <FieldLabel htmlFor="correlation-window">Janela</FieldLabel>
         <Controller
