@@ -18,6 +18,7 @@ export function useRefreshIndexes() {
         queryKeys.portfolio,
         queryKeys.dataHealth,
         queryKeys.simulation,
+        queryKeys.correlation,
       ]);
       // `failed` traz só o problema novo; os já avisados ficam no painel
       if (failed.length > 0) {

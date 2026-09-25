@@ -650,6 +650,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/correlation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get
+         * @description Compara `first` com outro ticker (`second`) ou com uma referência
+         *     (`benchmark`, IBOV ou CDI). Grava no cache o que a fonte trouxer; com o cache em
+         *     dia, responde sem sair da máquina.
+         */
+        get: operations["get_api_correlation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -959,6 +981,44 @@ export interface components {
             /** Cdi Equivalent */
             cdi_equivalent: DecimalString | null;
         };
+        /**
+         * CorrelationDTO
+         * @description A correlação de Pearson dos retornos diários, de -1 a 1, sobre `returns`
+         *     retornos nos pregões em comum de `start` a `end`. `points` são as duas séries
+         *     partindo de 100, e `rolling`, a correlação das `rolling_window` sessões que
+         *     terminam em cada dia.
+         */
+        CorrelationDTO: {
+            /** First */
+            first: string;
+            /** Second */
+            second: string;
+            /** Correlation */
+            correlation: number;
+            /** Returns */
+            returns: number;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Rolling Window */
+            rolling_window: number;
+            /** Points */
+            points: components["schemas"]["NormalizedPointDTO"][];
+            /** Rolling */
+            rolling: components["schemas"]["RollingPointDTO"][];
+        };
+        /**
+         * CorrelationWindow
+         * @enum {string}
+         */
+        CorrelationWindow: "6m" | "1y" | "3y" | "5y";
         /**
          * CurrentRatesDTO
          * @description O último valor real de cada série, em % ao ano: o CDI e a Selic do último
@@ -2055,6 +2115,18 @@ export interface components {
             ticker: string;
             asset_class: components["schemas"]["AssetClass"];
         };
+        /** NormalizedPointDTO */
+        NormalizedPointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** First */
+            first: number;
+            /** Second */
+            second: number;
+        };
         /** OperationDTO */
         OperationDTO: {
             /** Id */
@@ -2414,6 +2486,16 @@ export interface components {
              * Format: decimal
              */
             cumulative_return: DecimalString;
+        };
+        /** RollingPointDTO */
+        RollingPointDTO: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Value */
+            value: number;
         };
         /**
          * SectorAllocationDTO
@@ -4562,6 +4644,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstallmentsDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_api_correlation_get: {
+        parameters: {
+            query: {
+                first: string;
+                window: components["schemas"]["CorrelationWindow"];
+                second?: string | null;
+                benchmark?: components["schemas"]["IndexSeries"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrelationDTO"];
                 };
             };
             /** @description Unprocessable Content */

@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from backend.adapters.bcb_sgs_provider import BcbSgsProvider
-from backend.adapters.yfinance_provider import YFinanceProvider
 from backend.core.database.session import SessionDep
 from backend.core.dto import BaseDTO, DecimalStr
 from backend.core.enum import AssetClass, IndexSeries
-from backend.domain.index_series import IndexSeriesProvider
-from backend.domain.market_data import MarketDataProvider
 from backend.features.market.indexes import latest_indexes, refresh_indexes
 from backend.features.market.service import refresh_prices
+from backend.features.providers import IndexProviderDep, ProviderDep
 from backend.repository.market import latest_prices
 
 router = APIRouter(prefix="/api/market", tags=["market"])
@@ -36,18 +32,6 @@ class LatestIndexDTO(BaseDTO):
 class RefreshReportDTO(BaseDTO):
     updated: list[str]
     failed: list[str]
-
-
-def get_provider() -> MarketDataProvider:
-    return YFinanceProvider()
-
-
-def get_index_provider() -> IndexSeriesProvider:
-    return BcbSgsProvider()
-
-
-ProviderDep = Annotated[MarketDataProvider, Depends(get_provider)]
-IndexProviderDep = Annotated[IndexSeriesProvider, Depends(get_index_provider)]
 
 
 @router.get("/prices")

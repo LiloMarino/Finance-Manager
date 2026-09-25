@@ -213,6 +213,21 @@ class PriceHistory(Base):
     close: Mapped[Decimal] = mapped_column(DecimalText)
 
 
+class TickerPriceHistory(Base):
+    """Cache de fechamentos diários por ticker, das ferramentas que olham ativos fora
+    da carteira. Cada consulta à fonte traz a janela inteira e substitui o cache do
+    ticker, então os fechamentos dele estão todos na mesma base de ajuste."""
+
+    __tablename__ = "ticker_price_history"
+    __table_args__ = (
+        CheckConstraint("CAST(close AS REAL) > 0", name="close_positive"),
+    )
+
+    ticker: Mapped[str] = mapped_column(String, primary_key=True)
+    price_date: Mapped[date] = mapped_column(primary_key=True)
+    close: Mapped[Decimal] = mapped_column(DecimalText)
+
+
 class FixedIncomeInvestment(Base):
     """Um título de renda fixa. O valor dele é marcado a partir das movimentações e
     das séries do indexador.
@@ -291,16 +306,19 @@ class IndexHistory(Base):
 
 
 class FetchLog(Base):
-    """A última consulta à fonte externa de um ativo ou de uma série. É o que limita a
-    rede a uma consulta por intervalo e separa um problema de dado novo de um que já
-    tinha sido avisado.
+    """A última consulta à fonte externa de um ativo, de uma série ou de um ticker fora
+    da carteira. É o que limita a rede a uma consulta por intervalo e separa um
+    problema de dado novo de um que já tinha sido avisado.
 
     `gap` diz se, depois da tentativa, ainda faltava dado além da folga de publicação.
     """
 
     __tablename__ = "fetch_log"
     __table_args__ = (
-        CheckConstraint("(asset_id IS NULL) <> (series IS NULL)", name="one_target"),
+        CheckConstraint(
+            "(asset_id IS NOT NULL) + (series IS NOT NULL) + (ticker IS NOT NULL) = 1",
+            name="one_target",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
@@ -313,6 +331,7 @@ class FetchLog(Base):
     series: Mapped[IndexSeries | None] = mapped_column(
         _enum_column(IndexSeries, "series"), unique=True, default=None
     )
+    ticker: Mapped[str | None] = mapped_column(String, unique=True, default=None)
 
 
 class DarfPayment(Base):

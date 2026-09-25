@@ -36,8 +36,8 @@ from backend.features.market.indexes import (
     IBOV_TICKER,
     refresh_indexes,
 )
-from backend.features.market.router import get_provider
 from backend.features.market.service import refresh_prices
+from backend.features.providers import get_provider
 
 FIRST_OPERATION = date(2024, 2, 5)
 # Sexta-feira, depois do fechamento do pregão

@@ -14,6 +14,7 @@ export const queryKeys = {
   // Debaixo das séries: o refresh delas muda o ponto de partida da projeção
   currentRates: ["market", "indexes", "current"] as const,
   simulation: ["simulation"] as const,
+  correlation: ["market", "correlation"] as const,
   fixedIncome: ["fixed-income"] as const,
   tax: ["tax"] as const,
   dataHealth: ["data-health"] as const,

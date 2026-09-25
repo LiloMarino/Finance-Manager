@@ -16,6 +16,7 @@ export function useRefreshPrices() {
         queryKeys.prices,
         queryKeys.portfolio,
         queryKeys.dataHealth,
+        queryKeys.correlation,
       ]);
       // `failed` traz só o problema novo; os já avisados ficam no painel
       if (failed.length > 0) {
