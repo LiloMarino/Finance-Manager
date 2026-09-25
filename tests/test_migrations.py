@@ -67,3 +67,31 @@ def test_downgrade_then_upgrade_again(db_path: Path) -> None:
 
     command.upgrade(config, "head")
     assert current_revision(db_path) == head_revision()
+
+
+def test_existing_investment_gets_product_type_from_exemption(tmp_path: Path) -> None:
+    """O título que já existia ganha o tipo pela isenção: o tributado vira RDB e o
+    isento, LCI."""
+    db_path = tmp_path / "finance.db"
+    config = alembic_config(db_path)
+    command.upgrade(config, "4aaa68dd93e9")
+    connection = sqlite3.connect(db_path)
+    with connection:
+        connection.executemany(
+            "INSERT INTO fixed_income_investments"
+            " (label, indexer, rate, daily_liquidity, tax_exempt)"
+            " VALUES (?, 'cdi', '100', 1, ?)",
+            [("Caixinha", 0), ("LCI ABC", 1)],
+        )
+    connection.close()
+
+    command.upgrade(config, "head")
+
+    connection = sqlite3.connect(db_path)
+    try:
+        rows = connection.execute(
+            "SELECT label, product_type FROM fixed_income_investments ORDER BY label"
+        ).fetchall()
+    finally:
+        connection.close()
+    assert rows == [("Caixinha", "rdb"), ("LCI ABC", "lci")]

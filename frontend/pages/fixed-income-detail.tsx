@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
-import { describeRate, indexerLabels } from "@/shared/lib/labels";
+import { describeRate, fixedIncomeTypeLabels, indexerLabels } from "@/shared/lib/labels";
 import { formatBRL } from "@/types/decimal";
 
 export function FixedIncomeDetailPage() {
@@ -38,6 +38,7 @@ export function FixedIncomeDetailPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold">{data.label}</h1>
+            <Badge variant="outline">{fixedIncomeTypeLabels[data.product_type]}</Badge>
             {data.tax_exempt && <Badge variant="secondary">Isento</Badge>}
             {data.daily_liquidity && <Badge variant="secondary">Liquidez diária</Badge>}
           </div>

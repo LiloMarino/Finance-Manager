@@ -8,6 +8,7 @@ import type { components } from "@/types/openapi.generated";
 export type FixedIncome = components["schemas"]["FixedIncomeDTO"];
 export type Movement = components["schemas"]["MovementDTO"];
 type FixedIncomeInput = components["schemas"]["FixedIncomeInDTO"];
+type FixedIncomeCreateInput = components["schemas"]["FixedIncomeCreateDTO"];
 type MovementInput = components["schemas"]["MovementInDTO"];
 
 export function useFixedIncomeList() {
@@ -44,15 +45,20 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
   });
 }
 
-export function useSaveFixedIncome(investmentId?: number) {
+export function useCreateFixedIncome() {
   return useWrite(
-    (body: FixedIncomeInput) =>
-      investmentId === undefined
-        ? post("/api/fixed-income", { body })
-        : put("/api/fixed-income/{investment_id}", {
-            path: { investment_id: investmentId },
-            body,
-          }),
+    (body: FixedIncomeCreateInput) => post("/api/fixed-income", { body }),
+    "Título cadastrado.",
+  );
+}
+
+export function useUpdateFixedIncome() {
+  return useWrite(
+    ({ investmentId, body }: { investmentId: number; body: FixedIncomeInput }) =>
+      put("/api/fixed-income/{investment_id}", {
+        path: { investment_id: investmentId },
+        body,
+      }),
     "Título salvo.",
   );
 }

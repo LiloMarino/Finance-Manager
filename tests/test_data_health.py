@@ -9,6 +9,7 @@ from backend.core.enum import (
     AssetClass,
     DataIssueKind,
     FixedIncomeMovementType,
+    FixedIncomeType,
     Indexer,
     IndexSeries,
     OperationType,
@@ -140,11 +141,11 @@ def test_fixed_income_without_application_is_listed(session: Session) -> None:
     a primeira aplicação."""
     investment = FixedIncomeInvestment(
         label="CDB XYZ 2030",
+        product_type=FixedIncomeType.CDB,
         indexer=Indexer.CDI,
         rate=Decimal(100),
         maturity_date=None,
         daily_liquidity=True,
-        tax_exempt=False,
     )
     session.add(investment)
     session.commit()

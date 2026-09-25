@@ -8,9 +8,15 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import Indexer
+from backend.core.enum import FixedIncomeType, Indexer
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
-from backend.domain.fixed_income import FixedIncomeTerms, Marking, Movement, mark
+from backend.domain.fixed_income import (
+    TAX_EXEMPT_TYPES,
+    FixedIncomeTerms,
+    Marking,
+    Movement,
+    mark,
+)
 from backend.repository.market import index_rates
 
 
@@ -18,6 +24,7 @@ from backend.repository.market import index_rates
 class MarkedInvestment:
     id: int
     label: str
+    product_type: FixedIncomeType
     indexer: Indexer
     rate: Decimal
     maturity_date: date | None
@@ -58,10 +65,10 @@ def marked_investments(
             investment,
             mark(
                 FixedIncomeTerms(
+                    product_type=investment.product_type,
                     indexer=investment.indexer,
                     rate=investment.rate,
                     maturity_date=investment.maturity_date,
-                    tax_exempt=investment.tax_exempt,
                 ),
                 by_investment[investment.id],
                 rates,
@@ -76,11 +83,12 @@ def _marked(investment: FixedIncomeInvestment, marking: Marking) -> MarkedInvest
     return MarkedInvestment(
         id=investment.id,
         label=investment.label,
+        product_type=investment.product_type,
         indexer=investment.indexer,
         rate=investment.rate,
         maturity_date=investment.maturity_date,
         daily_liquidity=investment.daily_liquidity,
-        tax_exempt=investment.tax_exempt,
+        tax_exempt=investment.product_type in TAX_EXEMPT_TYPES,
         invested=marking.invested,
         gross_value=marking.gross_value,
         estimated_tax=marking.estimated_tax,

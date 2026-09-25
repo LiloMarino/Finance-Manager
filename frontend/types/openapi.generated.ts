@@ -403,6 +403,22 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * ApplicationInDTO
+         * @description Uma aplicação, pelo valor bruto.
+         */
+        ApplicationInDTO: {
+            /**
+             * Movement Date
+             * Format: date
+             */
+            movement_date: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+        };
+        /**
          * AssetClass
          * @enum {string}
          */
@@ -546,6 +562,26 @@ export interface components {
             detail: string;
         };
         /**
+         * FixedIncomeCreateDTO
+         * @description O título nasce com a primeira aplicação.
+         */
+        FixedIncomeCreateDTO: {
+            /** Label */
+            label: string;
+            product_type: components["schemas"]["FixedIncomeType"];
+            indexer: components["schemas"]["Indexer"];
+            /**
+             * Rate
+             * Format: decimal
+             */
+            rate: DecimalString;
+            /** Maturity Date */
+            maturity_date?: string | null;
+            /** Daily Liquidity */
+            daily_liquidity: boolean;
+            application: components["schemas"]["ApplicationInDTO"];
+        };
+        /**
          * FixedIncomeDTO
          * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou.
          */
@@ -554,6 +590,7 @@ export interface components {
             id: number;
             /** Label */
             label: string;
+            product_type: components["schemas"]["FixedIncomeType"];
             indexer: components["schemas"]["Indexer"];
             /**
              * Rate
@@ -600,6 +637,7 @@ export interface components {
             id: number;
             /** Label */
             label: string;
+            product_type: components["schemas"]["FixedIncomeType"];
             indexer: components["schemas"]["Indexer"];
             /**
              * Rate
@@ -685,10 +723,15 @@ export interface components {
              */
             as_of: string;
         };
-        /** FixedIncomeInDTO */
+        /**
+         * FixedIncomeInDTO
+         * @description Os termos do título. Na Selic, `rate` é o spread, que pode ser zero ou
+         *     negativo; nos outros indexadores, é maior que zero.
+         */
         FixedIncomeInDTO: {
             /** Label */
             label: string;
+            product_type: components["schemas"]["FixedIncomeType"];
             indexer: components["schemas"]["Indexer"];
             /**
              * Rate
@@ -699,14 +742,19 @@ export interface components {
             maturity_date?: string | null;
             /** Daily Liquidity */
             daily_liquidity: boolean;
-            /** Tax Exempt */
-            tax_exempt: boolean;
         };
         /**
          * FixedIncomeMovementType
          * @enum {string}
          */
         FixedIncomeMovementType: "application" | "redemption";
+        /**
+         * FixedIncomeType
+         * @description O produto de renda fixa. Ele decide a isenção de IR e, no Tesouro, o
+         *     indexador.
+         * @enum {string}
+         */
+        FixedIncomeType: "cdb" | "rdb" | "lc" | "lci" | "lca" | "cri" | "cra" | "debenture" | "incentivized_debenture" | "treasury_selic" | "treasury_prefixed" | "treasury_ipca";
         /** HealthDTO */
         HealthDTO: {
             /** Status */
@@ -1021,12 +1069,12 @@ export interface components {
              * Format: date
              */
             movement_date: string;
-            movement_type: components["schemas"]["FixedIncomeMovementType"];
             /**
              * Amount
              * Format: decimal
              */
             amount: DecimalString;
+            movement_type: components["schemas"]["FixedIncomeMovementType"];
         };
         /** NewAssetDTO */
         NewAssetDTO: {
@@ -2097,7 +2145,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FixedIncomeInDTO"];
+                "application/json": components["schemas"]["FixedIncomeCreateDTO"];
             };
         };
         responses: {

@@ -4,7 +4,12 @@ from collections.abc import Iterable
 from datetime import date, timedelta
 from decimal import Decimal
 
-from backend.core.enum import FixedIncomeMovementType, Indexer, IndexSeries
+from backend.core.enum import (
+    FixedIncomeMovementType,
+    FixedIncomeType,
+    Indexer,
+    IndexSeries,
+)
 from backend.domain.fixed_income import FixedIncomeTerms, Movement, mark
 from backend.domain.index_series import DailyRate
 
@@ -18,13 +23,13 @@ def _terms(
     rate: str = "12",
     *,
     maturity_date: date | None = None,
-    tax_exempt: bool = False,
+    product_type: FixedIncomeType = FixedIncomeType.CDB,
 ) -> FixedIncomeTerms:
     return FixedIncomeTerms(
+        product_type=product_type,
         indexer=indexer,
         rate=Decimal(rate),
         maturity_date=maturity_date,
-        tax_exempt=tax_exempt,
     )
 
 
@@ -91,8 +96,24 @@ def test_cdi_projects_last_rate_after_series_ends() -> None:
     assert marking.series_date == date(2024, 1, 5)
 
 
-def test_selic_uses_its_own_series() -> None:
-    """Título na Selic rende pela série da Selic, com o calendário do CDI."""
+def test_selic_with_zero_spread_follows_its_own_series() -> None:
+    """Título na Selic sem spread rende pela série da Selic, com o calendário do
+    CDI."""
+    start, today = date(2024, 1, 1), date(2024, 1, 8)
+    days = _weekdays(start, today)
+    rates = {
+        IndexSeries.CDI: _series(days, "0.05"),
+        IndexSeries.SELIC: _series(days, "0.04"),
+    }
+
+    marking = mark(_terms(Indexer.SELIC, "0"), [_movement(start, "1000")], rates, today)
+
+    assert _round(marking.gross_value) == _round(Decimal(1000) * Decimal("1.0004") ** 5)
+
+
+def test_selic_spread_compounds_on_top_of_selic() -> None:
+    """Selic + 0,1% a.a.: cada dia útil rende a Selic do dia vezes
+    `1,001^(1/252)`."""
     start, today = date(2024, 1, 1), date(2024, 1, 8)
     days = _weekdays(start, today)
     rates = {
@@ -101,10 +122,11 @@ def test_selic_uses_its_own_series() -> None:
     }
 
     marking = mark(
-        _terms(Indexer.SELIC, "100"), [_movement(start, "1000")], rates, today
+        _terms(Indexer.SELIC, "0.1"), [_movement(start, "1000")], rates, today
     )
 
-    assert _round(marking.gross_value) == _round(Decimal(1000) * Decimal("1.0004") ** 5)
+    daily = Decimal("1.0004") * Decimal("1.001") ** (Decimal(1) / Decimal(252))
+    assert _round(marking.gross_value) == _round(Decimal(1000) * daily**5)
 
 
 def test_ipca_accrues_monthly_rate_by_calendar_day() -> None:
@@ -199,11 +221,13 @@ def test_redemption_above_balance_closes_investment() -> None:
     assert marking.estimated_tax == 0
 
 
-def test_tax_exempt_investment_has_no_tax() -> None:
-    """Título isento não tem IR estimado."""
+def test_tax_exempt_product_has_no_tax() -> None:
+    """Título de tipo isento (LCI) não tem IR estimado."""
     start, today = date(2024, 1, 1), date(2024, 6, 3)
 
-    marking = mark(_terms(tax_exempt=True), [_movement(start, "1000")], {}, today)
+    marking = mark(
+        _terms(product_type=FixedIncomeType.LCI), [_movement(start, "1000")], {}, today
+    )
 
     assert marking.gross_value > Decimal(1000)
     assert marking.estimated_tax == 0

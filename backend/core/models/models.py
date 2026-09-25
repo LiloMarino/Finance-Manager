@@ -21,6 +21,7 @@ from backend.core.decimal_ctx import fmt
 from backend.core.enum import (
     AssetClass,
     FixedIncomeMovementType,
+    FixedIncomeType,
     Indexer,
     IndexSeries,
     OperationType,
@@ -164,21 +165,39 @@ class FixedIncomeInvestment(Base):
     das séries do indexador.
 
     O significado de `rate` depende do indexador:
-    - cdi/selic: percentual do indexador (110 = 110% do CDI);
+    - cdi: percentual do CDI (110 = 110% do CDI);
+    - selic: o spread anual somado à Selic (0.1 = Selic + 0,1% a.a.), que pode ser
+      zero ou negativo;
     - ipca: a taxa real anual somada ao IPCA (6 = IPCA + 6% a.a.);
     - prefixed: a taxa anual (12 = 12% a.a.).
+
+    A isenção de IR vem do `product_type`, e o do Tesouro fixa o indexador.
     """
 
     __tablename__ = "fixed_income_investments"
-    __table_args__ = (CheckConstraint("CAST(rate AS REAL) > 0", name="rate_positive"),)
+    __table_args__ = (
+        CheckConstraint(
+            "indexer = 'selic' OR CAST(rate AS REAL) > 0", name="rate_by_indexer"
+        ),
+        CheckConstraint(
+            "product_type NOT IN ('treasury_selic', 'treasury_prefixed', "
+            "'treasury_ipca')"
+            " OR (product_type = 'treasury_selic' AND indexer = 'selic')"
+            " OR (product_type = 'treasury_prefixed' AND indexer = 'prefixed')"
+            " OR (product_type = 'treasury_ipca' AND indexer = 'ipca')",
+            name="treasury_indexer",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     label: Mapped[str] = mapped_column(String, unique=True)
+    product_type: Mapped[FixedIncomeType] = mapped_column(
+        _enum_column(FixedIncomeType, "product_type")
+    )
     indexer: Mapped[Indexer] = mapped_column(_enum_column(Indexer, "indexer"))
     rate: Mapped[Decimal] = mapped_column(DecimalText)
     maturity_date: Mapped[date | None]
     daily_liquidity: Mapped[bool]
-    tax_exempt: Mapped[bool]
 
 
 class FixedIncomeMovement(Base):

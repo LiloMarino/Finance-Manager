@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from backend.core.enum import (
     AssetClass,
     FixedIncomeMovementType,
+    FixedIncomeType,
     Indexer,
     OperationType,
 )
@@ -54,11 +55,11 @@ def _fixed_income(session: Session, amount: str) -> None:
     """Título aplicado hoje: vale exatamente o que foi aplicado."""
     investment = FixedIncomeInvestment(
         label="CDB XYZ 2030",
+        product_type=FixedIncomeType.CDB,
         indexer=Indexer.PREFIXED,
         rate=Decimal(12),
         maturity_date=None,
         daily_liquidity=False,
-        tax_exempt=False,
     )
     session.add(investment)
     session.flush()

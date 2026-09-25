@@ -9,6 +9,7 @@ from backend.core.enum import FixedIncomeMovementType
 from backend.core.errors import FinanceError
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
 from backend.features.fixed_income.dto import (
+    FixedIncomeCreateDTO,
     FixedIncomeDetailDTO,
     FixedIncomeDTO,
     FixedIncomeInDTO,
@@ -88,18 +89,28 @@ def get_investment(
 
 
 def create_investment(
-    session: Session, payload: FixedIncomeInDTO, today: date
+    session: Session, payload: FixedIncomeCreateDTO, today: date
 ) -> FixedIncomeDetailDTO:
+    """O título e a primeira aplicação entram no mesmo commit."""
     _ensure_unique_label(session, payload.label)
     investment = FixedIncomeInvestment(
         label=payload.label,
+        product_type=payload.product_type,
         indexer=payload.indexer,
         rate=payload.rate,
         maturity_date=payload.maturity_date,
         daily_liquidity=payload.daily_liquidity,
-        tax_exempt=payload.tax_exempt,
     )
     session.add(investment)
+    session.flush()
+    session.add(
+        FixedIncomeMovement(
+            investment_id=investment.id,
+            movement_date=payload.application.movement_date,
+            movement_type=FixedIncomeMovementType.APPLICATION,
+            amount=payload.application.amount,
+        )
+    )
     session.commit()
     return get_investment(session, investment.id, today)
 
@@ -110,11 +121,11 @@ def update_investment(
     investment = _investment(session, investment_id)
     _ensure_unique_label(session, payload.label, investment_id)
     investment.label = payload.label
+    investment.product_type = payload.product_type
     investment.indexer = payload.indexer
     investment.rate = payload.rate
     investment.maturity_date = payload.maturity_date
     investment.daily_liquidity = payload.daily_liquidity
-    investment.tax_exempt = payload.tax_exempt
     session.commit()
     return get_investment(session, investment_id, today)
 

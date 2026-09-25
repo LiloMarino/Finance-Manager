@@ -18,14 +18,6 @@ import { describeRate } from "@/shared/lib/labels";
 import { formatBRL } from "@/types/decimal";
 
 export function FixedIncomeTable({ investments }: { investments: FixedIncome[] }) {
-  if (investments.length === 0) {
-    return (
-      <p className="text-muted-foreground">
-        Nenhum título cadastrado. Cadastre o título e registre a aplicação.
-      </p>
-    );
-  }
-
   return (
     <Table>
       <TableHeader>

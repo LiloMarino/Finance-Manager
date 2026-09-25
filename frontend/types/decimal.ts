@@ -94,3 +94,13 @@ export function parseDecimalInput(value: string): DecimalString | null {
     : text;
   return toDecimalString(normalized);
 }
+
+/** Como o `parseDecimalInput`, aceitando também o sinal de menos. */
+export function parseSignedDecimalInput(value: string): DecimalString | null {
+  const text = value.trim();
+  if (!text.startsWith("-")) {
+    return parseDecimalInput(text);
+  }
+  const magnitude = parseDecimalInput(text.slice(1));
+  return magnitude && toDecimalString(`-${magnitude}`);
+}

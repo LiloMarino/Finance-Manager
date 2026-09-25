@@ -15,7 +15,12 @@ from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from decimal import Decimal
 
-from backend.core.enum import FixedIncomeMovementType, Indexer, IndexSeries
+from backend.core.enum import (
+    FixedIncomeMovementType,
+    FixedIncomeType,
+    Indexer,
+    IndexSeries,
+)
 from backend.domain.business_days import BusinessCalendar
 from backend.domain.index_series import DailyRate
 
@@ -39,16 +44,38 @@ INDEX_SERIES = {
     Indexer.IPCA: IndexSeries.IPCA,
 }
 
+# Isentos de IR para pessoa física
+TAX_EXEMPT_TYPES = frozenset(
+    {
+        FixedIncomeType.LCI,
+        FixedIncomeType.LCA,
+        FixedIncomeType.CRI,
+        FixedIncomeType.CRA,
+        FixedIncomeType.INCENTIVIZED_DEBENTURE,
+    }
+)
+
+# O título do Tesouro tem o indexador no nome
+TREASURY_INDEXER = {
+    FixedIncomeType.TREASURY_SELIC: Indexer.SELIC,
+    FixedIncomeType.TREASURY_PREFIXED: Indexer.PREFIXED,
+    FixedIncomeType.TREASURY_IPCA: Indexer.IPCA,
+}
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class FixedIncomeTerms:
-    """`rate` segue o indexador: % do CDI ou da Selic; taxa real somada ao IPCA;
-    taxa anual no pré. Tudo em %."""
+    """`rate` segue o indexador: % do CDI; spread anual somado à Selic; taxa real
+    somada ao IPCA; taxa anual no pré. Tudo em %."""
 
+    product_type: FixedIncomeType
     indexer: Indexer
     rate: Decimal
     maturity_date: date | None
-    tax_exempt: bool
+
+    @property
+    def tax_exempt(self) -> bool:
+        return self.product_type in TAX_EXEMPT_TYPES
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -116,16 +143,28 @@ def _daily_factor(
     share = terms.rate / HUNDRED
 
     match terms.indexer:
-        case Indexer.CDI | Indexer.SELIC:
-            series = _Series(rates.get(INDEX_SERIES[terms.indexer], ()))
+        case Indexer.CDI:
+            cdi = _Series(rates.get(IndexSeries.CDI, ()))
 
-            def floating(day: date) -> Decimal:
-                value = series.at(day)
+            def percentage(day: date) -> Decimal:
+                value = cdi.at(day)
                 if value is None or not business.is_business_day(day):
                     return ONE
                 return ONE + value / HUNDRED * share
 
-            return floating
+            return percentage
+
+        case Indexer.SELIC:
+            selic = _Series(rates.get(IndexSeries.SELIC, ()))
+            spread = (ONE + share) ** (ONE / BUSINESS_DAYS_PER_YEAR)
+
+            def plus_spread(day: date) -> Decimal:
+                value = selic.at(day)
+                if value is None or not business.is_business_day(day):
+                    return ONE
+                return (ONE + value / HUNDRED) * spread
+
+            return plus_spread
 
         case Indexer.PREFIXED:
             prefixed = (ONE + share) ** (ONE / BUSINESS_DAYS_PER_YEAR)

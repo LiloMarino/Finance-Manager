@@ -6,6 +6,7 @@ from fastapi import APIRouter, status
 
 from backend.core.database.session import SessionDep
 from backend.features.fixed_income.dto import (
+    FixedIncomeCreateDTO,
     FixedIncomeDetailDTO,
     FixedIncomeDTO,
     FixedIncomeInDTO,
@@ -31,7 +32,7 @@ def list_all(session: SessionDep) -> list[FixedIncomeDTO]:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create(session: SessionDep, payload: FixedIncomeInDTO) -> FixedIncomeDetailDTO:
+def create(session: SessionDep, payload: FixedIncomeCreateDTO) -> FixedIncomeDetailDTO:
     return create_investment(session, payload, date.today())
 
 
