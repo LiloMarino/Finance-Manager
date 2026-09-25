@@ -18,6 +18,8 @@ class PositionDTO(BaseDTO):
     asset_id: int
     ticker: str
     asset_class: AssetClass
+    sector: str | None
+    segment: str | None
     quantity: DecimalStr
     average_price: DecimalStr
     total_cost: DecimalStr
@@ -48,13 +50,31 @@ class CategoryAllocationDTO(BaseDTO):
     share: DecimalStr
 
 
+class SectorAllocationDTO(BaseDTO):
+    """`sector` nulo é o que está sem classificação."""
+
+    sector: str | None
+    value: DecimalStr
+    share: DecimalStr
+
+
+class SegmentAllocationDTO(BaseDTO):
+    sector: str | None
+    segment: str | None
+    value: DecimalStr
+    share: DecimalStr
+
+
 class PortfolioDTO(BaseDTO):
-    """Frações (`share`, `unrealized_return`) vão de 0 a 1."""
+    """Frações (`share`, `unrealized_return`) vão de 0 a 1. A de setor e segmento
+    é sobre o total da renda variável."""
 
     total: DecimalStr
     categories: list[CategoryAllocationDTO]
     positions: list[PositionDTO]
     fixed_income: list[FixedIncomeHoldingDTO]
+    sectors: list[SectorAllocationDTO]
+    segments: list[SegmentAllocationDTO]
 
 
 @router.get("")

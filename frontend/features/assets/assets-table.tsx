@@ -28,7 +28,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
           <TableHead>Ticker</TableHead>
           <TableHead>Classe</TableHead>
           <TableHead>CNPJ</TableHead>
-          <TableHead>Setor</TableHead>
+          <TableHead>Setor / Segmento</TableHead>
           <TableHead className="w-24" />
         </TableRow>
       </TableHeader>
@@ -44,7 +44,9 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
               <Badge variant="secondary">{assetClassLabels[asset.asset_class]}</Badge>
             </TableCell>
             <TableCell>{asset.cnpj ?? "—"}</TableCell>
-            <TableCell>{asset.sector ?? "—"}</TableCell>
+            <TableCell>
+              {asset.sector ? `${asset.sector} / ${asset.segment}` : "—"}
+            </TableCell>
             <TableCell className="text-right">
               <AssetFormDialog
                 asset={asset}

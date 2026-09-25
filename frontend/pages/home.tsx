@@ -1,6 +1,7 @@
 import { AllocationChart } from "@/features/portfolio/allocation-chart";
 import { FixedIncomeHoldings } from "@/features/portfolio/fixed-income-holdings";
 import { PositionsTable } from "@/features/portfolio/positions-table";
+import { SectorDistribution } from "@/features/portfolio/sector-distribution";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -39,6 +40,18 @@ export function HomePage() {
               </CardContent>
             )}
           </Card>
+
+          {/* Renda variável por setor e segmento */}
+          {data.sectors.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Renda variável por setor</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SectorDistribution sectors={data.sectors} segments={data.segments} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Renda variável */}
           <h2 className="text-lg font-semibold">Renda variável</h2>

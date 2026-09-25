@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { SegmentSelect } from "@/features/assets/segment-select";
 import { useSaveAsset } from "@/features/assets/use-asset-mutations";
 import type { Asset } from "@/shared/hooks/use-assets";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
@@ -26,7 +27,7 @@ const schema = z.object({
     "Escolha a classe.",
   ),
   cnpj: z.string(),
-  sector: z.string(),
+  segment_id: z.number().nullable(),
 });
 
 type AssetFormValues = z.infer<typeof schema>;
@@ -66,14 +67,14 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
       ticker: asset?.ticker ?? "",
       asset_class: asset?.asset_class ?? "stock",
       cnpj: asset?.cnpj ?? "",
-      sector: asset?.sector ?? "",
+      segment_id: asset?.segment_id ?? null,
     },
   });
   const { errors } = form.formState;
 
   const submit = form.handleSubmit((values) =>
     save.mutate(
-      { ...values, cnpj: values.cnpj || null, sector: values.sector || null },
+      { ...values, cnpj: values.cnpj || null },
       { onSuccess: onSaved },
     ),
   );
@@ -101,8 +102,14 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
           <Input id="asset-cnpj" {...form.register("cnpj")} />
         </Field>
         <Field>
-          <FieldLabel htmlFor="asset-sector">Setor</FieldLabel>
-          <Input id="asset-sector" {...form.register("sector")} />
+          <FieldLabel htmlFor="asset-segment">Segmento</FieldLabel>
+          <Controller
+            control={form.control}
+            name="segment_id"
+            render={({ field }) => (
+              <SegmentSelect id="asset-segment" value={field.value} onChange={field.onChange} />
+            )}
+          />
         </Field>
       </FieldGroup>
       <DialogFooter className="mt-6">

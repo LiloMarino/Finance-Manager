@@ -9,6 +9,7 @@ export const queryKeys = {
   fixedIncome: ["fixed-income"] as const,
   tax: ["tax"] as const,
   dataHealth: ["data-health"] as const,
+  sectors: ["sectors"] as const,
 };
 
 /** Invalida toda query cuja chave começa por uma das `keys`. */

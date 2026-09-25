@@ -23,11 +23,16 @@ class PreviousTickerDTO(BaseDTO):
 
 
 class AssetDTO(BaseDTO):
+    """`segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
+    nomes vindos do segmento."""
+
     id: int
     ticker: str
     asset_class: AssetClass
     cnpj: str | None
+    segment_id: int | None
     sector: str | None
+    segment: str | None
     previous_tickers: list[PreviousTickerDTO]
 
 
@@ -35,14 +40,14 @@ class AssetInDTO(BaseDTO):
     ticker: str
     asset_class: AssetClass
     cnpj: str | None = None
-    sector: str | None = None
+    segment_id: int | None = None
 
     @field_validator("ticker")
     @classmethod
     def _normalize_ticker(cls, value: str) -> str:
         return normalize_ticker(value)
 
-    @field_validator("cnpj", "sector")
+    @field_validator("cnpj")
     @classmethod
     def _blank_is_none(cls, value: str | None) -> str | None:
         return (value or "").strip() or None

@@ -13,6 +13,7 @@ import { ImportOperationsPage } from "@/pages/import-operations";
 import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
 import { PlaceholderPage } from "@/pages/placeholder";
+import { SectorsPage } from "@/pages/sectors";
 import { TaxPage } from "@/pages/tax";
 import { queryClient } from "@/shared/lib/query-client";
 
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="operations/import" element={<ImportOperationsPage />} />
             <Route path="assets" element={<AssetsPage />} />
             <Route path="assets/:assetId" element={<AssetDetailPage />} />
+            <Route path="sectors" element={<SectorsPage />} />
             <Route path="fixed-income" element={<FixedIncomePage />} />
             <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
             <Route path="market" element={<MarketPage />} />

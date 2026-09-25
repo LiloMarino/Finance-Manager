@@ -8,3 +8,4 @@ class DataIssueKind(StrEnum):
     LATE_SERIES = "late_series"
     FIXED_INCOME_WITHOUT_APPLICATION = "fixed_income_without_application"
     MISSING_CNPJ = "missing_cnpj"
+    UNCLASSIFIED_ASSET = "unclassified_asset"

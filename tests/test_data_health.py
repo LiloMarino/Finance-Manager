@@ -21,6 +21,8 @@ from backend.core.models.models import (
     IndexHistory,
     Operation,
     PriceHistory,
+    Sector,
+    Segment,
 )
 from backend.features.data_health.dto import DataIssueDTO
 from backend.features.data_health.service import data_issues
@@ -183,3 +185,30 @@ def test_asset_without_cnpj_lists_its_irpf_years(session: Session) -> None:
         "ABCD11",
         "Ficha Bens e Direitos do IRPF de 2023 e 2024.",
     )
+
+
+def test_held_asset_without_segment_is_listed(session: Session) -> None:
+    """Ativo em carteira sem segmento aparece, e sai quando é classificado; ativo
+    com a posição zerada não entra na distribuição e não aparece."""
+    asset = _asset(session)
+    _trade(session, asset, date(2024, 2, 5))
+    sold = _asset(session, "EFGH11")
+    _trade(session, sold, date(2024, 1, 2))
+    _trade(session, sold, date(2024, 1, 10), OperationType.SELL)
+
+    [issue] = _issues(session, DataIssueKind.UNCLASSIFIED_ASSET)
+    sector = Sector(name="Imobiliário")
+    session.add(sector)
+    session.flush()
+    segment = Segment(sector_id=sector.id, name="Logística")
+    session.add(segment)
+    session.flush()
+    asset.segment_id = segment.id
+    session.commit()
+
+    assert (issue.subject, issue.missing, issue.path) == (
+        "ABCD11",
+        "Setor e segmento.",
+        f"/assets/{asset.id}",
+    )
+    assert _issues(session, DataIssueKind.UNCLASSIFIED_ASSET) == []

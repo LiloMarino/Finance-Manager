@@ -6,7 +6,12 @@ from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from backend.core.errors import FinanceError
-from backend.core.models.models import Asset, AssetTickerHistory, Operation
+from backend.core.models.models import (
+    Asset,
+    AssetTickerHistory,
+    Operation,
+    Segment,
+)
 from backend.features.assets.dto import (
     AssetDTO,
     AssetInDTO,
@@ -14,6 +19,7 @@ from backend.features.assets.dto import (
     TickerChangeInDTO,
 )
 from backend.repository.operations import check_positions
+from backend.repository.sectors import Classification, classifications
 from backend.repository.tickers import (
     TickerHistory,
     ensure_ticker_free,
@@ -33,13 +39,20 @@ class InvalidTickerChangeError(FinanceError):
     status = 422
 
 
-def _to_dto(asset: Asset, history: TickerHistory) -> AssetDTO:
+def _to_dto(
+    asset: Asset, history: TickerHistory, classes: dict[int, Classification]
+) -> AssetDTO:
+    classification = (
+        classes.get(asset.segment_id) if asset.segment_id is not None else None
+    )
     return AssetDTO(
         id=asset.id,
         ticker=asset.ticker,
         asset_class=asset.asset_class,
         cnpj=asset.cnpj,
-        sector=asset.sector,
+        segment_id=asset.segment_id,
+        sector=classification.sector if classification else None,
+        segment=classification.segment if classification else None,
         previous_tickers=[
             PreviousTickerDTO(ticker=entry.ticker, valid_until=entry.valid_until)
             for entry in history.previous(asset.id)
@@ -48,7 +61,12 @@ def _to_dto(asset: Asset, history: TickerHistory) -> AssetDTO:
 
 
 def _dto(session: Session, asset: Asset) -> AssetDTO:
-    return _to_dto(asset, ticker_history(session))
+    return _to_dto(asset, ticker_history(session), classifications(session))
+
+
+def _check_segment(session: Session, segment_id: int | None) -> None:
+    if segment_id is not None and session.get(Segment, segment_id) is None:
+        raise AssetNotFoundError("Segmento não encontrado.")
 
 
 def _asset(session: Session, asset_id: int) -> Asset:
@@ -60,8 +78,9 @@ def _asset(session: Session, asset_id: int) -> Asset:
 
 def list_assets(session: Session) -> list[AssetDTO]:
     history = ticker_history(session)
+    classes = classifications(session)
     return [
-        _to_dto(asset, history)
+        _to_dto(asset, history, classes)
         for asset in session.scalars(select(Asset).order_by(Asset.ticker))
     ]
 
@@ -72,11 +91,12 @@ def get_asset(session: Session, asset_id: int) -> AssetDTO:
 
 def create_asset(session: Session, payload: AssetInDTO) -> AssetDTO:
     ensure_ticker_free(session, payload.ticker, None)
+    _check_segment(session, payload.segment_id)
     asset = Asset(
         ticker=payload.ticker,
         asset_class=payload.asset_class,
         cnpj=payload.cnpj,
-        sector=payload.sector,
+        segment_id=payload.segment_id,
     )
     session.add(asset)
     session.commit()
@@ -88,10 +108,11 @@ def update_asset(session: Session, asset_id: int, payload: AssetInDTO) -> AssetD
     a troca de ticker com data é `change_ticker`."""
     asset = _asset(session, asset_id)
     ensure_ticker_free(session, payload.ticker, asset_id)
+    _check_segment(session, payload.segment_id)
     asset.ticker = payload.ticker
     asset.asset_class = payload.asset_class
     asset.cnpj = payload.cnpj
-    asset.sector = payload.sector
+    asset.segment_id = payload.segment_id
     session.commit()
     return _dto(session, asset)
 
@@ -171,6 +192,7 @@ def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDT
     ):
         entry.asset_id = target.id
     target.cnpj = target.cnpj or source.cnpj
+    target.segment_id = target.segment_id or source.segment_id
     old_ticker = source.ticker
     # As operações saem de `source` antes de apagá-lo: a FK delas é RESTRICT
     session.flush()

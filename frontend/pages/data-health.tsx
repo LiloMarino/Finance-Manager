@@ -45,6 +45,14 @@ const sections: {
     subjectLabel: "Ativo",
     actionLabel: "Editar ativo",
   },
+  {
+    kind: "unclassified_asset",
+    title: "Ativos sem setor ou segmento",
+    description:
+      "A distribuição por setor e segmento da Carteira junta esses ativos em Sem classificação.",
+    subjectLabel: "Ativo",
+    actionLabel: "Editar ativo",
+  },
 ];
 
 export function DataHealthPage() {

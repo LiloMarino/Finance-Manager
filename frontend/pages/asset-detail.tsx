@@ -39,6 +39,11 @@ export function AssetDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold">{asset.data.ticker}</h1>
             <Badge variant="secondary">{assetClassLabels[asset.data.asset_class]}</Badge>
+            <span className="text-muted-foreground text-sm">
+              {asset.data.sector
+                ? `${asset.data.sector} / ${asset.data.segment}`
+                : "Sem classificação"}
+            </span>
           </div>
           {asset.data.previous_tickers.length > 0 && (
             <p className="text-muted-foreground text-sm">

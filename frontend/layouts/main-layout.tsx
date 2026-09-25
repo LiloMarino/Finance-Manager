@@ -9,6 +9,7 @@ import {
   LineChart,
   PieChart,
   Receipt,
+  Shapes,
 } from "lucide-react";
 
 import { useDataHealth } from "@/features/data-health/use-data-health";
@@ -35,6 +36,7 @@ const navItems = [
   { to: "/", label: "Carteira", icon: PieChart },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },
+  { to: "/sectors", label: "Setores", icon: Shapes },
   { to: "/fixed-income", label: "Renda fixa", icon: Landmark },
   { to: "/market", label: "Mercado", icon: LineChart },
   { to: "/income", label: "Proventos", icon: Coins },

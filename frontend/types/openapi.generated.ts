@@ -224,6 +224,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sectors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All */
+        get: operations["list_all_api_sectors_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_sectors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sectors/{sector_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename */
+        put: operations["rename_api_sectors__sector_id__put"];
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_sectors__sector_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sectors/{sector_id}/segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Segment */
+        post: operations["add_segment_api_sectors__sector_id__segments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sectors/segments/{segment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename One Segment */
+        put: operations["rename_one_segment_api_sectors_segments__segment_id__put"];
+        post?: never;
+        /** Remove Segment */
+        delete: operations["remove_segment_api_sectors_segments__segment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolio": {
         parameters: {
             query?: never;
@@ -423,7 +494,11 @@ export interface components {
          * @enum {string}
          */
         AssetClass: "stock" | "fii" | "etf" | "bdr";
-        /** AssetDTO */
+        /**
+         * AssetDTO
+         * @description `segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
+         *     nomes vindos do segmento.
+         */
         AssetDTO: {
             /** Id */
             id: number;
@@ -432,8 +507,12 @@ export interface components {
             asset_class: components["schemas"]["AssetClass"];
             /** Cnpj */
             cnpj: string | null;
+            /** Segment Id */
+            segment_id: number | null;
             /** Sector */
             sector: string | null;
+            /** Segment */
+            segment: string | null;
             /** Previous Tickers */
             previous_tickers: components["schemas"]["PreviousTickerDTO"][];
         };
@@ -444,8 +523,8 @@ export interface components {
             asset_class: components["schemas"]["AssetClass"];
             /** Cnpj */
             cnpj?: string | null;
-            /** Sector */
-            sector?: string | null;
+            /** Segment Id */
+            segment_id?: number | null;
         };
         /** AssetPriceDTO */
         AssetPriceDTO: {
@@ -552,7 +631,7 @@ export interface components {
          * @description Os tipos de problema de dado que afetam algum número do app.
          * @enum {string}
          */
-        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj";
+        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -1076,6 +1155,14 @@ export interface components {
             amount: DecimalString;
             movement_type: components["schemas"]["FixedIncomeMovementType"];
         };
+        /**
+         * NameInDTO
+         * @description O nome de um setor ou de um segmento.
+         */
+        NameInDTO: {
+            /** Name */
+            name: string;
+        };
         /** NewAssetDTO */
         NewAssetDTO: {
             /** Ticker */
@@ -1238,7 +1325,8 @@ export interface components {
         PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income";
         /**
          * PortfolioDTO
-         * @description Frações (`share`, `unrealized_return`) vão de 0 a 1.
+         * @description Frações (`share`, `unrealized_return`) vão de 0 a 1. A de setor e segmento
+         *     é sobre o total da renda variável.
          */
         PortfolioDTO: {
             /**
@@ -1252,6 +1340,10 @@ export interface components {
             positions: components["schemas"]["PositionDTO"][];
             /** Fixed Income */
             fixed_income: components["schemas"]["FixedIncomeHoldingDTO"][];
+            /** Sectors */
+            sectors: components["schemas"]["SectorAllocationDTO"][];
+            /** Segments */
+            segments: components["schemas"]["SegmentAllocationDTO"][];
         };
         /**
          * PositionDTO
@@ -1263,6 +1355,10 @@ export interface components {
             /** Ticker */
             ticker: string;
             asset_class: components["schemas"]["AssetClass"];
+            /** Sector */
+            sector: string | null;
+            /** Segment */
+            segment: string | null;
             /**
              * Quantity
              * Format: decimal
@@ -1343,6 +1439,61 @@ export interface components {
             updated: string[];
             /** Failed */
             failed: string[];
+        };
+        /**
+         * SectorAllocationDTO
+         * @description `sector` nulo é o que está sem classificação.
+         */
+        SectorAllocationDTO: {
+            /** Sector */
+            sector: string | null;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+        };
+        /** SectorDTO */
+        SectorDTO: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Segments */
+            segments: components["schemas"]["SegmentDTO"][];
+        };
+        /** SegmentAllocationDTO */
+        SegmentAllocationDTO: {
+            /** Sector */
+            sector: string | null;
+            /** Segment */
+            segment: string | null;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+        };
+        /** SegmentDTO */
+        SegmentDTO: {
+            /** Id */
+            id: number;
+            /** Sector Id */
+            sector_id: number;
+            /** Name */
+            name: string;
+            /** Asset Count */
+            asset_count: number;
         };
         /**
          * TickerChangeInDTO
@@ -2039,6 +2190,290 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AssetDTO"];
                 };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_all_api_sectors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectorDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_api_sectors_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectorDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rename_api_sectors__sector_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sector_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_api_sectors__sector_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sector_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    add_segment_api_sectors__sector_id__segments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sector_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rename_one_segment_api_sectors_segments__segment_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remove_segment_api_sectors_segments__segment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                segment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unprocessable Content */
             422: {

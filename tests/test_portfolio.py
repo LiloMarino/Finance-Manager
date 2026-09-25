@@ -19,6 +19,8 @@ from backend.core.models.models import (
     FixedIncomeMovement,
     Operation,
     PriceHistory,
+    Sector,
+    Segment,
 )
 
 TODAY = date.today()
@@ -31,7 +33,7 @@ def _asset(
     quantity: str,
     unit_price: str,
     close: str | None = None,
-) -> None:
+) -> Asset:
     asset = Asset(ticker=ticker, asset_class=asset_class)
     session.add(asset)
     session.flush()
@@ -49,6 +51,7 @@ def _asset(
             PriceHistory(asset_id=asset.id, price_date=TODAY, close=Decimal(close))
         )
     session.commit()
+    return asset
 
 
 def _fixed_income(session: Session, amount: str) -> None:
@@ -131,3 +134,40 @@ def test_empty_portfolio_has_zero_total(api: TestClient) -> None:
 
     assert Decimal(body["total"]) == 0
     assert body["categories"] == []
+
+
+def test_sector_distribution_divides_equity_only(
+    api: TestClient, session: Session
+) -> None:
+    """Setor e segmento dividem só a renda variável, do maior valor para o menor:
+    a fração é sobre o total dela, e o ativo sem segmento fica em Sem
+    classificação."""
+    sector = Sector(name="Financeiro")
+    session.add(sector)
+    session.flush()
+    segment = Segment(sector_id=sector.id, name="Bancos")
+    session.add(segment)
+    session.flush()
+    bank = _asset(session, "ABCD3", AssetClass.STOCK, "10", "10", close="30")
+    _asset(session, "ABCD11", AssetClass.FII, "10", "10", close="10")
+    bank.segment_id = segment.id
+    session.commit()
+    _fixed_income(session, "600")
+
+    body = api.get("/api/portfolio").json()
+
+    assert [
+        (item["sector"], Decimal(item["value"]), Decimal(item["share"]))
+        for item in body["sectors"]
+    ] == [
+        ("Financeiro", Decimal(300), Decimal("0.75")),
+        (None, Decimal(100), Decimal("0.25")),
+    ]
+    assert [(item["sector"], item["segment"]) for item in body["segments"]] == [
+        ("Financeiro", "Bancos"),
+        (None, None),
+    ]
+    assert {
+        position["ticker"]: (position["sector"], position["segment"])
+        for position in body["positions"]
+    } == {"ABCD3": ("Financeiro", "Bancos"), "ABCD11": (None, None)}

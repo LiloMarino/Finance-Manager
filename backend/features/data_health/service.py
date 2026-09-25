@@ -160,10 +160,33 @@ def _cnpj_issues(session: Session, today: date) -> list[DataIssueDTO]:
     ]
 
 
+def _segment_issues(session: Session) -> list[DataIssueDTO]:
+    """Ativo em carteira sem segmento: é o que entra na distribuição por setor."""
+    held = [item.asset_id for item in held_assets(session) if item.window.end is None]
+    return [
+        DataIssueDTO(
+            kind=DataIssueKind.UNCLASSIFIED_ASSET,
+            subject=asset.ticker,
+            missing="Setor e segmento.",
+            affects=(
+                "Distribuição por setor e segmento na Carteira: o ativo entra em "
+                "Sem classificação."
+            ),
+            path=f"/assets/{asset.id}",
+        )
+        for asset in session.scalars(
+            select(Asset)
+            .where(Asset.id.in_(held), Asset.segment_id.is_(None))
+            .order_by(Asset.ticker)
+        )
+    ]
+
+
 def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
     return [
         *_price_issues(session, now),
         *_series_issues(session, now.date()),
         *_fixed_income_issues(session),
         *_cnpj_issues(session, now.date()),
+        *_segment_issues(session),
     ]

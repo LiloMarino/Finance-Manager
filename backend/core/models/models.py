@@ -79,6 +79,26 @@ def _enum_column[E: StrEnum](enum_class: type[E], name: str) -> Enum:
     )
 
 
+class Sector(Base):
+    __tablename__ = "sectors"
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    name: Mapped[str] = mapped_column(String, unique=True)
+
+
+class Segment(Base):
+    """O segmento é a classificação do ativo, e o setor vem por ele."""
+
+    __tablename__ = "segments"
+    __table_args__ = (UniqueConstraint("sector_id", "name"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    sector_id: Mapped[int] = mapped_column(
+        ForeignKey("sectors.id", ondelete="RESTRICT"), index=True
+    )
+    name: Mapped[str]
+
+
 class Asset(Base):
     __tablename__ = "assets"
 
@@ -89,7 +109,10 @@ class Asset(Base):
         _enum_column(AssetClass, "asset_class")
     )
     cnpj: Mapped[str | None] = mapped_column(String(18), default=None)
-    sector: Mapped[str | None] = mapped_column(String, default=None)
+    # Nulo é "sem classificação"
+    segment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("segments.id", ondelete="RESTRICT"), index=True, default=None
+    )
 
 
 class AssetTickerHistory(Base):
