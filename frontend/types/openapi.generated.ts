@@ -381,6 +381,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/data-health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Issues */
+        get: operations["list_issues_api_data_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -498,6 +515,28 @@ export interface components {
          * @enum {string}
          */
         DarfStatus: "paid" | "due" | "overdue" | "carried" | "exempt" | "compensated" | "none";
+        /**
+         * DataIssueDTO
+         * @description Um problema de dado que afeta algum número: o que falta, o que fica errado
+         *     por causa disso e a tela (`path`) onde ele se corrige.
+         */
+        DataIssueDTO: {
+            kind: components["schemas"]["DataIssueKind"];
+            /** Subject */
+            subject: string;
+            /** Missing */
+            missing: string;
+            /** Affects */
+            affects: string;
+            /** Path */
+            path: string;
+        };
+        /**
+         * DataIssueKind
+         * @description Os tipos de problema de dado que afetam algum número do app.
+         * @enum {string}
+         */
+        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -2476,6 +2515,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IrpfReportDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_issues_api_data_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataIssueDTO"][];
                 };
             };
             /** @description Unprocessable Content */

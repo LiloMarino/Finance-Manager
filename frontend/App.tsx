@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { MainLayout } from "@/layouts/main-layout";
 import { AssetDetailPage } from "@/pages/asset-detail";
 import { AssetsPage } from "@/pages/assets";
+import { DataHealthPage } from "@/pages/data-health";
 import { ErrorPage } from "@/pages/error";
 import { FixedIncomePage } from "@/pages/fixed-income";
 import { FixedIncomeDetailPage } from "@/pages/fixed-income-detail";
@@ -34,6 +35,7 @@ export default function App() {
               element={<PlaceholderPage title="Proventos" />}
             />
             <Route path="tax" element={<TaxPage />} />
+            <Route path="data-health" element={<DataHealthPage />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>
         </Routes>

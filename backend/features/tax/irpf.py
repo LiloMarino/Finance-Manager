@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from backend.core.decimal_ctx import fmt
 from backend.core.enum import AssetClass, LossPool
 from backend.core.models.models import Asset
+from backend.domain.irpf import is_declared
 from backend.domain.position import Position, current_positions
 from backend.domain.tax import CENT, DARF_CODE, ZERO
 from backend.features.tax.dto import (
@@ -78,7 +79,7 @@ def _bens_e_direitos(session: Session, year: int) -> list[IrpfAssetDTO]:
     for asset in session.scalars(select(Asset).order_by(Asset.ticker)):
         before = previous.get(asset.ticker, Position())
         after = current.get(asset.ticker, Position())
-        if before.quantity == 0 and after.quantity == 0:
+        if not is_declared(before, after):
             continue
         group, code, _ = ASSET_CODES[asset.asset_class]
         ticker = history.on(asset.id, date(year, 12, 31), asset.ticker)

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 
 from backend.core.enum import IndexSeries
-from backend.domain.business_days import BusinessCalendar
+from backend.domain.business_days import ONE_DAY, BusinessCalendar
 from backend.domain.position import HoldingWindow
 
 # Horário local, que é o da B3
@@ -136,21 +136,31 @@ def price_request(
     return request
 
 
-def prices_overdue(
+def price_gaps(
     window: HoldingWindow,
     cached: CachedRange | None,
     now: datetime,
     calendar: BusinessCalendar,
-) -> DateRange | None:
-    """Os dias que faltam na janela depois da folga de publicação, ou nulo."""
+) -> list[DateRange]:
+    """Os trechos da janela sem cotação depois da folga de publicação: o começo que
+    o cache não cobre e o fim que falta até o esperado."""
     expected = expected_close(window, now, calendar)
     if expected is None:
-        return None
+        return []
     if expected == last_closed_session(now, calendar):
         expected = calendar.previous(expected)
         if expected < calendar.on_or_after(window.start):
-            return None
-    return _missing_prices(window, cached, expected, calendar)
+            return []
+    if cached is None:
+        return [DateRange(start=window.start, end=expected)]
+    gaps: list[DateRange] = []
+    if cached.first > calendar.on_or_after(window.start):
+        gaps.append(DateRange(start=window.start, end=calendar.previous(cached.first)))
+    if cached.last < expected:
+        gaps.append(
+            DateRange(start=calendar.on_or_after(cached.last + ONE_DAY), end=expected)
+        )
+    return gaps
 
 
 def _month_start(day: date, months_back: int) -> date:

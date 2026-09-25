@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   ArrowLeftRight,
+  Activity,
   Boxes,
   Coins,
   Landmark,
@@ -10,6 +11,7 @@ import {
   Receipt,
 } from "lucide-react";
 
+import { useDataHealth } from "@/features/data-health/use-data-health";
 import { useRefreshIndexes } from "@/features/market/use-refresh-indexes";
 import { useRefreshPrices } from "@/features/market/use-refresh-prices";
 import {
@@ -20,6 +22,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -36,13 +39,16 @@ const navItems = [
   { to: "/market", label: "Mercado", icon: LineChart },
   { to: "/income", label: "Proventos", icon: Coins },
   { to: "/tax", label: "Fiscal", icon: Receipt },
+  { to: "/data-health", label: "Saúde dos dados", icon: Activity },
 ];
 
 export function MainLayout() {
   const { mutate: refreshPrices } = useRefreshPrices();
   const { mutate: refreshIndexes } = useRefreshIndexes();
+  const issues = useDataHealth();
+  const { pathname } = useLocation();
 
-  // Os caches de cotações e de séries recebem os dias que faltam a cada abertura
+  // A cada abertura, o backend confere o que falta nos caches de cotações e de séries
   useEffect(() => {
     refreshPrices();
     refreshIndexes();
@@ -60,16 +66,15 @@ export function MainLayout() {
               <SidebarMenu>
                 {navItems.map(({ to, label, icon: Icon }) => (
                   <SidebarMenuItem key={to}>
-                    <NavLink to={to} end>
-                      {({ isActive }) => (
-                        <SidebarMenuButton asChild isActive={isActive}>
-                          <span>
-                            <Icon />
-                            {label}
-                          </span>
-                        </SidebarMenuButton>
-                      )}
-                    </NavLink>
+                    <SidebarMenuButton asChild isActive={pathname === to}>
+                      <NavLink to={to} end>
+                        <Icon />
+                        {label}
+                      </NavLink>
+                    </SidebarMenuButton>
+                    {to === "/data-health" && Boolean(issues.data?.length) && (
+                      <SidebarMenuBadge>{issues.data?.length}</SidebarMenuBadge>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

@@ -1,10 +1,13 @@
+import { Pencil } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import { AssetFormDialog } from "@/features/assets/asset-form-dialog";
 import { TickerChangeDialog } from "@/features/assets/ticker-change-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAsset } from "@/shared/hooks/use-assets";
@@ -46,7 +49,18 @@ export function AssetDetailPage() {
             </p>
           )}
         </div>
-        <TickerChangeDialog asset={asset.data} />
+        <div className="flex gap-2">
+          <AssetFormDialog
+            asset={asset.data}
+            trigger={
+              <Button variant="outline">
+                <Pencil />
+                Editar
+              </Button>
+            }
+          />
+          <TickerChangeDialog asset={asset.data} />
+        </div>
       </div>
 
       <Card className="max-w-xl">

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PenLine } from "lucide-react";
+import { Replace } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ export function TickerChangeDialog({ asset }: { asset: Asset }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <PenLine />
+          <Replace />
           Trocar ticker
         </Button>
       </DialogTrigger>

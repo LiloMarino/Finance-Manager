@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { getApiErrorMessage, post } from "@/shared/lib/api";
@@ -6,6 +7,7 @@ import { invalidateKeys, queryKeys } from "@/shared/lib/query-keys";
 
 export function useRefreshIndexes() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: () => post("/api/market/indexes/refresh"),
@@ -14,11 +16,13 @@ export function useRefreshIndexes() {
         queryKeys.indexes,
         queryKeys.fixedIncome,
         queryKeys.portfolio,
+        queryKeys.dataHealth,
       ]);
+      // `failed` traz só o problema novo; os já avisados ficam no painel
       if (failed.length > 0) {
-        toast.warning(
-          `Sem dado novo do BCB para ${failed.join(", ")}: a renda fixa usa o último valor conhecido.`,
-        );
+        toast.warning(`Série do BCB atrasada: ${failed.join(", ")}.`, {
+          action: { label: "Ver painel", onClick: () => void navigate("/data-health") },
+        });
       }
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

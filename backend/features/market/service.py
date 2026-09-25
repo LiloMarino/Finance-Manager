@@ -10,7 +10,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from backend.core.models.models import FetchLog, PriceHistory
-from backend.domain.coverage import DateRange, price_request, prices_overdue
+from backend.domain.coverage import DateRange, price_gaps, price_request
 from backend.domain.market_data import DailyClose, MarketDataProvider
 from backend.repository.market import (
     HeldAsset,
@@ -118,10 +118,7 @@ def _refresh_prices(
     updated: list[str] = []
     failed: list[str] = []
     for held, closes in fetched:
-        gap = (
-            prices_overdue(held.window, ranges.get(held.asset_id), now, calendar)
-            is not None
-        )
+        gap = bool(price_gaps(held.window, ranges.get(held.asset_id), now, calendar))
         log = logs.get(held.asset_id)
         if gap and not (log and log.gap):
             failed.append(held.ticker)
