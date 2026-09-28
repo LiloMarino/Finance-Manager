@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** A liquidez em três camadas (F32) existe na Carteira, com a escada de vencimentos, e o rebalanceamento (F24) fica livre para pegar.
+> **Última mudança (2026-09-28):** As camadas de liquidez (F32) passaram a se chamar pelo prazo em que viram dinheiro; o rebalanceamento (F24) está em andamento.
 
 ## Glossário
 
@@ -634,7 +634,7 @@ Plano:
 - **desvio:** a tela mostra, para cada item, o atual, a meta e o desvio em pontos percentuais (atual 27% contra meta 30% dá −3 p.p.), com o valor em reais que falta ou sobra;
 - **quanto a subcarteira está desbalanceada:** a raiz da soma dos quadrados dos desvios, em p.p. Com meta 40/30/30, a carteira em 45/28/27 dá 6,16 e a em 45/25/30 dá 7,07: a segunda, com dois itens 5 pontos fora, fica pior, sem o empate da soma dos desvios (ver abaixo). 0 é a carteira na meta;
 - **aporte:** dado o valor, o app calcula direto quanto vai para cada item. O dinheiro vai primeiro para o item mais abaixo da meta (em reais, sobre o patrimônio depois do aporte) até ele empatar com o segundo mais abaixo, depois para os dois juntos, e assim por diante até o dinheiro acabar. É a divisão que deixa a subcarteira o mais perto possível da meta sem vender nada. Depois o app arredonda para cotas inteiras e mostra a sobra, que fica no saldo; o valor da renda fixa sai inteiro, para aplicar no título que o usuário escolher. Um botão preenche o valor com o saldo;
-- **com venda (opcional):** o mesmo cálculo, com cada item podendo descer até a parte travada dele (F32) em vez de parar no valor atual; o aviso diz que venda de renda variável pode gerar DARF;
+- **com venda (opcional):** o mesmo cálculo, com cada item podendo descer até a parte que só vira dinheiro no vencimento (F32) em vez de parar no valor atual; o aviso diz que venda de renda variável pode gerar DARF;
 - **limites do alerta:** desvio máximo por item (padrão 5 p.p., o do script) e desbalanceamento máximo (padrão 7 p.p., o valor com dois itens 5 p.p. fora em sentidos opostos), configurados por subcarteira. A subcarteira fora do limite aparece em Saúde dos dados, e a F28 avisa com eles.
 
 **Por que o desvio da planilha "não se mexe":** ela soma os desvios em valor absoluto. O que falta nos itens abaixo da meta é exatamente o que sobra nos de cima, então passar dinheiro de um item abaixo da meta para outro também abaixo dela (e que continua abaixo) não muda a soma. Exemplo: meta 40/30/30, o item A acima da meta e R$ 300 de aporte divididos entre B e C. As divisões 110/190, 120/180 e 150/150 dão todas a mesma soma de desvios, 12,31. Por isso a tentativa e erro não acha a melhor divisão, e o cálculo direto acha.
@@ -746,20 +746,21 @@ A notificação no canto da tela do Windows fica como alternativa, se a janela i
 **Aceite:** o usuário apaga a tarefa agendada do script e passa a ser avisado só por esta.
 
 **F32 — Liquidez em três camadas.** O patrimônio classificado pelo prazo em que vira dinheiro, derivado do que já existe, sem marcação manual (`backend/domain/liquidity.py`). Serve N2 e N6.
-- **mexível:** o saldo (F54) e a renda fixa com liquidez diária;
-- **intermediária:** a renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
-- **travada:** a renda fixa sem liquidez diária. No vencimento, o título vira saldo.
+- **hoje:** o saldo (F54) e a renda fixa com liquidez diária;
+- **em 2 dias úteis:** a renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
+- **no vencimento:** a renda fixa sem liquidez diária, que vira saldo quando vence.
 
-O `GET /api/portfolio` devolve a camada com valor e fração, e a escada de vencimentos por mês e por ano (`maturities_by_month`, `maturities_by_year`). A escada é o bruto de hoje dos títulos travados, somado no Python, com o travado sem vencimento numa barra própria no fim. Tudo sai do mesmo conjunto filtrado da Carteira, então a subcarteira vê só as camadas dos membros, sem o saldo.
+O `GET /api/portfolio` devolve a camada com valor e fração, e a escada de vencimentos por mês e por ano (`maturities_by_month`, `maturities_by_year`). A escada é o bruto de hoje dos títulos sem liquidez diária, somado no Python, com o título sem vencimento numa barra própria no fim. Tudo sai do mesmo conjunto filtrado da Carteira, então a subcarteira vê só as camadas dos membros, sem o saldo.
 
 Na Carteira, o card "Liquidez" tem:
 - a barra empilhada das camadas;
-- a tabela com valor, fração e a dica de cada camada;
+- a tabela "Vira dinheiro", com valor, fração e a dica de cada prazo;
 - a escada de vencimentos em barras, com Mês ou Ano (`?maturities=year`, D13).
 
 Decisões tomadas durante:
-- **As camadas são uma rampa de um tom só**, do azul claro (mexível) ao escuro (travada), invertida no tema escuro, com os tokens `--liquidity-*`. A ordem de prazo é o que a cor mostra, e as cinco cores categóricas continuam sendo das categorias. A rampa passou no validador ordinal nos dois temas.
-- **O título travado sem vencimento entra na escada como "Sem vencimento"**, em vez de ficar de fora da barra.
+- **Os rótulos dizem o prazo** ("Hoje", "Em 2 dias úteis", "No vencimento"), e não um apelido da camada: a primeira versão, com "Mexível", "Intermediária" e "Travada", foi trocada no uso.
+- **As camadas são uma rampa de um tom só**, do azul claro (hoje) ao escuro (no vencimento), invertida no tema escuro, com os tokens `--liquidity-*`. A ordem de prazo é o que a cor mostra, e as cinco cores categóricas continuam sendo das categorias. A rampa passou no validador ordinal nos dois temas.
+- **O título sem liquidez e sem vencimento entra na escada como "Sem vencimento"**, em vez de ficar de fora da barra.
 
 **Verificado** numa cópia do banco migrado: as camadas somam o total da Carteira, as frações somam 1, e a escada troca entre mês e ano pela URL e sobrevive ao recarregar, nos temas claro e escuro.
 
