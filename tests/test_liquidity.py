@@ -81,8 +81,8 @@ def _tiers(body: dict[str, list[dict[str, str]]]) -> dict[str, Decimal]:
 def test_each_holding_falls_in_its_liquidity_tier(
     api: TestClient, session: Session
 ) -> None:
-    """O saldo e a renda fixa diária são mexíveis, a renda variável é intermediária e
-    a renda fixa sem liquidez é travada; as frações somam 1."""
+    """O saldo e a renda fixa diária viram dinheiro hoje, a renda variável em 2 dias
+    úteis e a renda fixa sem liquidez no vencimento; as frações somam 1."""
     _stock(session)
     _title(session, "CDB Diário", "300", daily_liquidity=True)
     _title(session, "CDB Travado", "200", daily_liquidity=False)

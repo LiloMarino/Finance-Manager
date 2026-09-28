@@ -1,8 +1,9 @@
-"""As camadas de liquidez, derivadas do que já existe, sem marcação manual.
+"""Quando cada parte do patrimônio vira dinheiro, derivado do que já existe, sem
+marcação manual.
 
-- mexível: o saldo e a renda fixa com liquidez diária;
-- intermediária: a renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
-- travada: a renda fixa sem liquidez diária, até o vencimento, quando vira saldo.
+- hoje: o saldo e a renda fixa com liquidez diária;
+- em 2 dias úteis: a renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
+- no vencimento: a renda fixa sem liquidez diária, que vira saldo quando vence.
 """
 
 from __future__ import annotations

@@ -90,9 +90,9 @@ class SegmentAllocationDTO(BaseDTO):
 
 
 class LiquidityAllocationDTO(BaseDTO):
-    """O quanto do patrimônio está em cada camada de liquidez: mexível (saldo e renda
-    fixa com liquidez diária), intermediária (renda variável) e travada (renda fixa
-    sem liquidez diária)."""
+    """O quanto do patrimônio vira dinheiro em cada prazo: hoje (`daily`: saldo e
+    renda fixa com liquidez diária), em 2 dias úteis (`intermediate`: renda
+    variável) e no vencimento (`locked`: renda fixa sem liquidez diária)."""
 
     tier: LiquidityTier
     value: DecimalStr

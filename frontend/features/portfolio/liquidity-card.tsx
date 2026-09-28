@@ -25,22 +25,22 @@ import { formatBRL, formatPercent, toChartNumber } from "@/types/decimal";
 type Tier = Portfolio["liquidity"][number]["tier"];
 type Bucket = Portfolio["maturities_by_month"][number];
 
-// A ordem é a do prazo, do mais rápido ao travado, e a cor segue essa ordem
+// A ordem é a do prazo, de hoje ao vencimento, e a cor segue essa ordem
 const tiers: Tier[] = ["daily", "intermediate", "locked"];
 
 const tierConfig = {
-  daily: { label: "Mexível", color: "var(--liquidity-daily)" },
-  intermediate: { label: "Intermediária", color: "var(--liquidity-intermediate)" },
-  locked: { label: "Travada", color: "var(--liquidity-locked)" },
+  daily: { label: "Hoje", color: "var(--liquidity-daily)" },
+  intermediate: { label: "Em 2 dias úteis", color: "var(--liquidity-intermediate)" },
+  locked: { label: "No vencimento", color: "var(--liquidity-locked)" },
 } satisfies ChartConfig & Record<Tier, { label: string; color: string }>;
 
 const tierHints: Record<Tier, string> = {
   daily:
-    "Vira dinheiro no mesmo dia: o saldo e a renda fixa com liquidez diária. É o que cobre um imprevisto sem vender nada.",
+    "O saldo e a renda fixa com liquidez diária: dá para resgatar e usar no mesmo dia. É o que cobre um imprevisto sem vender nada.",
   intermediate:
     "A renda variável: a venda cai na conta em dois dias úteis (D+2), mas o lucro pode gerar DARF. Em ações, só quando as vendas do mês passam de R$ 20 mil; em FII e ETF, qualquer lucro.",
   locked:
-    "Renda fixa sem liquidez diária: só vira dinheiro no vencimento, quando cai no saldo. Um título travado acima da meta só se corrige aportando nos outros itens.",
+    "Renda fixa sem liquidez diária: só vira dinheiro no vencimento, quando cai no saldo. Um título desses acima da meta só se corrige aportando nos outros itens.",
 };
 
 const ladderConfig = {
@@ -128,7 +128,7 @@ function TierTable({ liquidity }: { liquidity: Portfolio["liquidity"] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Camada</TableHead>
+          <TableHead>Vira dinheiro</TableHead>
           <TableHead className="text-right">Valor</TableHead>
           <TableHead className="text-right">% da carteira</TableHead>
         </TableRow>
@@ -178,7 +178,7 @@ function MaturityLadder({ portfolio }: { portfolio: Portfolio }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <MetricHint hint="O valor bruto de hoje dos títulos travados, pelo período em que cada um vence e vira saldo. Ex.: um CDB de R$ 1.000 que vence em março de 2028 aparece na barra de Mar/2028.">
+        <MetricHint hint="O valor bruto de hoje dos títulos sem liquidez diária, pelo período em que cada um vence e vira saldo. Ex.: um CDB de R$ 1.000 que vence em março de 2028 aparece na barra de Mar/2028.">
           <span className="text-sm font-medium">Escada de vencimentos</span>
         </MetricHint>
         <ToggleGroup
@@ -227,7 +227,7 @@ function MaturityLadder({ portfolio }: { portfolio: Portfolio }) {
   );
 }
 
-/** O patrimônio pelo prazo em que vira dinheiro, e quando o travado destrava. */
+/** O patrimônio pelo prazo em que vira dinheiro, e quando cada título vence. */
 export function LiquidityCard({ portfolio }: { portfolio: Portfolio }) {
   if (portfolio.liquidity.length === 0) return null;
 
