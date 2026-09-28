@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 
 import { FixedIncomeFormDialog } from "@/features/fixed-income/fixed-income-form-dialog";
 import { FixedIncomeTable } from "@/features/fixed-income/fixed-income-table";
-import { useFixedIncomeList } from "@/features/fixed-income/use-fixed-income";
 import { Button } from "@/shared/components/ui/button";
 import {
   Select,
@@ -13,6 +12,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useFixedIncomeList } from "@/shared/hooks/use-fixed-income-list";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import {
   fixedIncomeTypeLabels,

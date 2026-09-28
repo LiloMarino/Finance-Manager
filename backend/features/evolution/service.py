@@ -17,6 +17,7 @@ from backend.domain.daily_series import (
     period_bounds,
 )
 from backend.repository.daily_series import daily_series, select_lines
+from backend.repository.subportfolios import members
 
 RECENT_MONTHS = (6, 12, 24)
 
@@ -50,7 +51,8 @@ class CategoryValue:
 class Evolution:
     """O patrimônio no tempo do conjunto escolhido. `total` e o crescimento contam
     até hoje, e o crescimento é nulo quando a série não cobre o começo dele. As
-    categorias são as da carteira toda, com o valor de hoje."""
+    categorias são as da carteira ou da subcarteira inteira, sem o filtro de
+    categoria, com o valor de hoje."""
 
     total: Decimal
     last_6_months: Growth | None
@@ -75,13 +77,15 @@ def evolution(
     today: date,
     *,
     category: PortfolioCategory | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> Evolution:
+    scope = members(session, subportfolio_id)
     series = daily_series(session, today)
 
     by_category: defaultdict[PortfolioCategory, Decimal] = defaultdict(Decimal)
-    for line in series.lines:
+    for line in select_lines(series, members=scope):
         by_category[line.category] += line.values[-1]
     categories = [
         CategoryValue(category=found, value=by_category[found])
@@ -89,7 +93,7 @@ def evolution(
         if by_category[found] > ZERO
     ]
 
-    points = aggregate(series.days, select_lines(series, category))
+    points = aggregate(series.days, select_lines(series, category, members=scope))
     if not points:
         return Evolution(
             total=ZERO,

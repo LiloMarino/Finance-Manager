@@ -24,7 +24,7 @@ class PreviousTickerDTO(BaseDTO):
 
 class AssetDTO(BaseDTO):
     """`segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
-    nomes vindos do segmento."""
+    nomes vindos do segmento. `subportfolio_id` nulo é ativo só da carteira geral."""
 
     id: int
     ticker: str
@@ -33,6 +33,7 @@ class AssetDTO(BaseDTO):
     segment_id: int | None
     sector: str | None
     segment: str | None
+    subportfolio_id: int | None
     previous_tickers: list[PreviousTickerDTO]
 
 
@@ -41,6 +42,7 @@ class AssetInDTO(BaseDTO):
     asset_class: AssetClass
     cnpj: str | None = None
     segment_id: int | None = None
+    subportfolio_id: int | None = None
 
     @field_validator("ticker")
     @classmethod

@@ -29,6 +29,7 @@ class MarkedInvestment:
     rate: Decimal
     maturity_date: date | None
     daily_liquidity: bool
+    subportfolio_id: int | None
     tax_exempt: bool
     invested: Decimal
     gross_value: Decimal
@@ -89,6 +90,7 @@ def _marked(investment: FixedIncomeInvestment, marking: Marking) -> MarkedInvest
         rate=investment.rate,
         maturity_date=investment.maturity_date,
         daily_liquidity=investment.daily_liquidity,
+        subportfolio_id=investment.subportfolio_id,
         tax_exempt=investment.product_type in TAX_EXEMPT_TYPES,
         invested=marking.invested,
         gross_value=marking.gross_value,

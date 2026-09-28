@@ -17,6 +17,7 @@ from backend.features.fixed_income.dto import (
     MovementInDTO,
 )
 from backend.repository.fixed_income import marked_investments
+from backend.repository.subportfolios import check_subportfolio
 
 
 class InvestmentNotFoundError(FinanceError):
@@ -93,6 +94,7 @@ def create_investment(
 ) -> FixedIncomeDetailDTO:
     """O título e a primeira aplicação entram no mesmo commit."""
     _ensure_unique_label(session, payload.label)
+    check_subportfolio(session, payload.subportfolio_id)
     investment = FixedIncomeInvestment(
         label=payload.label,
         product_type=payload.product_type,
@@ -100,6 +102,7 @@ def create_investment(
         rate=payload.rate,
         maturity_date=payload.maturity_date,
         daily_liquidity=payload.daily_liquidity,
+        subportfolio_id=payload.subportfolio_id,
     )
     session.add(investment)
     session.flush()
@@ -120,12 +123,14 @@ def update_investment(
 ) -> FixedIncomeDetailDTO:
     investment = _investment(session, investment_id)
     _ensure_unique_label(session, payload.label, investment_id)
+    check_subportfolio(session, payload.subportfolio_id)
     investment.label = payload.label
     investment.product_type = payload.product_type
     investment.indexer = payload.indexer
     investment.rate = payload.rate
     investment.maturity_date = payload.maturity_date
     investment.daily_liquidity = payload.daily_liquidity
+    investment.subportfolio_id = payload.subportfolio_id
     session.commit()
     return get_investment(session, investment_id, today)
 

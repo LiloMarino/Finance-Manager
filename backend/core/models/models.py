@@ -100,6 +100,17 @@ class Segment(Base):
     name: Mapped[str]
 
 
+class Subportfolio(Base):
+    """Um grupo nomeado de ativos e títulos, dentro da carteira geral. Cada ativo e
+    cada título está em no máximo uma, e a subcarteira é o conjunto de hoje: o
+    histórico dela é o dos membros atuais."""
+
+    __tablename__ = "subportfolios"
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    name: Mapped[str] = mapped_column(String, unique=True)
+
+
 class Asset(Base):
     __tablename__ = "assets"
 
@@ -113,6 +124,10 @@ class Asset(Base):
     # Nulo é "sem classificação"
     segment_id: Mapped[int | None] = mapped_column(
         ForeignKey("segments.id", ondelete="RESTRICT"), index=True, default=None
+    )
+    # Nulo é "só na carteira geral"; apagar a subcarteira devolve o ativo a ela
+    subportfolio_id: Mapped[int | None] = mapped_column(
+        ForeignKey("subportfolios.id", ondelete="SET NULL"), index=True, default=None
     )
 
 
@@ -266,6 +281,10 @@ class FixedIncomeInvestment(Base):
     rate: Mapped[Decimal] = mapped_column(DecimalText)
     maturity_date: Mapped[date | None]
     daily_liquidity: Mapped[bool]
+    # Nulo é "só na carteira geral"; apagar a subcarteira devolve o título a ela
+    subportfolio_id: Mapped[int | None] = mapped_column(
+        ForeignKey("subportfolios.id", ondelete="SET NULL"), index=True, default=None
+    )
 
 
 class FixedIncomeMovement(Base):

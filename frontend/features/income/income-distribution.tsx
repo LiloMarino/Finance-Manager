@@ -218,9 +218,12 @@ function AssetSections({ distribution }: { distribution: IncomeDistribution }) {
   );
 }
 
-export function IncomeDistributionPanel() {
+export function IncomeDistributionPanel({ subportfolioId }: { subportfolioId?: number }) {
   const [months, setMonths] = useState<Window>("12");
-  const { data, isPending, error } = useIncomeDistribution(Number(months));
+  const { data, isPending, error } = useIncomeDistribution({
+    months: Number(months),
+    subportfolio_id: subportfolioId,
+  });
 
   return (
     <div className="flex flex-col gap-6">

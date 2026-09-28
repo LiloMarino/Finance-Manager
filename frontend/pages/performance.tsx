@@ -3,10 +3,12 @@ import { useState } from "react";
 import { PerformancePanel } from "@/features/performance/performance-panel";
 import { CategorySelect } from "@/shared/components/category-select";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
 
 export function PerformancePage() {
   const [category, setCategory] = useState<PortfolioCategory>();
+  const [subportfolioId] = useSubportfolioParam();
 
   return (
     <div className="flex flex-col gap-6">
@@ -20,6 +22,7 @@ export function PerformancePage() {
         <CardContent>
           <PerformancePanel
             category={category}
+            subportfolioId={subportfolioId}
             filters={<CategorySelect value={category} onChange={setCategory} />}
           />
         </CardContent>

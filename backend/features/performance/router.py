@@ -85,6 +85,7 @@ def get_performance(
     session: SessionDep,
     category: PortfolioCategory | None = None,
     asset_id: int | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> PerformanceDTO:
@@ -94,6 +95,7 @@ def get_performance(
             date.today(),
             category=category,
             asset_id=asset_id,
+            subportfolio_id=subportfolio_id,
             start=start,
             end=end,
         )
@@ -105,7 +107,14 @@ def get_monthly_performance(
     session: SessionDep,
     category: PortfolioCategory | None = None,
     asset_id: int | None = None,
+    subportfolio_id: int | None = None,
 ) -> MonthlyPerformanceDTO:
     return MonthlyPerformanceDTO.model_validate(
-        monthly_performance(session, date.today(), category=category, asset_id=asset_id)
+        monthly_performance(
+            session,
+            date.today(),
+            category=category,
+            asset_id=asset_id,
+            subportfolio_id=subportfolio_id,
+        )
     )

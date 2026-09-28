@@ -37,6 +37,7 @@ from backend.features.income.dto import (
 from backend.repository.income import income_records
 from backend.repository.market import latest_prices
 from backend.repository.operations import operation_records
+from backend.repository.subportfolios import members
 from backend.repository.tickers import ticker_history
 
 
@@ -67,6 +68,16 @@ def _categories(records: Sequence[IncomeRecord]) -> list[CategoryAmountDTO]:
     ]
 
 
+def _records(session: Session, subportfolio_id: int | None) -> list[IncomeRecord]:
+    """Os proventos da carteira geral ou dos ativos da subcarteira."""
+    scope = members(session, subportfolio_id)
+    return [
+        record
+        for record in income_records(session)
+        if scope is None or record.asset_id in scope.asset_ids
+    ]
+
+
 def _in_period(
     records: Iterable[IncomeRecord], start: date | None, end: date | None
 ) -> list[IncomeRecord]:
@@ -86,6 +97,7 @@ def list_income(
     asset_id: int | None = None,
     category: PortfolioCategory | None = None,
     income_type: IncomeType | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomeListDTO:
@@ -93,7 +105,7 @@ def list_income(
     history = ticker_history(session)
     found = [
         record
-        for record in _in_period(income_records(session), start, end)
+        for record in _in_period(_records(session, subportfolio_id), start, end)
         if (asset_id is None or record.asset_id == asset_id)
         and (category is None or _category(record) is category)
         and (income_type is None or record.income_type is income_type)
@@ -186,12 +198,13 @@ def income_performance(
     today: date,
     *,
     by_year: bool = False,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomePerformanceDTO:
     """As barras cobrem todo mês, ou ano, do período, inclusive os sem provento. Sem
     período, vão do primeiro provento até hoje."""
-    records = income_records(session)
+    records = _records(session, subportfolio_id)
     selected = _in_period(records, start, end)
 
     bars: list[IncomeBarDTO] = []
@@ -221,11 +234,11 @@ def income_performance(
 
 
 def income_distribution(
-    session: Session, today: date, months: int
+    session: Session, today: date, months: int, subportfolio_id: int | None = None
 ) -> IncomeDistributionDTO:
     """O que cada categoria e cada ativo pagou nos últimos `months` meses, do que
     mais pagou para o que menos pagou, com a posição de hoje ao lado."""
-    records = income_records(session)
+    records = _records(session, subportfolio_id)
     window = since(records, today, months)
     window_total = total(window)
     positions = current_positions(operation_records(session))

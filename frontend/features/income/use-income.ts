@@ -10,6 +10,9 @@ export type IncomeFilters = NonNullable<paths["/api/income"]["get"]["parameters"
 export type IncomePerformanceQuery = NonNullable<
   paths["/api/income/performance"]["get"]["parameters"]["query"]
 >;
+export type IncomeDistributionQuery = NonNullable<
+  paths["/api/income/distribution"]["get"]["parameters"]["query"]
+>;
 export type IncomePerformance = components["schemas"]["IncomePerformanceDTO"];
 export type IncomeDistribution = components["schemas"]["IncomeDistributionDTO"];
 type IncomeInput = components["schemas"]["IncomeEventInDTO"];
@@ -28,10 +31,10 @@ export function useIncomePerformance(query: IncomePerformanceQuery) {
   });
 }
 
-export function useIncomeDistribution(months: number) {
+export function useIncomeDistribution(query: IncomeDistributionQuery) {
   return useQuery({
-    queryKey: [...queryKeys.income, "distribution", months],
-    queryFn: () => get("/api/income/distribution", { query: { months } }),
+    queryKey: [...queryKeys.income, "distribution", query],
+    queryFn: () => get("/api/income/distribution", { query }),
   });
 }
 

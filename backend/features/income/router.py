@@ -32,6 +32,7 @@ def list_all(
     asset_id: int | None = None,
     category: PortfolioCategory | None = None,
     income_type: IncomeType | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomeListDTO:
@@ -40,6 +41,7 @@ def list_all(
         asset_id=asset_id,
         category=category,
         income_type=income_type,
+        subportfolio_id=subportfolio_id,
         start=start,
         end=end,
     )
@@ -66,16 +68,24 @@ def delete(session: SessionDep, income_id: int) -> None:
 def get_performance(
     session: SessionDep,
     group: Literal["month", "year"] = "month",
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomePerformanceDTO:
     return income_performance(
-        session, date.today(), by_year=group == "year", start=start, end=end
+        session,
+        date.today(),
+        by_year=group == "year",
+        subportfolio_id=subportfolio_id,
+        start=start,
+        end=end,
     )
 
 
 @router.get("/distribution")
 def get_distribution(
-    session: SessionDep, months: Annotated[int, Query(ge=1)] = 12
+    session: SessionDep,
+    months: Annotated[int, Query(ge=1)] = 12,
+    subportfolio_id: int | None = None,
 ) -> IncomeDistributionDTO:
-    return income_distribution(session, date.today(), months)
+    return income_distribution(session, date.today(), months, subportfolio_id)

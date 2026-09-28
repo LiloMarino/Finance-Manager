@@ -3,7 +3,8 @@ from __future__ import annotations
 from fastapi import APIRouter, status
 
 from backend.core.database.session import SessionDep
-from backend.features.sectors.dto import NameInDTO, SectorDTO, SegmentDTO
+from backend.core.dto import NameInDTO
+from backend.features.sectors.dto import SectorDTO, SegmentDTO
 from backend.features.sectors.service import (
     create_sector,
     create_segment,

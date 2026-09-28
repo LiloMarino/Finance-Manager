@@ -365,6 +365,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/subportfolios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All */
+        get: operations["list_all_api_subportfolios_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_subportfolios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subportfolios/{subportfolio_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename */
+        put: operations["rename_api_subportfolios__subportfolio_id__put"];
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_subportfolios__subportfolio_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subportfolios/{subportfolio_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Members */
+        put: operations["update_members_api_subportfolios__subportfolio_id__members_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolio": {
         parameters: {
             query?: never;
@@ -719,7 +772,7 @@ export interface components {
         /**
          * AssetDTO
          * @description `segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
-         *     nomes vindos do segmento.
+         *     nomes vindos do segmento. `subportfolio_id` nulo é ativo só da carteira geral.
          */
         AssetDTO: {
             /** Id */
@@ -735,6 +788,8 @@ export interface components {
             sector: string | null;
             /** Segment */
             segment: string | null;
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
             /** Previous Tickers */
             previous_tickers: components["schemas"]["PreviousTickerDTO"][];
         };
@@ -747,6 +802,8 @@ export interface components {
             cnpj?: string | null;
             /** Segment Id */
             segment_id?: number | null;
+            /** Subportfolio Id */
+            subportfolio_id?: number | null;
         };
         /** AssetPriceDTO */
         AssetPriceDTO: {
@@ -1142,8 +1199,8 @@ export interface components {
         /**
          * EvolutionDTO
          * @description `total` e o crescimento contam até hoje, e o crescimento é nulo quando a
-         *     carteira é mais nova que ele. As categorias são as da carteira toda, com o
-         *     valor de hoje.
+         *     carteira é mais nova que ele. As categorias são as da carteira ou da
+         *     subcarteira inteira, sem o filtro de categoria, com o valor de hoje.
          */
         EvolutionDTO: {
             /**
@@ -1204,11 +1261,14 @@ export interface components {
             maturity_date?: string | null;
             /** Daily Liquidity */
             daily_liquidity: boolean;
+            /** Subportfolio Id */
+            subportfolio_id?: number | null;
             application: components["schemas"]["ApplicationInDTO"];
         };
         /**
          * FixedIncomeDTO
          * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou.
+         *     `subportfolio_id` nulo é título só da carteira geral.
          */
         FixedIncomeDTO: {
             /** Id */
@@ -1226,6 +1286,8 @@ export interface components {
             maturity_date: string | null;
             /** Daily Liquidity */
             daily_liquidity: boolean;
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
             /** Tax Exempt */
             tax_exempt: boolean;
             /**
@@ -1273,6 +1335,8 @@ export interface components {
             maturity_date: string | null;
             /** Daily Liquidity */
             daily_liquidity: boolean;
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
             /** Tax Exempt */
             tax_exempt: boolean;
             /**
@@ -1382,6 +1446,8 @@ export interface components {
             maturity_date?: string | null;
             /** Daily Liquidity */
             daily_liquidity: boolean;
+            /** Subportfolio Id */
+            subportfolio_id?: number | null;
         };
         /**
          * FixedIncomeMovementType
@@ -2014,6 +2080,31 @@ export interface components {
             /** Returns */
             returns: number;
         };
+        /** MemberAssetDTO */
+        MemberAssetDTO: {
+            /** Id */
+            id: number;
+            /** Ticker */
+            ticker: string;
+        };
+        /** MemberInvestmentDTO */
+        MemberInvestmentDTO: {
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+        };
+        /**
+         * MembersInDTO
+         * @description A filiação completa: o que vem aqui passa a ser da subcarteira, inclusive o
+         *     que estava em outra, e o que era dela e não veio volta à carteira geral.
+         */
+        MembersInDTO: {
+            /** Asset Ids */
+            asset_ids: number[];
+            /** Investment Ids */
+            investment_ids: number[];
+        };
         /** MonthReturnDTO */
         MonthReturnDTO: {
             /** Year */
@@ -2143,7 +2234,7 @@ export interface components {
         };
         /**
          * NameInDTO
-         * @description O nome de um setor ou de um segmento.
+         * @description O nome de uma entidade nomeada, como setor, segmento ou subcarteira.
          */
         NameInDTO: {
             /** Name */
@@ -2591,6 +2682,20 @@ export interface components {
             name: string;
             /** Asset Count */
             asset_count: number;
+        };
+        /**
+         * SubportfolioDTO
+         * @description A subcarteira com os ativos e os títulos de hoje, em ordem de nome.
+         */
+        SubportfolioDTO: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Assets */
+            assets: components["schemas"]["MemberAssetDTO"][];
+            /** Fixed Income */
+            fixed_income: components["schemas"]["MemberInvestmentDTO"][];
         };
         /**
          * TickerChangeInDTO
@@ -3121,6 +3226,7 @@ export interface operations {
                 asset_id?: number | null;
                 category?: components["schemas"]["PortfolioCategory"] | null;
                 income_type?: components["schemas"]["IncomeType"] | null;
+                subportfolio_id?: number | null;
                 start?: string | null;
                 end?: string | null;
             };
@@ -3287,6 +3393,7 @@ export interface operations {
         parameters: {
             query?: {
                 group?: "month" | "year";
+                subportfolio_id?: number | null;
                 start?: string | null;
                 end?: string | null;
             };
@@ -3329,6 +3436,7 @@ export interface operations {
         parameters: {
             query?: {
                 months?: number;
+                subportfolio_id?: number | null;
             };
             header?: never;
             path?: never;
@@ -3895,9 +4003,213 @@ export interface operations {
             };
         };
     };
-    get_portfolio_api_portfolio_get: {
+    list_all_api_subportfolios_get: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubportfolioDTO"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_api_subportfolios_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubportfolioDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rename_api_subportfolios__subportfolio_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NameInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_api_subportfolios__subportfolio_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_members_api_subportfolios__subportfolio_id__members_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MembersInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_portfolio_api_portfolio_get: {
+        parameters: {
+            query?: {
+                subportfolio_id?: number | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3938,6 +4250,7 @@ export interface operations {
             query?: {
                 category?: components["schemas"]["PortfolioCategory"] | null;
                 asset_id?: number | null;
+                subportfolio_id?: number | null;
                 start?: string | null;
                 end?: string | null;
             };
@@ -3981,6 +4294,7 @@ export interface operations {
             query?: {
                 category?: components["schemas"]["PortfolioCategory"] | null;
                 asset_id?: number | null;
+                subportfolio_id?: number | null;
             };
             header?: never;
             path?: never;
@@ -4021,6 +4335,7 @@ export interface operations {
         parameters: {
             query?: {
                 category?: components["schemas"]["PortfolioCategory"] | null;
+                subportfolio_id?: number | null;
                 start?: string | null;
                 end?: string | null;
             };

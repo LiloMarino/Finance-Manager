@@ -20,6 +20,7 @@ from backend.repository.fixed_income import MarkedInvestment, marked_investments
 from backend.repository.market import AssetPrice, latest_prices
 from backend.repository.operations import operation_records
 from backend.repository.sectors import Classification, classifications
+from backend.repository.subportfolios import members
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -280,7 +281,12 @@ def _by_classification(
     )
 
 
-def portfolio(session: Session, today: date) -> Portfolio:
+def portfolio(
+    session: Session, today: date, subportfolio_id: int | None = None
+) -> Portfolio:
+    """A carteira geral ou, com `subportfolio_id`, só os membros da subcarteira: o
+    total e as frações são sobre ela."""
+    scope = members(session, subportfolio_id)
     positions = current_positions(operation_records(session))
     prices = {price.asset_id: price for price in latest_prices(session)}
     classes = classifications(session)
@@ -294,13 +300,15 @@ def portfolio(session: Session, today: date) -> Portfolio:
             ),
         )
         for asset in session.scalars(select(Asset).order_by(Asset.ticker))
-        if (position := positions.get(asset.ticker)) is not None
+        if (scope is None or asset.id in scope.asset_ids)
+        and (position := positions.get(asset.ticker)) is not None
         and position.quantity != 0
     ]
     investments = [
         investment
         for investment in marked_investments(session, today)
-        if investment.gross_value > 0
+        if (scope is None or investment.id in scope.investment_ids)
+        and investment.gross_value > 0
     ]
 
     # O "hoje" da renda variável é o pregão mais recente entre os ativos em carteira

@@ -23,6 +23,7 @@ from backend.domain.position import OperationRecord
 from backend.repository.income import income_records
 from backend.repository.market import index_rates
 from backend.repository.operations import operation_records
+from backend.repository.subportfolios import Members
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -159,11 +160,17 @@ def select_lines(
     series: DailySeries,
     category: PortfolioCategory | None = None,
     asset_id: int | None = None,
+    members: Members | None = None,
 ) -> list[DailyLine]:
-    """As linhas da carteira, de uma categoria ou de um ativo."""
+    """As linhas da carteira, de uma subcarteira, de uma categoria ou de um ativo."""
     return [
         line
         for line in series.lines
         if (category is None or line.category is category)
         and (asset_id is None or line.asset_id == asset_id)
+        and (
+            members is None
+            or line.asset_id in members.asset_ids
+            or line.investment_id in members.investment_ids
+        )
     ]

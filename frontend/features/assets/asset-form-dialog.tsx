@@ -7,6 +7,7 @@ import { SegmentSelect } from "@/features/assets/segment-select";
 import { useSaveAsset } from "@/features/assets/use-asset-mutations";
 import type { Asset } from "@/shared/hooks/use-assets";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
+import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -28,6 +29,7 @@ const schema = z.object({
   ),
   cnpj: z.string(),
   segment_id: z.number().nullable(),
+  subportfolio_id: z.number().nullable(),
 });
 
 type AssetFormValues = z.infer<typeof schema>;
@@ -68,6 +70,7 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
       asset_class: asset?.asset_class ?? "stock",
       cnpj: asset?.cnpj ?? "",
       segment_id: asset?.segment_id ?? null,
+      subportfolio_id: asset?.subportfolio_id ?? null,
     },
   });
   const { errors } = form.formState;
@@ -108,6 +111,20 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
             name="segment_id"
             render={({ field }) => (
               <SegmentSelect id="asset-segment" value={field.value} onChange={field.onChange} />
+            )}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="asset-subportfolio">Subcarteira</FieldLabel>
+          <Controller
+            control={form.control}
+            name="subportfolio_id"
+            render={({ field }) => (
+              <SubportfolioSelect
+                id="asset-subportfolio"
+                value={field.value}
+                onChange={field.onChange}
+              />
             )}
           />
         </Field>

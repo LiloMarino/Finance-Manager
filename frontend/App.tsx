@@ -21,6 +21,7 @@ import { MonthlyReturnsPage } from "@/pages/monthly-returns";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
 import { SectorsPage } from "@/pages/sectors";
+import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
 import { queryClient } from "@/shared/lib/query-client";
 
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="assets" element={<AssetsPage />} />
             <Route path="assets/:assetId" element={<AssetDetailPage />} />
             <Route path="sectors" element={<SectorsPage />} />
+            <Route path="subportfolios" element={<SubportfoliosPage />} />
             <Route path="fixed-income" element={<FixedIncomePage />} />
             <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
             <Route path="market" element={<MarketPage />} />

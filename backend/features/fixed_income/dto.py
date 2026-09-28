@@ -21,6 +21,7 @@ class FixedIncomeInDTO(BaseDTO):
     rate: DecimalStrIn
     maturity_date: date | None = None
     daily_liquidity: bool
+    subportfolio_id: int | None = None
 
     @field_validator("label")
     @classmethod
@@ -39,7 +40,8 @@ class FixedIncomeInDTO(BaseDTO):
 
 
 class FixedIncomeDTO(BaseDTO):
-    """O título com a marcação em `as_of`: hoje, ou o vencimento se já passou."""
+    """O título com a marcação em `as_of`: hoje, ou o vencimento se já passou.
+    `subportfolio_id` nulo é título só da carteira geral."""
 
     id: int
     label: str
@@ -48,6 +50,7 @@ class FixedIncomeDTO(BaseDTO):
     rate: DecimalStr
     maturity_date: date | None
     daily_liquidity: bool
+    subportfolio_id: int | None
     tax_exempt: bool
     invested: DecimalStr
     gross_value: DecimalStr

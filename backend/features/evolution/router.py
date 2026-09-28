@@ -37,8 +37,8 @@ class CategoryValueDTO(BaseDTO):
 
 class EvolutionDTO(BaseDTO):
     """`total` e o crescimento contam até hoje, e o crescimento é nulo quando a
-    carteira é mais nova que ele. As categorias são as da carteira toda, com o
-    valor de hoje."""
+    carteira é mais nova que ele. As categorias são as da carteira ou da
+    subcarteira inteira, sem o filtro de categoria, com o valor de hoje."""
 
     total: DecimalStr
     last_6_months: GrowthDTO | None
@@ -52,9 +52,17 @@ class EvolutionDTO(BaseDTO):
 def get_evolution(
     session: SessionDep,
     category: PortfolioCategory | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> EvolutionDTO:
     return EvolutionDTO.model_validate(
-        evolution(session, date.today(), category=category, start=start, end=end)
+        evolution(
+            session,
+            date.today(),
+            category=category,
+            subportfolio_id=subportfolio_id,
+            start=start,
+            end=end,
+        )
     )

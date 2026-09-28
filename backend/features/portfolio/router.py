@@ -109,5 +109,9 @@ class PortfolioDTO(BaseDTO):
 
 
 @router.get("")
-def get_portfolio(session: SessionDep) -> PortfolioDTO:
-    return PortfolioDTO.model_validate(portfolio(session, date.today()))
+def get_portfolio(
+    session: SessionDep, subportfolio_id: int | None = None
+) -> PortfolioDTO:
+    return PortfolioDTO.model_validate(
+        portfolio(session, date.today(), subportfolio_id)
+    )

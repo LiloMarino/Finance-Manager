@@ -22,6 +22,7 @@ import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
 interface PerformancePanelProps {
   category?: PortfolioCategory;
   assetId?: number;
+  subportfolioId?: number;
   /** Filtros da tela, ao lado do seletor de período */
   filters?: ReactNode;
 }
@@ -41,12 +42,18 @@ function staleBenchmarks(performance: Performance, selected: Benchmark[]): strin
   });
 }
 
-export function PerformancePanel({ category, assetId, filters }: PerformancePanelProps) {
+export function PerformancePanel({
+  category,
+  assetId,
+  subportfolioId,
+  filters,
+}: PerformancePanelProps) {
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
   const [selected, setSelected] = useState<Benchmark[]>(["cdi"]);
   const { data, isPending, error } = usePerformance({
     category,
     asset_id: assetId,
+    subportfolio_id: subportfolioId,
     ...periodRange(period),
   });
 

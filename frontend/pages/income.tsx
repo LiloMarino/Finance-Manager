@@ -8,8 +8,11 @@ import { IncomePerformancePanel } from "@/features/income/income-performance";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
 
 export function IncomePage() {
+  const [subportfolioId] = useSubportfolioParam();
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -47,7 +50,7 @@ export function IncomePage() {
         <TabsContent value="performance">
           <Card>
             <CardContent>
-              <IncomePerformancePanel />
+              <IncomePerformancePanel subportfolioId={subportfolioId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -55,13 +58,13 @@ export function IncomePage() {
         <TabsContent value="distribution">
           <Card>
             <CardContent>
-              <IncomeDistributionPanel />
+              <IncomeDistributionPanel subportfolioId={subportfolioId} />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="history">
-          <IncomeHistory />
+          <IncomeHistory subportfolioId={subportfolioId} />
         </TabsContent>
       </Tabs>
     </div>

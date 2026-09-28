@@ -26,7 +26,7 @@ interface NameDialogProps {
   save: UseMutationResult<unknown, Error, string>;
 }
 
-/** Diálogo de um campo só, para criar ou renomear setor e segmento. */
+/** Diálogo de um campo só, para criar ou renomear uma entidade nomeada. */
 export function NameDialog({ title, trigger, initialName = "", save }: NameDialogProps) {
   const [open, setOpen] = useState(false);
 

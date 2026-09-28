@@ -186,11 +186,12 @@ function CategoryTotals({ performance }: { performance: IncomePerformance }) {
   );
 }
 
-export function IncomePerformancePanel() {
+export function IncomePerformancePanel({ subportfolioId }: { subportfolioId?: number }) {
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
   const [group, setGroup] = useState<Group>("month");
   const { data, isPending, error } = useIncomePerformance({
     group,
+    subportfolio_id: subportfolioId,
     ...periodRange(period),
   });
 

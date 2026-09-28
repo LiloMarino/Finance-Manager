@@ -1,22 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 import { del, get, getApiErrorMessage, post, put } from "@/shared/lib/api";
 import { invalidateKeys, queryKeys } from "@/shared/lib/query-keys";
 import type { components } from "@/types/openapi.generated";
 
-export type FixedIncome = components["schemas"]["FixedIncomeDTO"];
 export type Movement = components["schemas"]["MovementDTO"];
 type FixedIncomeInput = components["schemas"]["FixedIncomeInDTO"];
 type FixedIncomeCreateInput = components["schemas"]["FixedIncomeCreateDTO"];
 type MovementInput = components["schemas"]["MovementInDTO"];
-
-export function useFixedIncomeList() {
-  return useQuery({
-    queryKey: queryKeys.fixedIncome,
-    queryFn: () => get("/api/fixed-income"),
-  });
-}
 
 export function useFixedIncome(investmentId: number) {
   return useQuery({
@@ -39,6 +32,7 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
         queryKeys.fixedIncome,
         queryKeys.portfolio,
         queryKeys.dataHealth,
+        queryKeys.subportfolios,
       ]);
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

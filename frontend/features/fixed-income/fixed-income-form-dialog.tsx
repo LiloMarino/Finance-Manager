@@ -4,11 +4,11 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import {
-  type FixedIncome,
   useCreateFixedIncome,
   useUpdateFixedIncome,
 } from "@/features/fixed-income/use-fixed-income";
 import { InvestmentTermsFields } from "@/shared/components/investment-terms-fields";
+import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -21,6 +21,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 import { investmentTermsSchema } from "@/shared/lib/investment-terms";
 import { parseDecimalInput } from "@/types/decimal";
 
@@ -33,6 +34,7 @@ function schemaFor(creating: boolean) {
       investment: investmentTermsSchema,
       maturity_date: z.string(),
       daily_liquidity: z.boolean(),
+      subportfolio_id: z.number().nullable(),
       application_date: z.string(),
       application_amount: z.string(),
     })
@@ -109,6 +111,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
       },
       maturity_date: investment?.maturity_date ?? "",
       daily_liquidity: investment?.daily_liquidity ?? false,
+      subportfolio_id: investment?.subportfolio_id ?? null,
       application_date: "",
       application_amount: "",
     },
@@ -169,6 +172,20 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
             </Field>
           )}
         />
+        <Field>
+          <FieldLabel htmlFor="fixed-income-subportfolio">Subcarteira</FieldLabel>
+          <Controller
+            control={form.control}
+            name="subportfolio_id"
+            render={({ field }) => (
+              <SubportfolioSelect
+                id="fixed-income-subportfolio"
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </Field>
 
         {/* Primeira aplicação */}
         {creating && (

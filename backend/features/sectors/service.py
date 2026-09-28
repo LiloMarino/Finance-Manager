@@ -5,9 +5,10 @@ from collections import defaultdict
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
+from backend.core.dto import NameInDTO
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, Sector, Segment
-from backend.features.sectors.dto import NameInDTO, SectorDTO, SegmentDTO
+from backend.features.sectors.dto import SectorDTO, SegmentDTO
 
 
 class SectorNotFoundError(FinanceError):

@@ -1,7 +1,5 @@
 import { Pencil, Plus } from "lucide-react";
 
-import { DeleteDialog } from "@/features/sectors/delete-dialog";
-import { NameDialog } from "@/features/sectors/name-dialog";
 import {
   useCreateSegment,
   useDeleteSector,
@@ -9,6 +7,8 @@ import {
   useRenameSector,
   useRenameSegment,
 } from "@/features/sectors/use-sector-mutations";
+import { DeleteDialog } from "@/shared/components/delete-dialog";
+import { NameDialog } from "@/shared/components/name-dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import type { Sector, Segment } from "@/shared/hooks/use-sectors";

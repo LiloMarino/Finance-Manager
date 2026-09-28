@@ -10,7 +10,13 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, PlainSerializer, WithJsonSchema
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    PlainSerializer,
+    WithJsonSchema,
+    field_validator,
+)
 from pydantic.functional_validators import BeforeValidator
 
 from backend.core.decimal_ctx import fmt
@@ -43,6 +49,20 @@ DecimalStrIn = Annotated[
 
 class BaseDTO(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", from_attributes=True)
+
+
+class NameInDTO(BaseDTO):
+    """O nome de uma entidade nomeada, como setor, segmento ou subcarteira."""
+
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def _strip_name(cls, value: str) -> str:
+        name = value.strip()
+        if not name:
+            raise ValueError("Informe o nome.")
+        return name
 
 
 class ErrorResponse(BaseDTO):

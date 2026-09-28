@@ -1,9 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-import {
-  type FixedIncome,
-  useDeleteFixedIncome,
-} from "@/features/fixed-income/use-fixed-income";
+import { useDeleteFixedIncome } from "@/features/fixed-income/use-fixed-income";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
+import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 
 export function DeleteFixedIncomeDialog({ investment }: { investment: FixedIncome }) {
   const remove = useDeleteFixedIncome();

@@ -20,7 +20,7 @@ import { formatBRL, formatQuantity, formatSignedBRL } from "@/types/decimal";
 export function AssetDetailPage() {
   const assetId = Number(useParams().assetId);
   const asset = useAsset(assetId);
-  const portfolio = usePortfolio();
+  const portfolio = usePortfolio({});
   const operations = useOperations({ asset_id: assetId });
 
   if (asset.error) {

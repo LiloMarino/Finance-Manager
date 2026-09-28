@@ -1,8 +1,8 @@
 import { Plus } from "lucide-react";
 
-import { NameDialog } from "@/features/sectors/name-dialog";
 import { SectorCard } from "@/features/sectors/sector-card";
 import { useCreateSector } from "@/features/sectors/use-sector-mutations";
+import { NameDialog } from "@/shared/components/name-dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useSectors } from "@/shared/hooks/use-sectors";

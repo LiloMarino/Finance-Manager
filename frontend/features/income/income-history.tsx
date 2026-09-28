@@ -168,9 +168,12 @@ function IncomeTable({ events }: { events: IncomeEvent[] }) {
   );
 }
 
-export function IncomeHistory() {
+export function IncomeHistory({ subportfolioId }: { subportfolioId?: number }) {
   const [filters, setFilters] = useState<IncomeFilters>({});
-  const { data, isPending, error } = useIncome(filters);
+  const { data, isPending, error } = useIncome({
+    ...filters,
+    subportfolio_id: subportfolioId,
+  });
 
   return (
     <div className="flex flex-col gap-6">

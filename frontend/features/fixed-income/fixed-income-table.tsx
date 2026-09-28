@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { DeleteFixedIncomeDialog } from "@/features/fixed-income/delete-fixed-income-dialog";
 import { FixedIncomeFormDialog } from "@/features/fixed-income/fixed-income-form-dialog";
-import type { FixedIncome } from "@/features/fixed-income/use-fixed-income";
+import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,

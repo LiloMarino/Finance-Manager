@@ -24,6 +24,7 @@ from backend.domain.performance import (
 )
 from backend.repository.daily_series import daily_series, select_lines
 from backend.repository.market import index_rates
+from backend.repository.subportfolios import members
 
 RECENT_MONTHS = (6, 12, 24)
 
@@ -86,13 +87,15 @@ def performance(
     *,
     category: PortfolioCategory | None = None,
     asset_id: int | None = None,
+    subportfolio_id: int | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> Performance:
     """O período vai do fechamento da véspera de `start` ao de `end`: o primeiro dia
     dele já conta."""
+    scope = members(session, subportfolio_id)
     series = daily_series(session, today)
-    points = aggregate(series.days, select_lines(series, category, asset_id))
+    points = aggregate(series.days, select_lines(series, category, asset_id, scope))
     if not points:
         return EMPTY
     days = [point.day for point in points]
@@ -197,9 +200,11 @@ def monthly_performance(
     *,
     category: PortfolioCategory | None = None,
     asset_id: int | None = None,
+    subportfolio_id: int | None = None,
 ) -> MonthlyPerformance:
+    scope = members(session, subportfolio_id)
     series = daily_series(session, today)
-    points = aggregate(series.days, select_lines(series, category, asset_id))
+    points = aggregate(series.days, select_lines(series, category, asset_id, scope))
     days = [point.day for point in points]
     rates = index_rates(session)
     years = monthly_returns(days, quota_series(points))

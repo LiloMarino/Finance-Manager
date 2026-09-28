@@ -21,6 +21,7 @@ from backend.features.assets.dto import (
 )
 from backend.repository.operations import check_positions
 from backend.repository.sectors import Classification, classifications
+from backend.repository.subportfolios import check_subportfolio
 from backend.repository.tickers import (
     TickerHistory,
     ensure_ticker_free,
@@ -54,6 +55,7 @@ def _to_dto(
         segment_id=asset.segment_id,
         sector=classification.sector if classification else None,
         segment=classification.segment if classification else None,
+        subportfolio_id=asset.subportfolio_id,
         previous_tickers=[
             PreviousTickerDTO(ticker=entry.ticker, valid_until=entry.valid_until)
             for entry in history.previous(asset.id)
@@ -93,11 +95,13 @@ def get_asset(session: Session, asset_id: int) -> AssetDTO:
 def create_asset(session: Session, payload: AssetInDTO) -> AssetDTO:
     ensure_ticker_free(session, payload.ticker, None)
     _check_segment(session, payload.segment_id)
+    check_subportfolio(session, payload.subportfolio_id)
     asset = Asset(
         ticker=payload.ticker,
         asset_class=payload.asset_class,
         cnpj=payload.cnpj,
         segment_id=payload.segment_id,
+        subportfolio_id=payload.subportfolio_id,
     )
     session.add(asset)
     session.commit()
@@ -110,10 +114,12 @@ def update_asset(session: Session, asset_id: int, payload: AssetInDTO) -> AssetD
     asset = _asset(session, asset_id)
     ensure_ticker_free(session, payload.ticker, asset_id)
     _check_segment(session, payload.segment_id)
+    check_subportfolio(session, payload.subportfolio_id)
     asset.ticker = payload.ticker
     asset.asset_class = payload.asset_class
     asset.cnpj = payload.cnpj
     asset.segment_id = payload.segment_id
+    asset.subportfolio_id = payload.subportfolio_id
     session.commit()
     return _dto(session, asset)
 
@@ -203,6 +209,7 @@ def _merge(session: Session, source: Asset, target: Asset, day: date) -> AssetDT
         entry.asset_id = target.id
     target.cnpj = target.cnpj or source.cnpj
     target.segment_id = target.segment_id or source.segment_id
+    target.subportfolio_id = target.subportfolio_id or source.subportfolio_id
     old_ticker = source.ticker
     # Operações e proventos saem de `source` antes de apagá-lo: a FK delas é RESTRICT
     session.flush()

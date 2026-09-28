@@ -6,12 +6,14 @@ import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
 import { formatBRL, formatSignedBRL, formatSignedPercent } from "@/types/decimal";
 
 export function HomePage() {
-  const { data, isPending, error } = usePortfolio();
+  const [subportfolioId] = useSubportfolioParam();
+  const { data, isPending, error } = usePortfolio({ subportfolio_id: subportfolioId });
 
   return (
     <div className="flex flex-col gap-6">

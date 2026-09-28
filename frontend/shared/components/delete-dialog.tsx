@@ -16,7 +16,7 @@ import { Button } from "@/shared/components/ui/button";
 
 interface DeleteDialogProps {
   name: string;
-  /** A regra de quando dá para apagar. */
+  /** A regra de quando dá para apagar, ou o que acontece ao apagar. */
   description: string;
   remove: UseMutationResult<unknown, Error, void>;
 }
