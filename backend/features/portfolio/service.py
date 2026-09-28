@@ -12,9 +12,11 @@ from backend.core.enum import (
     AssetClass,
     FixedIncomeType,
     Indexer,
+    LiquidityTier,
     PortfolioCategory,
 )
 from backend.core.models.models import Asset
+from backend.domain.liquidity import CASH_TIER, EQUITY_TIER, investment_tier
 from backend.domain.position import ZERO, Position, current_positions
 from backend.repository.cash import cash_ledger
 from backend.repository.fixed_income import MarkedInvestment, marked_investments
@@ -103,6 +105,22 @@ class SegmentAllocation:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class LiquidityAllocation:
+    tier: LiquidityTier
+    value: Decimal
+    share: Decimal
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MaturityBucket:
+    """O bruto de hoje dos títulos travados que vencem no mês ou no ano que começa
+    em `start`; `start` nulo é o título travado sem vencimento."""
+
+    start: date | None
+    value: Decimal
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Portfolio:
     """O patrimônio de hoje: renda variável a mercado e renda fixa pelo valor
     bruto marcado. Setor e segmento dividem só a renda variável, e a fração deles é
@@ -126,6 +144,9 @@ class Portfolio:
     fixed_income: list[FixedIncomeHolding]
     sectors: list[SectorAllocation]
     segments: list[SegmentAllocation]
+    liquidity: list[LiquidityAllocation]
+    maturities_by_month: list[MaturityBucket]
+    maturities_by_year: list[MaturityBucket]
 
 
 def _share(value: Decimal, total: Decimal) -> Decimal:
@@ -286,6 +307,49 @@ def _by_classification(
     )
 
 
+def _liquidity(
+    valued: list[_Valued],
+    investments: list[MarkedInvestment],
+    cash: Decimal | None,
+    total: Decimal,
+) -> list[LiquidityAllocation]:
+    by_tier: defaultdict[LiquidityTier, Decimal] = defaultdict(Decimal)
+    for item in valued:
+        by_tier[EQUITY_TIER] += item.market_value
+    for investment in investments:
+        by_tier[investment_tier(investment.daily_liquidity)] += investment.gross_value
+    if cash:
+        by_tier[CASH_TIER] += cash
+    return [
+        LiquidityAllocation(
+            tier=tier, value=by_tier[tier], share=_share(by_tier[tier], total)
+        )
+        for tier in LiquidityTier
+        if by_tier[tier] > 0
+    ]
+
+
+def _maturities(
+    investments: list[MarkedInvestment], *, by_year: bool
+) -> list[MaturityBucket]:
+    """Os travados por período do vencimento, em ordem, com os sem vencimento no
+    fim."""
+    buckets: defaultdict[date | None, Decimal] = defaultdict(Decimal)
+    for investment in investments:
+        if investment_tier(investment.daily_liquidity) is not LiquidityTier.LOCKED:
+            continue
+        maturity = investment.maturity_date
+        start = (
+            None
+            if maturity is None
+            else date(maturity.year, 1 if by_year else maturity.month, 1)
+        )
+        buckets[start] += investment.gross_value
+    dated = sorted(start for start in buckets if start is not None)
+    starts: list[date | None] = [*dated, *([None] if None in buckets else [])]
+    return [MaturityBucket(start=start, value=buckets[start]) for start in starts]
+
+
 def portfolio(
     session: Session, today: date, subportfolio_id: int | None = None
 ) -> Portfolio:
@@ -384,4 +448,7 @@ def portfolio(
         ],
         sectors=sectors,
         segments=segments,
+        liquidity=_liquidity(valued, investments, cash, total),
+        maturities_by_month=_maturities(investments, by_year=False),
+        maturities_by_year=_maturities(investments, by_year=True),
     )

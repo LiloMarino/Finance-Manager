@@ -2263,6 +2263,31 @@ export interface components {
             rate_date: string | null;
         };
         /**
+         * LiquidityAllocationDTO
+         * @description O quanto do patrimônio está em cada camada de liquidez: mexível (saldo e renda
+         *     fixa com liquidez diária), intermediária (renda variável) e travada (renda fixa
+         *     sem liquidez diária).
+         */
+        LiquidityAllocationDTO: {
+            tier: components["schemas"]["LiquidityTier"];
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+        };
+        /**
+         * LiquidityTier
+         * @description O prazo em que o patrimônio vira dinheiro, do mais rápido ao mais lento.
+         * @enum {string}
+         */
+        LiquidityTier: "daily" | "intermediate" | "locked";
+        /**
          * LossPool
          * @description Conjunto de operações cujos prejuízos se compensam entre si: as comuns de
          *     ações, ETF e BDR; o day trade delas; e o FII, à parte.
@@ -2279,6 +2304,20 @@ export interface components {
             value: number | null;
             /** Returns */
             returns: number;
+        };
+        /**
+         * MaturityBucketDTO
+         * @description O bruto de hoje dos títulos travados que vencem no período que começa em
+         *     `start`; nulo é o travado sem vencimento.
+         */
+        MaturityBucketDTO: {
+            /** Start */
+            start: string | null;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
         };
         /** MemberAssetDTO */
         MemberAssetDTO: {
@@ -2686,6 +2725,12 @@ export interface components {
             sectors: components["schemas"]["SectorAllocationDTO"][];
             /** Segments */
             segments: components["schemas"]["SegmentAllocationDTO"][];
+            /** Liquidity */
+            liquidity: components["schemas"]["LiquidityAllocationDTO"][];
+            /** Maturities By Month */
+            maturities_by_month: components["schemas"]["MaturityBucketDTO"][];
+            /** Maturities By Year */
+            maturities_by_year: components["schemas"]["MaturityBucketDTO"][];
         };
         /**
          * PositionDTO

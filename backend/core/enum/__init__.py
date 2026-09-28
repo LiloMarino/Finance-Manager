@@ -12,6 +12,7 @@ from backend.core.enum.income_type import IncomeType
 from backend.core.enum.index_series import IndexSeries
 from backend.core.enum.indexer import Indexer
 from backend.core.enum.installment_mode import InstallmentMode
+from backend.core.enum.liquidity_tier import LiquidityTier
 from backend.core.enum.loss_pool import LossPool
 from backend.core.enum.operation_type import OperationType
 from backend.core.enum.payment_choice import PaymentChoice
@@ -33,6 +34,7 @@ __all__ = [
     "IndexSeries",
     "Indexer",
     "InstallmentMode",
+    "LiquidityTier",
     "LossPool",
     "OperationType",
     "PaymentChoice",

@@ -4,6 +4,7 @@ import { cashHint } from "@/features/cash/labels";
 import { AllocationChart } from "@/features/portfolio/allocation-chart";
 import { CategorySections } from "@/features/portfolio/category-sections";
 import { dayChangeHint } from "@/features/portfolio/hints";
+import { LiquidityCard } from "@/features/portfolio/liquidity-card";
 import { SectorDistribution } from "@/features/portfolio/sector-distribution";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { MetricHint } from "@/shared/components/metric-hint";
@@ -72,6 +73,9 @@ export function HomePage() {
               </CardContent>
             )}
           </Card>
+
+          {/* Liquidez */}
+          <LiquidityCard portfolio={data} />
 
           {/* Posições por categoria */}
           <CategorySections portfolio={data} />

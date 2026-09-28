@@ -10,6 +10,7 @@ from backend.core.enum import (
     AssetClass,
     FixedIncomeType,
     Indexer,
+    LiquidityTier,
     PortfolioCategory,
 )
 from backend.features.portfolio.service import portfolio
@@ -88,6 +89,24 @@ class SegmentAllocationDTO(BaseDTO):
     share: DecimalStr
 
 
+class LiquidityAllocationDTO(BaseDTO):
+    """O quanto do patrimônio está em cada camada de liquidez: mexível (saldo e renda
+    fixa com liquidez diária), intermediária (renda variável) e travada (renda fixa
+    sem liquidez diária)."""
+
+    tier: LiquidityTier
+    value: DecimalStr
+    share: DecimalStr
+
+
+class MaturityBucketDTO(BaseDTO):
+    """O bruto de hoje dos títulos travados que vencem no período que começa em
+    `start`; nulo é o travado sem vencimento."""
+
+    start: date | None
+    value: DecimalStr
+
+
 class PortfolioDTO(BaseDTO):
     """Frações (`share`, `unrealized_return`, `day_return`) vão de 0 a 1. A de setor
     e segmento é sobre o total da renda variável.
@@ -109,6 +128,9 @@ class PortfolioDTO(BaseDTO):
     fixed_income: list[FixedIncomeHoldingDTO]
     sectors: list[SectorAllocationDTO]
     segments: list[SegmentAllocationDTO]
+    liquidity: list[LiquidityAllocationDTO]
+    maturities_by_month: list[MaturityBucketDTO]
+    maturities_by_year: list[MaturityBucketDTO]
 
 
 @router.get("")
