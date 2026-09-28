@@ -33,7 +33,7 @@
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
 | **F32** | Liquidez em três camadas | — | ⏳ |
-| **F33** | Custo da bonificação | — | ⏳ |
+| **F33** | Custo da bonificação | — | 💤 |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
 | **F39** | Correlação da carteira | — | ⏳ |
@@ -111,7 +111,6 @@
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 | **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
-| **F33** | Custo da bonificação | M5 | 0 | ⏳ |
 | **F39** | Correlação da carteira | M7 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
@@ -235,7 +234,7 @@
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F33** | Custo da bonificação | F21 | ⏳ |
+| **F33** | Custo da bonificação | F21 | 💤 |
 | **F34** | Taxas da nota no resultado | F21 | 💤 |
 | **F35** | IRRF abatido do DARF | F21 | 💤 |
 
@@ -368,7 +367,7 @@
 | **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F27** | Ferramenta de correlação entre ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
-| **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
+| **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F35** | IRRF abatido do DARF | N5 | — | M5 | F21 | Médio | Baixo | Médio | Médio | 💤 Registrado, sem prioridade |
 | **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
