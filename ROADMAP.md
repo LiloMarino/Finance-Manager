@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** As subcarteiras (F25) existem: o seletor global no header filtra Carteira, Evolução, Rentabilidade, Ano a ano e Proventos, e a F24 fica livre para pegar.
+> **Última mudança (2026-09-28):** O saldo de investimento (F54) entra no M6, antes da liquidez, do rebalanceamento e do alerta, que passam a depender dele.
 
 ## Glossário
 
@@ -17,11 +17,11 @@
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
-| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52 | — |
+| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52, F54 | — |
 | **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51 | — |
 | **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F19, F20, F38 | — |
 | **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48, F51 | — |
-| **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32 | — |
+| **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32, F54 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
@@ -44,6 +44,7 @@
 | **F51** | Máscaras nos campos | — | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 | **F53** | Simulador: escada de títulos | — | ⏳ |
+| **F54** | Saldo de investimento | — | ⏳ |
 
 <details>
 <summary><strong>Concluído / decidido / descartado (45 itens — clique pra expandir)</strong></summary>
@@ -51,15 +52,15 @@
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **D1** | Stack: FastAPI + Vite | F1, F2 | ✅ |
-| **D2** | Dado primário por família de ativo (RV em operations, RF em tabelas próprias); o resto é derivado | F5, F8, F14, F17, F20 | ✅ |
+| **D2** | Dado primário por família de ativo (RV em operations, RF em tabelas próprias); o resto é derivado | F5, F8, F14, F17, F20, F54 | ✅ |
 | **D3** | Um único SQLite, com snapshot e migration testada | F4 | ✅ |
 | **D4** | Dinheiro e quantidade em Decimal (string no JSON) | F5, F26, F36 | ✅ |
-| **D5** | Rentabilidade medida por cota (TWR) | F15, F18 | ✅ |
+| **D5** | Rentabilidade medida por cota (TWR) | F15, F18, F54 | ✅ |
 | **D6** | Dados de mercado atrás de interface; cache em três camadas, idempotente; só fonte gratuita | F10, F12, F14, F16, F41, F52 | ✅ |
 | **D8** | IR-Helper aposentado; o banco dele é oráculo de posição e PM | F1, F7, F8, F21, F23 | ✅ |
 | **D10** | Roteamento: React Router 7 | F2 | ✅ |
 | **D11** | Tipagem: Pydantic nas bordas, dataclass no domínio, pyright strict | F3 | ✅ |
-| **D12** | Subcarteira: seletor em toda visão de carteira, cada ativo em uma só | F24, F25 | ✅ |
+| **D12** | Subcarteira: seletor em toda visão de carteira, cada ativo em uma só | F24, F25, F54 | ✅ |
 | **D13** | O estado da tela mora na URL | F25, F45, F48 | ✅ |
 | **F1** | Spike de stack (resolve D1) | — | ✅ |
 | **F2** | Scaffold do projeto na stack escolhida | — | ✅ |
@@ -106,11 +107,10 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F24** | Rebalanceamento | M6 | 1 | ⏳ |
+| **F54** | Saldo de investimento | M6 | 3 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
-| **F32** | Liquidez em três camadas | M6 | 0 | ⏳ |
 | **F39** | Correlação da carteira | M7 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
@@ -248,19 +248,20 @@
 
 </details>
 
-### M6 — Subcarteiras e rebalanceamento
+### M6 — Saldo, subcarteiras e rebalanceamento
 
-> **Objetivo:** Separar a carteira em grupos, dar meta a cada um e saber onde pôr cada aporte.
+> **Objetivo:** Separar a carteira em grupos, dar meta a cada um, ver o dinheiro parado à espera de reinvestimento e saber onde pôr cada aporte.
 >
-> **Serve:** N6, N7
+> **Serve:** N2, N6, N7
 >
-> **Progresso:** 1/4 concluídas
+> **Progresso:** 1/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F24** | Rebalanceamento | F11, F25 | ⏳ |
-| **F28** | Alerta de rebalanceamento com o app fechado | F24 | ⏳ |
-| **F32** | Liquidez em três camadas | F11, F12 | ⏳ |
+| **F24** | Rebalanceamento | F11, F25, F32, F54 | ⏳ |
+| **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ⏳ |
+| **F32** | Liquidez em três camadas | F11, F12, F54 | ⏳ |
+| **F54** | Saldo de investimento | F12, F17, F20 | ⏳ |
 
 <details><summary>Concluído (1 item)</summary>
 
@@ -371,7 +372,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
 | **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
-| **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25, F32, F54 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F27** | Ferramenta de correlação entre ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | 💤 Registrado, sem prioridade |
@@ -380,8 +381,8 @@
 | **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
 | **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ✅ Concluído |
-| **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
-| **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24, F54 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
+| **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12, F54 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
@@ -398,6 +399,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F53** | Simulador: escada de títulos | N9 | — | M7 | F49 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ⏳ Pendente |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -627,13 +629,13 @@ O endpoint é `GET /api/tax/period?year=&month=`. O botão "Apurar resultados" d
 **F24 — Rebalanceamento.** Substitui a planilha e o script de rebalanceamento: a meta, o desvio de cada item e a divisão do próximo aporte. Serve N6.
 
 Plano:
-- **meta:** pertence à subcarteira (F25, D12), com um percentual por item, guardado no banco. Item é um ativo, e a renda fixa é um item só, genérico ("Renda fixa"), sem distinguir título: o que tem dentro dela aparece na composição da carteira, não na meta. Ativo fora de subcarteira não tem meta;
-- **carteira geral:** não tem meta própria. A meta dela, quando mostrada, é a combinação das metas das subcarteiras, cada uma pesada pela fração da subcarteira na carteira;
+- **meta:** pertence à subcarteira (F25, D12), com um percentual por item, guardado no banco. Item é um ativo, e a renda fixa é um item só, genérico ("Renda fixa"), sem distinguir título: o que tem dentro dela aparece na composição da carteira, não na meta. Ativo fora de subcarteira não tem meta, e o membro sem meta entra com meta 0. As metas de uma subcarteira somam 100%;
+- **carteira geral:** não tem meta própria. A meta dela, quando mostrada, é a combinação das metas das subcarteiras, cada uma pesada pela fração da subcarteira na carteira. O saldo (F54) aparece como linha "a reinvestir";
 - **desvio:** a tela mostra, para cada item, o atual, a meta e o desvio em pontos percentuais (atual 27% contra meta 30% dá −3 p.p.), com o valor em reais que falta ou sobra;
-- **quanto a subcarteira está desbalanceada:** um número só, sem os empates da soma dos desvios (ver abaixo). Candidatos: a soma dos quadrados dos desvios, ou o maior desvio individual; a escolha sai na implementação, com exemplos na tela;
-- **aporte:** dado o valor, o app calcula direto quanto vai para cada item. O dinheiro vai primeiro para o item mais abaixo da meta (em reais, sobre o patrimônio depois do aporte) até ele empatar com o segundo mais abaixo, depois para os dois juntos, e assim por diante até o dinheiro acabar. É a divisão que deixa a subcarteira o mais perto possível da meta sem vender nada. Depois o app arredonda para cotas inteiras e mostra a sobra; o valor da renda fixa sai inteiro, para aplicar no título que o usuário escolher;
-- **com venda (opcional):** quanto vender de cada item acima da meta, só entre o que tem liquidez (F32), com o aviso de que venda de renda variável pode gerar DARF;
-- **limites do alerta:** desvio máximo por item e total, configurados por subcarteira (o script usa 5 p.p. por item e 10 p.p. na soma). A F28 avisa com eles.
+- **quanto a subcarteira está desbalanceada:** a raiz da soma dos quadrados dos desvios, em p.p. Com meta 40/30/30, a carteira em 45/28/27 dá 6,16 e a em 45/25/30 dá 7,07: a segunda, com dois itens 5 pontos fora, fica pior, sem o empate da soma dos desvios (ver abaixo). 0 é a carteira na meta;
+- **aporte:** dado o valor, o app calcula direto quanto vai para cada item. O dinheiro vai primeiro para o item mais abaixo da meta (em reais, sobre o patrimônio depois do aporte) até ele empatar com o segundo mais abaixo, depois para os dois juntos, e assim por diante até o dinheiro acabar. É a divisão que deixa a subcarteira o mais perto possível da meta sem vender nada. Depois o app arredonda para cotas inteiras e mostra a sobra, que fica no saldo; o valor da renda fixa sai inteiro, para aplicar no título que o usuário escolher. Um botão preenche o valor com o saldo;
+- **com venda (opcional):** o mesmo cálculo, com cada item podendo descer até a parte travada dele (F32) em vez de parar no valor atual; o aviso diz que venda de renda variável pode gerar DARF;
+- **limites do alerta:** desvio máximo por item (padrão 5 p.p., o do script) e desbalanceamento máximo (padrão 7 p.p., o valor com dois itens 5 p.p. fora em sentidos opostos), configurados por subcarteira. A subcarteira fora do limite aparece em Saúde dos dados, e a F28 avisa com eles.
 
 **Por que o desvio da planilha "não se mexe":** ela soma os desvios em valor absoluto. O que falta nos itens abaixo da meta é exatamente o que sobra nos de cima, então passar dinheiro de um item abaixo da meta para outro também abaixo dela (e que continua abaixo) não muda a soma. Exemplo: meta 40/30/30, o item A acima da meta e R$ 300 de aporte divididos entre B e C. As divisões 110/190, 120/180 e 150/150 dão todas a mesma soma de desvios, 12,31. Por isso a tentativa e erro não acha a melhor divisão, e o cálculo direto acha.
 
@@ -732,23 +734,25 @@ Decisões tomadas durante:
 - **A fração por ativo é uma barra na linha, e não uma pizza.** Uma pizza por ativo precisaria de uma cor por ativo, gerada além da paleta das categorias. A cor segue a categoria em toda a tela.
 - Tudo é em valor líquido, o mesmo do informe da corretora.
 
-**F28 — Alerta de rebalanceamento com o app fechado.** Substitui o popup agendado do script: um aviso quando algum desvio passar do limite configurado na F24. Serve N6.
+**F28 — Alerta de rebalanceamento com o app fechado.** Substitui o popup agendado do script: um aviso diário quando alguma subcarteira passa do limite configurado na F24, ou quando o saldo parado (F54) passa do limite dele. Serve N6.
 
 Plano:
-- um comando do próprio app, rodado sem subir o servidor, que atualiza as cotações, calcula os desvios de cada subcarteira com meta e, se algum limite furou, mostra o aviso com a subcarteira, o item e o desvio;
-- o Agendador de Tarefas do Windows roda o comando, como roda o script hoje; a tela de metas mostra o comando pronto para agendar;
-- o aviso é uma janela como a do script (Tkinter, da stdlib), só com o OK: a atualização manual da renda fixa que o script pede não existe mais, porque a renda fixa é marcada pelo app. A janela é intrusiva de propósito, para não passar despercebida.
+- um comando do próprio app, rodado sem subir o servidor, que atualiza as cotações e as séries e lê os itens de Saúde dos dados. Ele fica com dois tipos: a subcarteira fora do limite de rebalanceamento e o saldo parado acima do limite. O saldo é o que pega o vencimento de renda fixa e os proventos acumulados. Tudo o que o comando avisa também está no painel, pela mesma função;
+- o aviso é uma janela como a do script (Tkinter, da stdlib), só com o OK. A atualização manual da renda fixa que o script pede não existe mais, porque a renda fixa é marcada pelo app. A janela é intrusiva de propósito, para não passar despercebida, e só o comando a abre: o app aberto nunca dispara janela;
+- o próprio app agenda o comando no Agendador de Tarefas do Windows: um botão cria a tarefa diária (padrão 04:00, e "executar assim que possível" se o PC estava desligado), com o status, o horário, remover e testar agora. A tarefa é descrita por XML, que o `schtasks` aceita e devolve igual em qualquer idioma do Windows.
 
 A notificação no canto da tela do Windows fica como alternativa, se a janela incomodar no uso: é mais discreta, com o risco de passar sem ser vista.
 
+**Aceite:** o usuário apaga a tarefa agendada do script e passa a ser avisado só por esta.
+
 **F32 — Liquidez em três camadas.** O patrimônio classificado pelo prazo em que vira dinheiro. Serve N2 e N6.
-- **mexível:** renda fixa com liquidez diária;
+- **mexível:** o saldo (F54) e a renda fixa com liquidez diária;
 - **intermediária:** renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
-- **travada:** renda fixa sem liquidez diária, até o vencimento.
+- **travada:** renda fixa sem liquidez diária, até o vencimento. No vencimento, o título vira saldo, então não existe título vencido parado.
 
 Plano:
-- a camada é derivada do que já existe (liquidez diária e vencimento do título da F12; classe do ativo), sem marcação manual;
-- na Carteira: barra empilhada com o valor e a fração de cada camada, e a escada de vencimentos (quanto destrava em cada mês ou ano, em barras);
+- a camada é derivada do que já existe (liquidez diária e vencimento do título da F12; classe do ativo; o saldo), sem marcação manual, numa regra só em `backend/domain/liquidity.py`;
+- na Carteira: barra empilhada com o valor e a fração de cada camada, e a escada de vencimentos (o bruto de hoje dos títulos travados, por mês ou por ano do vencimento, em barras). As somas saem do Python;
 - na F24, a sugestão com venda considera só o que não está travado.
 
 Sobre a liquidez no rebalanceamento: rebalancear pelo aporte, que é o caso comum, não precisa de liquidez, porque o dinheiro novo vai para o que está abaixo da meta. A liquidez importa quando rebalancear exige vender: o travado só se vende no vencimento, e um título travado acima da meta só se corrige com aportes nos outros itens. Por isso a camada entra na sugestão com venda, e não na do aporte.
@@ -954,6 +958,19 @@ Plano:
 
 Com a mesma taxa em todos os degraus, a escada empata com a liquidez diária: cada real resgatado paga o IR da idade da aplicação nos dois casos. Ela só muda o resultado quando o degrau mais longo rende mais, como um CDB de prazo maior.
 
+**F54 — Saldo de investimento.** O dinheiro de investimento que espera ser reinvestido: o que entrou por venda, provento ou vencimento de renda fixa e ainda não voltou para um ativo. Hoje a venda, o resgate e o provento saem da carteira como se fossem saque, e o título vencido fica congelado como renda fixa. Serve N2 e N6.
+
+Plano:
+- **derivado dos movimentos:** entram o valor de cada venda (quantidade × preço), o líquido de cada provento, cada resgate de renda fixa e o resgate automático no vencimento; saem o valor de cada compra, cada aplicação e os saques. Os fluxos do mesmo dia se compensam, e a compra que passa do saldo é aporte de fora, sem registro;
+- **dado primário (D2):** a conferência com o extrato (data e saldo) e o saque (data e valor). A conferência substitui o saldo derivado no fim do dia, e a diferença é um ajuste de fora, que cobre, por exemplo, as taxas da nota que o app não grava. A primeira conferência é a abertura: antes dela não há saldo, e o histórico segue como está;
+- **vencimento:** o título vale 0 depois do vencimento, e o bruto do vencimento vai para o saldo no dia. Movimentação depois do vencimento é recusada, e o resgate registrado na data do vencimento é abatido antes do automático;
+- **série diária:** uma linha de saldo, sem ativo e sem título. Com ela, entradas menos saídas de todas as linhas é só o dinheiro de fora, e o provento entra no ganho da Evolução a partir da abertura. A linha fica fora da cota (D5) e das subcarteiras (D12);
+- **Carteira:** o saldo entra no total e numa categoria própria, só na carteira geral;
+- **tela Saldo:** o saldo de hoje, o extrato derivado (venda, provento, vencimento, compra, aporte de fora, saque, conferência), os diálogos de conferência e de saque, e o limite de saldo parado;
+- **Saúde dos dados:** "Saldo parado acima do limite" (padrão R$ 100, configurável), passivo como os outros itens do painel.
+
+**Aceite:** numa conferência feita semanas depois da abertura, o saldo derivado bate com o extrato da corretora, com diferença só das taxas da nota.
+
 ---
 ## 2. Nice-to-have
 
@@ -977,7 +994,7 @@ Plano:
 | --- | --- | --- | --- |
 | **F13** | Caixa e reserva | N2 | 🚫 Descartado |
 
-**F13 — Descartado.** 🚫 O app cobre só o financeiro de investimentos, separado dos gastos pessoais: saldo em conta não entra. O dinheiro de investimento que fica parado é renda fixa de liquidez diária (F12); o tamanho do aporte sai das operações (F17); e a liquidez virou o card F32. A classe de ativo `cash` saiu do schema.
+**F13 — Descartado.** 🚫 A reserva e o saldo da conta pessoal ficam fora: o app cobre só o financeiro de investimentos, separado dos gastos pessoais. O dinheiro de investimento que espera ser reinvestido (venda, provento, vencimento) é a F54; o tamanho do aporte sai das operações (F17); e a liquidez virou o card F32. A classe de ativo `cash` saiu do schema: o saldo não é um ativo.
 
 ---
 ## 4. Incerta / exploratória

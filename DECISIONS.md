@@ -4,7 +4,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar. Ao criar/alterar um `N#`/`D#` aqui, espelhar no ROADMAP via `roadmap.py upsert-ref` na mesma resposta.
 >
-> **Última mudança (2026-09-25):** D6 põe o IBOV no cache das séries, em pontos, buscado pelo provider de cotações.
+> **Última mudança (2026-09-28):** o saldo de investimento entra no modelo: derivado das movimentações (D2), fora da cota (D5) e só na carteira geral (D12).
 
 ---
 
@@ -17,7 +17,7 @@ Absorve projetos irmãos que falam do mesmo domínio, pra acabar com a sincroniz
 - **Script de rebalanceamento** — yfinance + arquivo de metas + alerta agendado no sistema, e a planilha de rebalanceamento ao lado dele. Viram o rebalanceamento do app.
 - Ideias reaproveitáveis (não absorvidos): marcação de renda fixa do [SimuladorFinanceiro](https://github.com/LiloMarino/SimuladorFinanceiro) e do [Comparador-Renda-Fixa](https://github.com/LiloMarino/Comparador-Renda-Fixa).
 
-O app cobre **só o financeiro de investimentos**, separado dos gastos pessoais: saldo em conta corrente não entra. O dinheiro de investimento que fica parado mora em renda fixa de liquidez diária.
+O app cobre **só o financeiro de investimentos**, separado dos gastos pessoais: saldo em conta corrente e reserva não entram. O dinheiro de investimento que espera ser reinvestido (o que entrou por venda, provento ou vencimento) é o saldo de investimento, derivado das movimentações.
 
 Classes de ativo no escopo: **ações/FII/ETF/BDR da B3 e renda fixa/Tesouro**. Ativos no exterior e cripto ficam de fora: exigiriam câmbio e outra regra fiscal inteira, e ficam fora do escopo até haver uso real para eles. O app acompanha a própria carteira: notícias e indicadores fundamentalistas não entram, e para uma decisão que ainda não foi tomada ele oferece ferramentas de simulação sobre os dados que já tem: a correlação pelo preço histórico, e a comparação de renda fixa e a simulação de parcelamento pelas séries do BCB. A simulação não grava gasto nenhum: é conta sobre valores digitados na hora.
 
@@ -93,6 +93,8 @@ Todo o resto — posição, preço médio, valor marcado, patrimônio, rentabili
 
 **Consequências:** toda tabela derivada tem um caminho de reconstrução, e derivado só muda por recálculo.
 
+**Atualização (2026-09-28):** o saldo de investimento é derivado como o resto: entra o que a venda, o provento e o vencimento devolvem, sai o que a compra e a aplicação usam, e a compra que passa do saldo é aporte de fora. O dado primário dele é só o que nenhuma movimentação conta: a conferência com o extrato (data e saldo), que substitui o derivado naquele dia, e o saque. A primeira conferência abre o saldo; antes dela, a série segue como era. O título vencido deixa de ser renda fixa: no vencimento, o bruto dele vai para o saldo.
+
 ### D3 — Um único SQLite, com snapshot e migration testada
 **Status:** ✅ Decidida
 
@@ -140,6 +142,8 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 - é a medida que os agregadores publicam: a tabela mês × ano de referência compõe os meses no ano e os anos no acumulado, conta que só fecha com cota. Isso dá um critério externo de conferência.
 
 **Consequências:** a série diária registra o dinheiro que entrou ou saiu em cada dia separado da variação de valor.
+
+**Atualização (2026-09-28):** o saldo de investimento fica fora da cota. A rentabilidade mede o dinheiro investido, como a fonte externa de conferência: R$ 9.000 investidos rendendo 10% com R$ 1.000 parados dão 10%, e não 9%. O custo do dinheiro parado aparece no patrimônio, na Evolução e no alerta de saldo parado, e não no percentual.
 
 ### D6 — Dados de mercado atrás de interface, com cache local e só fonte gratuita
 **Status:** ✅ Decidida
@@ -195,6 +199,8 @@ A rentabilidade de qualquer período é a variação da cota nele. Cota de 1,20 
 - A subcarteira é o conjunto de ativos de hoje: mover um ativo de subcarteira recalcula o histórico das duas como se ele sempre tivesse estado na nova.
 
 **Por quê:** a soma das subcarteiras nunca passa da carteira geral, nada conta duas vezes, e a meta de rebalanceamento de cada subcarteira se calcula sozinha, sem duas metas puxando o mesmo ativo para lados opostos. Colocar o mesmo ativo inteiro em várias subcarteiras quebraria as duas coisas. Dividir o ativo por quantidade resolve a foto de hoje, mas o histórico precisaria saber de quem era cada cota em cada dia.
+
+**Atualização (2026-09-28):** o saldo de investimento é da carteira geral. Ele não é um ativo, e o dinheiro de uma venda não carrega a subcarteira de onde veio: na subcarteira, o saldo não aparece, e o aporte sugerido nela pode usar o saldo da geral.
 
 **Expansão, se a carteira ficar complexa:** o caso que esta decisão não cobre é o mesmo ticker servindo a duas estratégias. A saída é marcar cada operação com a subcarteira: cada subcarteira vira uma conta separada, com posição, PM e rentabilidade próprios, somando a geral. A marcação é opcional (a operação sem subcarteira fica só na geral), então o cadastro comum não muda. O PM da subcarteira passa a diferir do PM fiscal, que é do ativo inteiro.
 
