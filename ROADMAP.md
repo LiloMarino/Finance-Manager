@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** O saldo de investimento (F54) existe: venda, provento e vencimento entram nele, fora da cota e só na carteira geral, e a liquidez (F32) fica livre para pegar.
+> **Última mudança (2026-09-28):** A liquidez em três camadas (F32) existe na Carteira, com a escada de vencimentos, e o rebalanceamento (F24) fica livre para pegar.
 
 ## Glossário
 
@@ -31,7 +31,6 @@
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
-| **F32** | Liquidez em três camadas | — | ⏳ |
 | **F33** | Custo da bonificação | — | 💤 |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
@@ -46,7 +45,7 @@
 | **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (46 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (47 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -86,6 +85,7 @@
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
 | **F25** | Subcarteiras | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
+| **F32** | Liquidez em três camadas | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
 | **F38** | Desempenho e distribuição dos proventos | — | ✅ |
@@ -107,7 +107,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F32** | Liquidez em três camadas | M6 | 2 | ⏳ |
+| **F24** | Rebalanceamento | M6 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -254,19 +254,19 @@
 >
 > **Serve:** N2, N6, N7
 >
-> **Progresso:** 2/5 concluídas
+> **Progresso:** 3/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F24** | Rebalanceamento | F11, F25, F32, F54 | ⏳ |
 | **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ⏳ |
-| **F32** | Liquidez em três camadas | F11, F12, F54 | ⏳ |
 
-<details><summary>Concluído (2 itens)</summary>
+<details><summary>Concluído (3 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F25** | Subcarteiras | F15 | ✅ |
+| **F32** | Liquidez em três camadas | F11, F12, F54 | ✅ |
 | **F54** | Saldo de investimento | F12, F17, F20 | ✅ |
 
 </details>
@@ -382,7 +382,7 @@
 | **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24, F54 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
-| **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12, F54 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
+| **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12, F54 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
@@ -745,19 +745,23 @@ A notificação no canto da tela do Windows fica como alternativa, se a janela i
 
 **Aceite:** o usuário apaga a tarefa agendada do script e passa a ser avisado só por esta.
 
-**F32 — Liquidez em três camadas.** O patrimônio classificado pelo prazo em que vira dinheiro. Serve N2 e N6.
+**F32 — Liquidez em três camadas.** O patrimônio classificado pelo prazo em que vira dinheiro, derivado do que já existe, sem marcação manual (`backend/domain/liquidity.py`). Serve N2 e N6.
 - **mexível:** o saldo (F54) e a renda fixa com liquidez diária;
-- **intermediária:** renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
-- **travada:** renda fixa sem liquidez diária, até o vencimento. No vencimento, o título vira saldo, então não existe título vencido parado.
+- **intermediária:** a renda variável, que sai em D+2, mas cuja venda pode gerar DARF;
+- **travada:** a renda fixa sem liquidez diária. No vencimento, o título vira saldo.
 
-Plano:
-- a camada é derivada do que já existe (liquidez diária e vencimento do título da F12; classe do ativo; o saldo), sem marcação manual, numa regra só em `backend/domain/liquidity.py`;
-- na Carteira: barra empilhada com o valor e a fração de cada camada, e a escada de vencimentos (o bruto de hoje dos títulos travados, por mês ou por ano do vencimento, em barras). As somas saem do Python;
-- na F24, a sugestão com venda considera só o que não está travado.
+O `GET /api/portfolio` devolve a camada com valor e fração, e a escada de vencimentos por mês e por ano (`maturities_by_month`, `maturities_by_year`). A escada é o bruto de hoje dos títulos travados, somado no Python, com o travado sem vencimento numa barra própria no fim. Tudo sai do mesmo conjunto filtrado da Carteira, então a subcarteira vê só as camadas dos membros, sem o saldo.
 
-Sobre a liquidez no rebalanceamento: rebalancear pelo aporte, que é o caso comum, não precisa de liquidez, porque o dinheiro novo vai para o que está abaixo da meta. A liquidez importa quando rebalancear exige vender: o travado só se vende no vencimento, e um título travado acima da meta só se corrige com aportes nos outros itens. Por isso a camada entra na sugestão com venda, e não na do aporte.
+Na Carteira, o card "Liquidez" tem:
+- a barra empilhada das camadas;
+- a tabela com valor, fração e a dica de cada camada;
+- a escada de vencimentos em barras, com Mês ou Ano (`?maturities=year`, D13).
 
-Fica para quando o uso pedir: meta por camada (ex.: X% mexível).
+Decisões tomadas durante:
+- **As camadas são uma rampa de um tom só**, do azul claro (mexível) ao escuro (travada), invertida no tema escuro, com os tokens `--liquidity-*`. A ordem de prazo é o que a cor mostra, e as cinco cores categóricas continuam sendo das categorias. A rampa passou no validador ordinal nos dois temas.
+- **O título travado sem vencimento entra na escada como "Sem vencimento"**, em vez de ficar de fora da barra.
+
+**Verificado** numa cópia do banco migrado: as camadas somam o total da Carteira, as frações somam 1, e a escada troca entre mês e ano pela URL e sobrevive ao recarregar, nos temas claro e escuro.
 
 **F39 — Correlação da carteira.** A correlação entre os ativos que a carteira tem, sem precisar escolher cada um. Serve N8.
 
