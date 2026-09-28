@@ -13,7 +13,7 @@ from backend.core.enum import (
     LiquidityTier,
     PortfolioCategory,
 )
-from backend.features.portfolio.service import portfolio
+from backend.repository.portfolio import portfolio
 
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 

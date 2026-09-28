@@ -435,6 +435,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rebalance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rebalance
+         * @description A meta de uma subcarteira ou, sem `subportfolio_id`, a combinada da geral.
+         */
+        get: operations["get_rebalance_api_rebalance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rebalance/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get Plan
+         * @description Conta sobre o aporte enviado, sem gravar nada.
+         */
+        post: operations["get_plan_api_rebalance_plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rebalance/{subportfolio_id}/targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Targets */
+        get: operations["read_targets_api_rebalance__subportfolio_id__targets_get"];
+        /** Write Targets */
+        put: operations["write_targets_api_rebalance__subportfolio_id__targets_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/performance": {
         parameters: {
             query?: never;
@@ -919,6 +977,31 @@ export interface components {
             /** Price Date */
             price_date: string | null;
         };
+        /**
+         * AssetTargetDTO
+         * @description A meta do ativo em percentual: 30 é 30% da subcarteira.
+         */
+        AssetTargetDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            /**
+             * Target
+             * Format: decimal
+             */
+            target: DecimalString;
+        };
+        /** AssetTargetInDTO */
+        AssetTargetInDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /**
+             * Target
+             * Format: decimal
+             */
+            target: DecimalString;
+        };
         /** BalancePointDTO */
         BalancePointDTO: {
             /**
@@ -1382,7 +1465,7 @@ export interface components {
          * @description Os tipos de problema de dado que afetam algum número do app.
          * @enum {string}
          */
-        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash";
+        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash" | "rebalance_breach";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -2553,6 +2636,32 @@ export interface components {
          */
         OperationType: "buy" | "sell" | "bonus" | "split" | "reverse_split";
         /**
+         * OrderDTO
+         * @description Compra (positiva) ou venda (negativa) de um item. `quantity` é o número
+         *     inteiro de cotas, nulo na renda fixa e no ativo sem cotação.
+         */
+        OrderDTO: {
+            /** Asset Id */
+            asset_id: number | null;
+            /** Label */
+            label: string;
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /** Quantity */
+            quantity: DecimalString | null;
+            /** Price */
+            price: DecimalString | null;
+            /**
+             * Share After
+             * Format: decimal
+             */
+            share_after: DecimalString;
+        };
+        /**
          * PaymentChoice
          * @enum {string}
          */
@@ -2637,6 +2746,52 @@ export interface components {
             closing: components["schemas"]["PeriodPositionDTO"][];
             /** Months */
             months: components["schemas"]["MonthlyTaxDTO"][];
+        };
+        /**
+         * PlanDTO
+         * @description A sugestão para o aporte. `leftover` é o que sobra do arredondamento em
+         *     cotas, e fica no saldo; `sells_equity` avisa que alguma venda de renda variável
+         *     pode gerar DARF.
+         */
+        PlanDTO: {
+            /** Orders */
+            orders: components["schemas"]["OrderDTO"][];
+            /**
+             * Leftover
+             * Format: decimal
+             */
+            leftover: DecimalString;
+            /**
+             * Imbalance Before
+             * Format: decimal
+             */
+            imbalance_before: DecimalString;
+            /**
+             * Imbalance After
+             * Format: decimal
+             */
+            imbalance_after: DecimalString;
+            /** Sells Equity */
+            sells_equity: boolean;
+        };
+        /**
+         * PlanInDTO
+         * @description O aporte a dividir. Com `allow_sales`, a divisão também vende o que passou da
+         *     meta, menos a renda fixa que só vira dinheiro no vencimento.
+         */
+        PlanInDTO: {
+            /** Subportfolio Id */
+            subportfolio_id: number;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Allow Sales
+             * @default false
+             */
+            allow_sales: boolean;
         };
         /**
          * PoolResultDTO
@@ -2847,6 +3002,72 @@ export interface components {
              */
             ipca: DecimalString;
         };
+        /**
+         * RebalanceDTO
+         * @description A meta de uma subcarteira, ou a combinada da carteira geral. `imbalance` é a
+         *     raiz da soma dos quadrados dos desvios, em fração; os limites e os furos só
+         *     existem na subcarteira cujas metas somam 100% (`complete`).
+         */
+        RebalanceDTO: {
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Targets Total */
+            targets_total: DecimalString | null;
+            /** Complete */
+            complete: boolean;
+            /** Imbalance */
+            imbalance: DecimalString | null;
+            /** Max Item Deviation */
+            max_item_deviation: DecimalString | null;
+            /** Max Total Deviation */
+            max_total_deviation: DecimalString | null;
+            /** Breached */
+            breached: boolean;
+            /** Lines */
+            lines: components["schemas"]["RebalanceLineDTO"][];
+        };
+        /**
+         * RebalanceLineDTO
+         * @description Um item da meta. `asset_id` nulo é a renda fixa da subcarteira ou o saldo.
+         *     Frações de 0 a 1: `deviation` é o atual menos a meta (-0.03 é 3 p.p. abaixo),
+         *     e `gap` é o que falta em reais para a meta, negativo quando sobra. Na carteira
+         *     geral, a meta é a da subcarteira pesada pela fração dela, e o item fora de
+         *     subcarteira vem sem meta.
+         */
+        RebalanceLineDTO: {
+            /** Asset Id */
+            asset_id: number | null;
+            /** Label */
+            label: string;
+            category: components["schemas"]["PortfolioCategory"];
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
+            /** Subportfolio */
+            subportfolio: string | null;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+            /** Target */
+            target: DecimalString | null;
+            /** Deviation */
+            deviation: DecimalString | null;
+            /** Gap */
+            gap: DecimalString | null;
+            /** Breached */
+            breached: boolean;
+        };
         /** RefreshReportDTO */
         RefreshReportDTO: {
             /** Updated */
@@ -2945,6 +3166,53 @@ export interface components {
             assets: components["schemas"]["MemberAssetDTO"][];
             /** Fixed Income */
             fixed_income: components["schemas"]["MemberInvestmentDTO"][];
+        };
+        /**
+         * TargetsDTO
+         * @description As metas e os limites de uma subcarteira, em percentual e pontos percentuais,
+         *     como o formulário os edita. Todo membro vem, com meta 0 quando não tem.
+         */
+        TargetsDTO: {
+            /** Assets */
+            assets: components["schemas"]["AssetTargetDTO"][];
+            /**
+             * Fixed Income Target
+             * Format: decimal
+             */
+            fixed_income_target: DecimalString;
+            /**
+             * Max Item Deviation
+             * Format: decimal
+             */
+            max_item_deviation: DecimalString;
+            /**
+             * Max Total Deviation
+             * Format: decimal
+             */
+            max_total_deviation: DecimalString;
+        };
+        /**
+         * TargetsInDTO
+         * @description As metas somam 100; os limites vão em pontos percentuais.
+         */
+        TargetsInDTO: {
+            /** Assets */
+            assets: components["schemas"]["AssetTargetInDTO"][];
+            /**
+             * Fixed Income Target
+             * Format: decimal
+             */
+            fixed_income_target: DecimalString;
+            /**
+             * Max Item Deviation
+             * Format: decimal
+             */
+            max_item_deviation: DecimalString;
+            /**
+             * Max Total Deviation
+             * Format: decimal
+             */
+            max_total_deviation: DecimalString;
         };
         /**
          * TickerChangeInDTO
@@ -4473,6 +4741,170 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PortfolioDTO"];
                 };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_rebalance_api_rebalance_get: {
+        parameters: {
+            query?: {
+                subportfolio_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RebalanceDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_plan_api_rebalance_plan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_targets_api_rebalance__subportfolio_id__targets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetsDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    write_targets_api_rebalance__subportfolio_id__targets_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TargetsInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unprocessable Content */
             422: {

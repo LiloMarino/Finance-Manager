@@ -21,6 +21,7 @@ import { MarketPage } from "@/pages/market";
 import { MonthlyReturnsPage } from "@/pages/monthly-returns";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
+import { RebalancePage } from "@/pages/rebalance";
 import { SectorsPage } from "@/pages/sectors";
 import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="evolution" element={<EvolutionPage />} />
             <Route path="performance" element={<PerformancePage />} />
             <Route path="monthly-returns" element={<MonthlyReturnsPage />} />
+            <Route path="rebalance" element={<RebalancePage />} />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="import" element={<ImportPage />} />
             <Route path="assets" element={<AssetsPage />} />

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
@@ -16,7 +17,7 @@ from backend.core.models.models import (
 )
 from backend.domain.coverage import DateRange, expected_close, index_overdue, price_gaps
 from backend.domain.irpf import declared_years
-from backend.features.brazilian import brl
+from backend.features.brazilian import brazilian, brl
 from backend.features.data_health.dto import DataIssueDTO
 from backend.repository.cash import cash_ledger, cash_settings
 from backend.repository.market import (
@@ -26,6 +27,7 @@ from backend.repository.market import (
     last_cached_indexes,
 )
 from backend.repository.operations import operation_records
+from backend.repository.rebalance import breaches
 
 SERIES_LABELS = {
     IndexSeries.CDI: "CDI",
@@ -206,6 +208,35 @@ def _cash_issues(session: Session, today: date) -> list[DataIssueDTO]:
     ]
 
 
+def _points(fraction: Decimal) -> str:
+    """A fração em pontos percentuais, com sinal: 0.062 vira "+6,20 p.p."."""
+    points = fraction * 100
+    sign = "+" if points > 0 else ""
+    return f"{sign}{brazilian(points, 2)} p.p."
+
+
+def _rebalance_issues(session: Session, today: date) -> list[DataIssueDTO]:
+    """Subcarteira com meta que passou de um dos limites dela."""
+    issues: list[DataIssueDTO] = []
+    for breach in breaches(session, today):
+        parts = [f"{label} {_points(deviation)}" for label, deviation in breach.items]
+        parts.append(
+            f"desbalanceamento {_points(breach.imbalance).lstrip('+')} "
+            f"(limites: {_points(breach.max_item_deviation).lstrip('+')} por item e "
+            f"{_points(breach.max_total_deviation).lstrip('+')} no total)"
+        )
+        issues.append(
+            DataIssueDTO(
+                kind=DataIssueKind.REBALANCE_BREACH,
+                subject=breach.name,
+                missing=f"Rebalancear: {'; '.join(parts)}.",
+                affects="Distância da subcarteira até a meta dela.",
+                path=f"/rebalance?subportfolio={breach.subportfolio_id}",
+            )
+        )
+    return issues
+
+
 def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
     return [
         *_price_issues(session, now),
@@ -214,4 +245,5 @@ def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
         *_cnpj_issues(session, now.date()),
         *_segment_issues(session),
         *_cash_issues(session, now.date()),
+        *_rebalance_issues(session, now.date()),
     ]

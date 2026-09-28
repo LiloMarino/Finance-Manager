@@ -6,6 +6,7 @@ import {
   Boxes,
   CalendarRange,
   ChartArea,
+  Crosshair,
   Coins,
   CreditCard,
   FolderTree,
@@ -48,7 +49,14 @@ import { useSubportfolios } from "@/shared/hooks/use-subportfolios";
 
 // As visões que mostram a carteira geral ou uma subcarteira: nelas o seletor aparece,
 // e os links entre elas levam a subcarteira escolhida
-const PORTFOLIO_VIEWS = ["/", "/evolution", "/performance", "/monthly-returns", "/income"];
+const PORTFOLIO_VIEWS = [
+  "/",
+  "/evolution",
+  "/performance",
+  "/monthly-returns",
+  "/rebalance",
+  "/income",
+];
 
 // Paths em inglês acompanham o código; o rótulo é o que aparece pro usuário.
 const navItems = [
@@ -56,6 +64,7 @@ const navItems = [
   { to: "/evolution", label: "Evolução", icon: ChartArea },
   { to: "/performance", label: "Rentabilidade", icon: TrendingUp },
   { to: "/monthly-returns", label: "Ano a ano", icon: CalendarRange },
+  { to: "/rebalance", label: "Rebalanceamento", icon: Crosshair },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },
   { to: "/sectors", label: "Setores", icon: Shapes },

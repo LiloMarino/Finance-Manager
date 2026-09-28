@@ -18,6 +18,7 @@ from backend.features.market.router import router as market_router
 from backend.features.operations.router import router as operations_router
 from backend.features.performance.router import router as performance_router
 from backend.features.portfolio.router import router as portfolio_router
+from backend.features.rebalance.router import router as rebalance_router
 from backend.features.sectors.router import router as sectors_router
 from backend.features.simulation.router import router as simulation_router
 from backend.features.subportfolios.router import router as subportfolios_router
@@ -34,6 +35,7 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(sectors_router, responses=ERROR_RESPONSES)
     app.include_router(subportfolios_router, responses=ERROR_RESPONSES)
     app.include_router(portfolio_router, responses=ERROR_RESPONSES)
+    app.include_router(rebalance_router, responses=ERROR_RESPONSES)
     app.include_router(performance_router, responses=ERROR_RESPONSES)
     app.include_router(evolution_router, responses=ERROR_RESPONSES)
     app.include_router(fixed_income_router, responses=ERROR_RESPONSES)

@@ -10,3 +10,4 @@ class DataIssueKind(StrEnum):
     MISSING_CNPJ = "missing_cnpj"
     UNCLASSIFIED_ASSET = "unclassified_asset"
     IDLE_CASH = "idle_cash"
+    REBALANCE_BREACH = "rebalance_breach"

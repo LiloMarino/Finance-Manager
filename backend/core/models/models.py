@@ -103,12 +103,40 @@ class Segment(Base):
 class Subportfolio(Base):
     """Um grupo nomeado de ativos e títulos, dentro da carteira geral. Cada ativo e
     cada título está em no máximo uma, e a subcarteira é o conjunto de hoje: o
-    histórico dela é o dos membros atuais."""
+    histórico dela é o dos membros atuais.
+
+    A meta de rebalanceamento é dela: a de cada ativo em `asset_targets`, e a da renda
+    fixa inteira em `fixed_income_target`. Os limites do alerta são o desvio máximo
+    de um item e o desbalanceamento máximo, a raiz da soma dos quadrados dos
+    desvios. Tudo em fração: 0.05 é 5 pontos percentuais."""
 
     __tablename__ = "subportfolios"
+    __table_args__ = (
+        CheckConstraint(
+            "CAST(fixed_income_target AS REAL) BETWEEN 0 AND 1",
+            name="fixed_income_target_fraction",
+        ),
+        CheckConstraint(
+            "CAST(max_item_deviation AS REAL) BETWEEN 0 AND 1",
+            name="max_item_deviation_fraction",
+        ),
+        CheckConstraint(
+            "CAST(max_total_deviation AS REAL) BETWEEN 0 AND 1",
+            name="max_total_deviation_fraction",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     name: Mapped[str] = mapped_column(String, unique=True)
+    fixed_income_target: Mapped[Decimal] = mapped_column(
+        DecimalText, default=Decimal(0), server_default="0"
+    )
+    max_item_deviation: Mapped[Decimal] = mapped_column(
+        DecimalText, default=Decimal("0.05"), server_default="0.05"
+    )
+    max_total_deviation: Mapped[Decimal] = mapped_column(
+        DecimalText, default=Decimal("0.07"), server_default="0.07"
+    )
 
 
 class Asset(Base):
@@ -129,6 +157,24 @@ class Asset(Base):
     subportfolio_id: Mapped[int | None] = mapped_column(
         ForeignKey("subportfolios.id", ondelete="SET NULL"), index=True, default=None
     )
+
+
+class AssetTarget(Base):
+    """A meta de um ativo na subcarteira, em fração. Vale só enquanto o ativo é
+    membro dela: a leitura cruza com `assets.subportfolio_id`."""
+
+    __tablename__ = "asset_targets"
+    __table_args__ = (
+        CheckConstraint("CAST(share AS REAL) BETWEEN 0 AND 1", name="share_fraction"),
+    )
+
+    subportfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("subportfolios.id", ondelete="CASCADE"), primary_key=True
+    )
+    asset_id: Mapped[int] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    share: Mapped[Decimal] = mapped_column(DecimalText)
 
 
 class AssetTickerHistory(Base):

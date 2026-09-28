@@ -64,6 +64,16 @@ export function formatSignedPercent(value: DecimalString): string {
   return signedPercentFormatter.format(value);
 }
 
+/** Fração (0,062) como pontos percentuais (6,20 p.p.): a diferença entre dois
+percentuais, que o Intl formata como percentual e aqui ganha a unidade certa. */
+export function formatPoints(value: DecimalString): string {
+  return `${percentFormatter.format(value).replace(/\s?%/, "")} p.p.`;
+}
+
+export function formatSignedPoints(value: DecimalString): string {
+  return `${signedPercentFormatter.format(value).replace(/\s?%/, "")} p.p.`;
+}
+
 /** O sinal lido da string: o backend manda ponto fixo, sem expoente. */
 export function decimalSign(value: DecimalString): -1 | 0 | 1 {
   if (!/[1-9]/.test(value)) return 0;

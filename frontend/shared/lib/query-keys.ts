@@ -11,6 +11,7 @@ export const queryKeys = {
   income: ["portfolio", "income"] as const,
   // O saldo sai das operações, dos proventos e da renda fixa, como a carteira
   cash: ["portfolio", "cash"] as const,
+  rebalance: ["portfolio", "rebalance"] as const,
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   // Debaixo das séries: o refresh delas muda o ponto de partida da projeção
