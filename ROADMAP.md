@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** As camadas de liquidez (F32) passaram a se chamar pelo prazo em que viram dinheiro; o rebalanceamento (F24) está em andamento.
+> **Última mudança (2026-09-28):** O rebalanceamento (F24) existe: meta por subcarteira, desvio, desbalanceamento e divisão do aporte, e o alerta com o app fechado (F28) fica livre para pegar.
 
 ## Glossário
 
@@ -25,7 +25,6 @@
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
-| **F24** | Rebalanceamento | — | ⏳ |
 | **F26** | Risco × retorno | — | 💤 |
 | **F28** | Alerta de rebalanceamento com o app fechado | — | ⏳ |
 | **F29** | Empacotamento desktop | — | 🔍 |
@@ -45,7 +44,7 @@
 | **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (47 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (48 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -83,6 +82,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
+| **F24** | Rebalanceamento | — | ✅ |
 | **F25** | Subcarteiras | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
 | **F32** | Liquidez em três camadas | — | ✅ |
@@ -107,7 +107,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F24** | Rebalanceamento | M6 | 1 | ⏳ |
+| **F28** | Alerta de rebalanceamento com o app fechado | M6 | 0 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -254,17 +254,17 @@
 >
 > **Serve:** N2, N6, N7
 >
-> **Progresso:** 3/5 concluídas
+> **Progresso:** 4/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F24** | Rebalanceamento | F11, F25, F32, F54 | ⏳ |
 | **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ⏳ |
 
-<details><summary>Concluído (3 itens)</summary>
+<details><summary>Concluído (4 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
+| **F24** | Rebalanceamento | F11, F25, F32, F54 | ✅ |
 | **F25** | Subcarteiras | F15 | ✅ |
 | **F32** | Liquidez em três camadas | F11, F12, F54 | ✅ |
 | **F54** | Saldo de investimento | F12, F17, F20 | ✅ |
@@ -372,7 +372,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 | F8 | Alto | Alto | Alto | Bom | ✅ Concluído |
 | **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
-| **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25, F32, F54 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
+| **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25, F32, F54 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F27** | Ferramenta de correlação entre ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | 💤 Registrado, sem prioridade |
@@ -626,20 +626,25 @@ O endpoint é `GET /api/tax/period?year=&month=`. O botão "Apurar resultados" d
 
 **Aceite:** o usuário faz aqui tudo o que fazia no IR-Helper e para de abri-lo.
 
-**F24 — Rebalanceamento.** Substitui a planilha e o script de rebalanceamento: a meta, o desvio de cada item e a divisão do próximo aporte. Serve N6.
+**F24 — Rebalanceamento.** Substitui a planilha e o script de rebalanceamento: a meta, o desvio de cada item e a divisão do próximo aporte, na tela Rebalanceamento, que tem o seletor de subcarteira (D12). Serve N6.
 
-Plano:
-- **meta:** pertence à subcarteira (F25, D12), com um percentual por item, guardado no banco. Item é um ativo, e a renda fixa é um item só, genérico ("Renda fixa"), sem distinguir título: o que tem dentro dela aparece na composição da carteira, não na meta. Ativo fora de subcarteira não tem meta, e o membro sem meta entra com meta 0. As metas de uma subcarteira somam 100%;
-- **carteira geral:** não tem meta própria. A meta dela, quando mostrada, é a combinação das metas das subcarteiras, cada uma pesada pela fração da subcarteira na carteira. O saldo (F54) aparece como linha "a reinvestir";
-- **desvio:** a tela mostra, para cada item, o atual, a meta e o desvio em pontos percentuais (atual 27% contra meta 30% dá −3 p.p.), com o valor em reais que falta ou sobra;
-- **quanto a subcarteira está desbalanceada:** a raiz da soma dos quadrados dos desvios, em p.p. Com meta 40/30/30, a carteira em 45/28/27 dá 6,16 e a em 45/25/30 dá 7,07: a segunda, com dois itens 5 pontos fora, fica pior, sem o empate da soma dos desvios (ver abaixo). 0 é a carteira na meta;
-- **aporte:** dado o valor, o app calcula direto quanto vai para cada item. O dinheiro vai primeiro para o item mais abaixo da meta (em reais, sobre o patrimônio depois do aporte) até ele empatar com o segundo mais abaixo, depois para os dois juntos, e assim por diante até o dinheiro acabar. É a divisão que deixa a subcarteira o mais perto possível da meta sem vender nada. Depois o app arredonda para cotas inteiras e mostra a sobra, que fica no saldo; o valor da renda fixa sai inteiro, para aplicar no título que o usuário escolher. Um botão preenche o valor com o saldo;
-- **com venda (opcional):** o mesmo cálculo, com cada item podendo descer até a parte que só vira dinheiro no vencimento (F32) em vez de parar no valor atual; o aviso diz que venda de renda variável pode gerar DARF;
-- **limites do alerta:** desvio máximo por item (padrão 5 p.p., o do script) e desbalanceamento máximo (padrão 7 p.p., o valor com dois itens 5 p.p. fora em sentidos opostos), configurados por subcarteira. A subcarteira fora do limite aparece em Saúde dos dados, e a F28 avisa com eles.
+- **Meta:** é da subcarteira. A de cada ativo fica em `asset_targets`; a da renda fixa inteira, um item só, e os dois limites ficam em colunas de `subportfolios`, tudo em fração. A leitura cruza a meta com a filiação de hoje, então o ativo que sai da subcarteira deixa de contar, sem tocar na meta. Apagar a subcarteira apaga as metas. `GET/PUT /api/rebalance/{id}/targets` edita as metas em percentual, e o `PUT` dá 422 quando elas não somam 100%, com a soma na mensagem.
+- **Desvio:** `GET /api/rebalance?subportfolio_id=` devolve, por item, o atual, a meta, o desvio em p.p. e os reais que faltam ou sobram. Devolve também o desbalanceamento, a raiz da soma dos quadrados dos desvios, com a dica do exemplo 40/30/30 (6,16 contra 7,07 p.p.). Só a subcarteira com metas somando 100% é avaliada: a que não tem meta não fura limite nenhum.
+- **Carteira geral:** a meta combinada, que é a da subcarteira vezes a fração dela na carteira. O que está fora de subcarteira e o saldo vêm sem meta. É só leitura.
+- **Aporte:** `POST /api/rebalance/plan`. `backend/domain/rebalance.py` resolve os dois modos numa conta só: cada item termina em `max(piso, meta × (P + A) − L)`, com o nível L que fecha a soma. Só com aporte, o piso é o valor de hoje. Com venda, o piso é a parte da renda fixa que só vira dinheiro no vencimento, e a renda variável pode ir a zero. As ordens saem em cotas inteiras, arredondadas para mexer menos; a renda fixa sai no valor exato; e a sobra fica no saldo. O plano traz o desbalanceamento antes e depois, e o aviso de DARF quando vende renda variável.
+- **Tela:** o card do desbalanceamento com os limites e "Editar metas", a tabela de desvios com o selo "Fora do limite", e o card do aporte. O valor e a venda ficam na URL (`?amount=&sales=1`, D13), com o botão "Usar o saldo".
+- **Saúde dos dados:** "Subcarteira fora do limite de rebalanceamento", um item por subcarteira, com os itens fora e o desbalanceamento, e o link para a tela já com a subcarteira.
 
-**Por que o desvio da planilha "não se mexe":** ela soma os desvios em valor absoluto. O que falta nos itens abaixo da meta é exatamente o que sobra nos de cima, então passar dinheiro de um item abaixo da meta para outro também abaixo dela (e que continua abaixo) não muda a soma. Exemplo: meta 40/30/30, o item A acima da meta e R$ 300 de aporte divididos entre B e C. As divisões 110/190, 120/180 e 150/150 dão todas a mesma soma de desvios, 12,31. Por isso a tentativa e erro não acha a melhor divisão, e o cálculo direto acha.
+Decisões tomadas durante:
+- **O cálculo da Carteira e o da meta moram em `backend/repository/`** (`portfolio.py` e `rebalance.py`). O rebalanceamento, a Saúde dos dados e o alerta usam os dois, e feature não importa service de outra.
+- **As metas trafegam em percentual no formulário e em fração na visão.** O front não multiplica Decimal, então a conversão fica no Python.
+- **A soma das metas não aparece ao vivo no formulário:** ela é conta, e conta mora no Python. O 422 diz quanto as metas somam.
+- **O desvio aparece em pontos percentuais** ("−3,00 p.p."), com `formatPoints` sobre o percentual do Intl.
+- **Na carteira geral, a coluna "falta ou sobra" sai:** o aporte é por subcarteira.
 
-**Aceite:** o usuário faz um aporte inteiro guiado pela sugestão, sem abrir a planilha.
+**Verificado** numa cópia do banco migrado, com o dry run da migration e uma subcarteira de teste. As compras mais a sobra fecham o aporte, nenhum item vende sem a opção, e o desbalanceamento depois do aporte fica menor que o de antes. "Usar o saldo" e a venda passam pela URL, com o aviso de DARF, e a subcarteira fora do limite aparece em Saúde dos dados. As telas foram conferidas nos temas claro e escuro.
+
+**Aceite:** o usuário faz um aporte inteiro guiado pela sugestão, sem abrir a planilha. Fica com o usuário.
 
 **F26 — Risco × retorno.** Gráfico de dispersão com um ponto por ativo e um para a carteira. Serve N8.
 
