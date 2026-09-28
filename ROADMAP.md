@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** O rebalanceamento (F24) existe: meta por subcarteira, desvio, desbalanceamento e divisão do aporte, e o alerta com o app fechado (F28) fica livre para pegar.
+> **Última mudança (2026-09-28):** O M6 fechou: saldo de investimento, liquidez, rebalanceamento e o alerta diário com o app fechado; os aceites de uso (aporte guiado, agendamento) ficam com o usuário.
 
 ## Glossário
 
@@ -26,7 +26,6 @@
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
 | **F26** | Risco × retorno | — | 💤 |
-| **F28** | Alerta de rebalanceamento com o app fechado | — | ⏳ |
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
@@ -44,7 +43,7 @@
 | **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (48 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (49 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -85,6 +84,7 @@
 | **F24** | Rebalanceamento | — | ✅ |
 | **F25** | Subcarteiras | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
+| **F28** | Alerta de rebalanceamento com o app fechado | — | ✅ |
 | **F32** | Liquidez em três camadas | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
@@ -107,7 +107,6 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F28** | Alerta de rebalanceamento com o app fechado | M6 | 0 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -254,18 +253,19 @@
 >
 > **Serve:** N2, N6, N7
 >
-> **Progresso:** 4/5 concluídas
+> **Progresso:** 5/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (4 itens)</summary>
+<details><summary>Concluído (5 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F24** | Rebalanceamento | F11, F25, F32, F54 | ✅ |
 | **F25** | Subcarteiras | F15 | ✅ |
+| **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ✅ |
 | **F32** | Liquidez em três camadas | F11, F12, F54 | ✅ |
 | **F54** | Saldo de investimento | F12, F17, F20 | ✅ |
 
@@ -381,7 +381,7 @@
 | **F36** | Posição por categoria com variação do dia | N2 | D4 | M2 | F11 | Médio | Baixo | Alto | Excelente | ✅ Concluído |
 | **F37** | Setor e segmento cadastrados | N2 | — | M2 | F11 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ✅ Concluído |
-| **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24, F54 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
+| **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24, F54 | Baixo | Médio | Médio | Bom | ✅ Concluído |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12, F54 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ✅ Concluído |
@@ -739,16 +739,27 @@ Decisões tomadas durante:
 - **A fração por ativo é uma barra na linha, e não uma pizza.** Uma pizza por ativo precisaria de uma cor por ativo, gerada além da paleta das categorias. A cor segue a categoria em toda a tela.
 - Tudo é em valor líquido, o mesmo do informe da corretora.
 
-**F28 — Alerta de rebalanceamento com o app fechado.** Substitui o popup agendado do script: um aviso diário quando alguma subcarteira passa do limite configurado na F24, ou quando o saldo parado (F54) passa do limite dele. Serve N6.
+**F28 — Alerta de rebalanceamento com o app fechado.** Substitui o popup agendado do script: uma janela diária quando alguma subcarteira passou do limite da F24, ou quando o saldo parado (F54) passou do limite dele. Serve N6.
 
-Plano:
-- um comando do próprio app, rodado sem subir o servidor, que atualiza as cotações e as séries e lê os itens de Saúde dos dados. Ele fica com dois tipos: a subcarteira fora do limite de rebalanceamento e o saldo parado acima do limite. O saldo é o que pega o vencimento de renda fixa e os proventos acumulados. Tudo o que o comando avisa também está no painel, pela mesma função;
-- o aviso é uma janela como a do script (Tkinter, da stdlib), só com o OK. A atualização manual da renda fixa que o script pede não existe mais, porque a renda fixa é marcada pelo app. A janela é intrusiva de propósito, para não passar despercebida, e só o comando a abre: o app aberto nunca dispara janela;
-- o próprio app agenda o comando no Agendador de Tarefas do Windows: um botão cria a tarefa diária (padrão 04:00, e "executar assim que possível" se o PC estava desligado), com o status, o horário, remover e testar agora. A tarefa é descrita por XML, que o `schtasks` aceita e devolve igual em qualquer idioma do Windows.
+- **`alert.py`**, na raiz, roda sem subir o servidor e faz, em ordem:
+  1. confere se o banco está no head. Com migration pendente, avisa para abrir o app e para, porque a migration fica com o start, que tira o snapshot antes;
+  2. atualiza as cotações e as séries, como na abertura do app;
+  3. lê os itens de Saúde dos dados e fica com dois tipos: a subcarteira fora do limite e o saldo parado.
 
-A notificação no canto da tela do Windows fica como alternativa, se a janela incomodar no uso: é mais discreta, com o risco de passar sem ser vista.
+  Se houver algum, abre uma janela Tkinter só com o OK, com os itens. O log fica em `logs/alert.log`.
+- **O alerta é um recorte do painel:** o saldo é o que pega o vencimento de renda fixa e os proventos acumulados. Tudo o que a janela avisa também está em Saúde dos dados, pela mesma função. A janela só vem da tarefa, e usar o app não abre janela nenhuma.
+- **Agendamento pelo próprio app:** o card "Alerta diário" da tela Rebalanceamento tem Agendar ou Reagendar num horário (padrão 04:00, como o script), Testar agora e Remover.
+  - `backend/domain/task_schedule.py` monta o XML da tarefa: gatilho diário e "executar assim que possível" (`StartWhenAvailable`) para o PC desligado no horário. O programa é o `pythonw.exe` do `.venv` (sem console), o argumento é o `alert.py` e a pasta de trabalho é a raiz do repo, de onde saem os caminhos do `config.toml`.
+  - `backend/adapters/windows_task_scheduler.py` fala com o `schtasks`: cria pelo XML, lê o horário de volta pelo XML (que sai igual em qualquer idioma do Windows), roda e apaga. A tarefa se chama `Finance Manager\Alerta`.
+  - `GET/PUT/DELETE /api/alert/schedule` e `POST /api/alert/run` recebem o agendador por dependência, e os testes o trocam por um fake.
 
-**Aceite:** o usuário apaga a tarefa agendada do script e passa a ser avisado só por esta.
+Decisões tomadas durante:
+- **O filtro do alerta mora no `alert.py`**, o único consumidor dele. O `features/alert` cuida só da tarefa, sem importar de outra feature.
+- **A janela não força ficar na frente:** o `messagebox` já abre em primeiro plano, e o `-topmost` do Tk não passa na tipagem estrita.
+
+**Verificado** numa cópia do banco migrado: com os limites da subcarteira de teste e do saldo, o alerta montou os dois avisos. Com os limites folgados, terminou sem janela, e o log registrou os dois casos. No app de pé, Agendar criou a `Finance Manager\Alerta` com os campos certos (conferida pelo `schtasks /Query`), e Remover a apagou. A janela do Tkinter e o "Testar agora" ficaram fora da verificação para não abrir janela na tela no meio dela.
+
+**Aceite:** o usuário agenda pelo app, vê a janela com "Testar agora" e apaga a tarefa agendada do script. Fica com o usuário.
 
 **F32 — Liquidez em três camadas.** O patrimônio classificado pelo prazo em que vira dinheiro, derivado do que já existe, sem marcação manual (`backend/domain/liquidity.py`). Serve N2 e N6.
 - **hoje:** o saldo (F54) e a renda fixa com liquidez diária;
