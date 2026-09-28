@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-25):** A correlação (F27) virou matriz de 2 a 12 tickers e referências, com o par aberto embaixo; a F39 passa a reaproveitar a matriz com os ativos da carteira.
+> **Última mudança (2026-09-28):** As subcarteiras (F25) existem: o seletor global no header filtra Carteira, Evolução, Rentabilidade, Ano a ano e Proventos, e a F24 fica livre para pegar.
 
 ## Glossário
 
@@ -26,7 +26,6 @@
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
 | **F24** | Rebalanceamento | — | ⏳ |
-| **F25** | Subcarteiras | — | ⏳ |
 | **F26** | Risco × retorno | — | 💤 |
 | **F28** | Alerta de rebalanceamento com o app fechado | — | ⏳ |
 | **F29** | Empacotamento desktop | — | 🔍 |
@@ -47,7 +46,7 @@
 | **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (44 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (45 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -85,6 +84,7 @@
 | **F21** | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ |
 | **F22** | Relatório anual do IRPF | — | ✅ |
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
+| **F25** | Subcarteiras | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
@@ -106,7 +106,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F25** | Subcarteiras | M6 | 2 | ⏳ |
+| **F24** | Rebalanceamento | M6 | 1 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -254,14 +254,21 @@
 >
 > **Serve:** N6, N7
 >
-> **Progresso:** 0/4 concluídas
+> **Progresso:** 1/4 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F24** | Rebalanceamento | F11, F25 | ⏳ |
-| **F25** | Subcarteiras | F15 | ⏳ |
 | **F28** | Alerta de rebalanceamento com o app fechado | F24 | ⏳ |
 | **F32** | Liquidez em três camadas | F11, F12 | ⏳ |
+
+<details><summary>Concluído (1 item)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F25** | Subcarteiras | F15 | ✅ |
+
+</details>
 
 ### M7 — Análises e ferramentas
 
@@ -376,7 +383,7 @@
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24 | Baixo | Médio | Médio | Bom | ⏳ Pendente |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
-| **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ⏳ Pendente |
+| **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ✅ Concluído |
 | **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ✅ Concluído |
@@ -756,15 +763,21 @@ Plano:
 - filtro de categoria, e o de carteira quando a F25 existir;
 - a matriz passa de 12 itens com a carteira inteira: o limite da F27 é revisto aqui, junto com o tamanho da célula.
 
-**F25 — Subcarteiras.** Grupos nomeados de ativos, como pastas: a carteira geral tem tudo, e cada subcarteira tem só o que é dela, com cada ativo em no máximo uma (D12). Serve N7.
+**F25 — Subcarteiras.** Grupos nomeados de ativos e títulos, como pastas: a carteira geral tem tudo, e cada subcarteira tem só o que é dela, com cada ativo e cada título em no máximo uma (D12). Serve N7.
 
-Plano:
-- tabela `subportfolios` (nome único) e `subportfolio_id` opcional em `assets` e em `fixed_income_investments`, com FK em `SET NULL`: apagar a subcarteira devolve os ativos à carteira geral sem subcarteira;
-- tela de subcarteiras: criar, renomear, apagar, e escolher os ativos e títulos de cada uma; o formulário do ativo e o do título ganham o select;
-- o seletor de carteira (geral ou uma subcarteira) em toda visão de carteira que já existir: posição, composição, setor, evolução do patrimônio, rentabilidade, ano a ano, proventos, correlação e risco × retorno. A visão filtra as posições e as linhas da série diária (F14) pelos ativos da subcarteira; a escolha fica na URL, para sobreviver à navegação;
-- meta de rebalanceamento própria de cada subcarteira (F24).
+- **Schema:** a tabela `subportfolios` (nome único) e o `subportfolio_id` opcional em `assets` e em `fixed_income_investments`, com FK em `SET NULL`: apagar a subcarteira devolve os membros à carteira geral.
+- **Um filtro só:** `backend/repository/subportfolios.py` devolve os membros de hoje de uma subcarteira, ou nada para a carteira geral, e 404 para uma que não existe. A série diária filtra as linhas por eles no `select_lines`, e a Carteira e os Proventos filtram as posições, os títulos e os proventos pelos mesmos ids. Total, frações, categorias e setores saem do conjunto filtrado.
+- **Visões:** Carteira, Evolução, Rentabilidade, Ano a ano e Proventos (desempenho, distribuição e histórico) recebem `subportfolio_id`.
+- **Tela Subcarteiras:** criar, renomear, apagar e escolher os ativos e os títulos de cada uma, numa lista de checkboxes que mostra quando o item está em outra subcarteira. `PUT /api/subportfolios/{id}/members` define a filiação exata: o que vem passa para ela, inclusive de outra, e o que era dela e não veio volta à geral. O formulário do ativo e o do título ganharam o select.
+- **Troca de ticker:** a junção de dois ativos mantém a subcarteira do que sai, como o segmento.
 
-Sem histórico de pertença: mover um ativo de subcarteira muda também o passado dela, porque a subcarteira é o conjunto de ativos de hoje.
+Decisões tomadas durante:
+- **O seletor é global, no header**, e só aparece nas cinco visões de carteira. O `?subportfolio=` fica na URL (D13), e os links da sidebar para essas visões levam o parâmetro: escolher uma vez vale em todas. Categoria e período seguem no estado da tela.
+- **A correlação e a meta de rebalanceamento ficam para as features delas:** a tela de correlação de hoje recebe tickers livres, e o filtro de carteira chega com a F39; a meta chega com a F24. Risco × retorno não existe ainda.
+- **As categorias da Evolução passam a ser as do conjunto escolhido**, a subcarteira ou a carteira geral, e não mais sempre as da carteira toda.
+- O `NameInDTO` foi para `backend/core/dto.py`, e o diálogo de nome, o de apagar e o `useFixedIncomeList` subiram para `shared/`: setores e subcarteiras usam os mesmos.
+
+**Aceite verificado** numa cópia do banco migrado: o dry run da migration sem perda de dado e com as FKs íntegras. Com metade dos ativos e um título numa subcarteira, o total dela é a soma dos membros na carteira geral, as frações somam 1, a evolução termina no mesmo total, e a carteira, a evolução, a rentabilidade e o ano a ano gerais ficam idênticos. Apagar a subcarteira devolveu tudo à geral. No app de pé: o seletor filtrou a Carteira e a Evolução, a subcarteira seguiu pela sidebar e sobreviveu ao recarregar, e o formulário do ativo tirou um membro dela.
 
 **F40 — Troca de ticker como renomeação.** A tabela `asset_ticker_history` (ativo, ticker antigo, vigente até) fica ao lado do `ticker` atual. `backend/repository/tickers.py` concentra o ticker vigente numa data, a resolução de um ticker antigo para o atual e a regra de que nenhum ticker, antigo ou atual, é de dois ativos. `POST /api/assets/{id}/ticker-change` recebe o ticker novo e a data desde a qual ele vale. Quando o ticker novo já é um ativo, a troca junta os dois: as operações do antigo passam para o novo e o ativo antigo sai. Operações, posições do fiscal e Bens e Direitos mostram o ticker vigente na data; Carteira e Mercado, o atual. O detalhe do ativo ganhou "Trocar ticker", a lista dos tickers antigos e o botão Editar. Os importadores passam cada ticker pela resolução antes da chave natural. A transferência entre ativos saiu: endpoint, tela, tipos `transfer_in`/`transfer_out` e os dois `CHECK` de `operations`, numa migration própria.
 
