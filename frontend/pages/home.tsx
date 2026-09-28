@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+
+import { cashHint } from "@/features/cash/labels";
 import { AllocationChart } from "@/features/portfolio/allocation-chart";
 import { CategorySections } from "@/features/portfolio/category-sections";
 import { dayChangeHint } from "@/features/portfolio/hints";
@@ -44,6 +47,16 @@ export function HomePage() {
                   </MetricHint>{" "}
                   {formatSignedBRL(data.day_change)}
                   {data.day_return && ` (${formatSignedPercent(data.day_return)})`}
+                </p>
+              )}
+              {data.cash && (
+                <p className="tabular-nums">
+                  <MetricHint hint={cashHint}>
+                    <span className="text-muted-foreground">Saldo a reinvestir</span>
+                  </MetricHint>{" "}
+                  <Link to="/cash" className="underline-offset-4 hover:underline">
+                    {formatBRL(data.cash)}
+                  </Link>
                 </p>
               )}
               <p className="text-muted-foreground text-xs">

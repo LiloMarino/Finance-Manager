@@ -9,3 +9,4 @@ class DataIssueKind(StrEnum):
     FIXED_INCOME_WITHOUT_APPLICATION = "fixed_income_without_application"
     MISSING_CNPJ = "missing_cnpj"
     UNCLASSIFIED_ASSET = "unclassified_asset"
+    IDLE_CASH = "idle_cash"

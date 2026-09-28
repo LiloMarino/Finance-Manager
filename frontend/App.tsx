@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { MainLayout } from "@/layouts/main-layout";
 import { AssetDetailPage } from "@/pages/asset-detail";
 import { AssetsPage } from "@/pages/assets";
+import { CashPage } from "@/pages/cash";
 import { CorrelationPage } from "@/pages/correlation";
 import { DataHealthPage } from "@/pages/data-health";
 import { ErrorPage } from "@/pages/error";
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="operations" element={<OperationsPage />} />
             <Route path="import" element={<ImportPage />} />
             <Route path="assets" element={<AssetsPage />} />
+            <Route path="cash" element={<CashPage />} />
             <Route path="assets/:assetId" element={<AssetDetailPage />} />
             <Route path="sectors" element={<SectorsPage />} />
             <Route path="subportfolios" element={<SubportfoliosPage />} />

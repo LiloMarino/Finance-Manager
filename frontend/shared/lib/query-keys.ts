@@ -9,6 +9,8 @@ export const queryKeys = {
   evolution: ["portfolio", "evolution"] as const,
   monthlyReturns: ["portfolio", "monthly-returns"] as const,
   income: ["portfolio", "income"] as const,
+  // O saldo sai das operações, dos proventos e da renda fixa, como a carteira
+  cash: ["portfolio", "cash"] as const,
   prices: ["market", "prices"] as const,
   indexes: ["market", "indexes"] as const,
   // Debaixo das séries: o refresh delas muda o ponto de partida da projeção
@@ -33,9 +35,14 @@ export function invalidateKeys(
   });
 }
 
-/** Todo provento muda a rentabilidade da carteira e o relatório do IRPF. */
+/** Todo provento muda a rentabilidade e o saldo da carteira, o relatório do IRPF e
+o saldo parado dos problemas de dado. */
 export function invalidateIncomeData(queryClient: QueryClient): Promise<void> {
-  return invalidateKeys(queryClient, [queryKeys.portfolio, queryKeys.tax]);
+  return invalidateKeys(queryClient, [
+    queryKeys.portfolio,
+    queryKeys.tax,
+    queryKeys.dataHealth,
+  ]);
 }
 
 /** Toda escrita em ativo ou operação muda a carteira, as listas, os ativos a cotar,

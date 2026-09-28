@@ -31,6 +31,7 @@ class MarkedInvestment:
     daily_liquidity: bool
     subportfolio_id: int | None
     tax_exempt: bool
+    matured: bool
     invested: Decimal
     gross_value: Decimal
     estimated_tax: Decimal
@@ -40,19 +41,16 @@ class MarkedInvestment:
     series_date: date | None
 
 
-def marked_investments(
-    session: Session, today: date, investment_id: int | None = None
-) -> list[MarkedInvestment]:
-    """Os títulos marcados em `today` pelas séries em cache; sem `investment_id`,
-    todos."""
-    investments = select(FixedIncomeInvestment).order_by(FixedIncomeInvestment.label)
-    movements = select(FixedIncomeMovement).order_by(FixedIncomeMovement.id)
+def movements_by_investment(
+    session: Session, investment_id: int | None = None
+) -> dict[int, list[Movement]]:
+    """As movimentações de cada título, na ordem de gravação; sem `investment_id`,
+    de todos."""
+    statement = select(FixedIncomeMovement).order_by(FixedIncomeMovement.id)
     if investment_id is not None:
-        investments = investments.where(FixedIncomeInvestment.id == investment_id)
-        movements = movements.where(FixedIncomeMovement.investment_id == investment_id)
-
+        statement = statement.where(FixedIncomeMovement.investment_id == investment_id)
     by_investment: defaultdict[int, list[Movement]] = defaultdict(list)
-    for movement in session.scalars(movements):
+    for movement in session.scalars(statement):
         by_investment[movement.investment_id].append(
             Movement(
                 movement_date=movement.movement_date,
@@ -60,28 +58,46 @@ def marked_investments(
                 amount=movement.amount,
             )
         )
+    return by_investment
 
+
+def investment_terms(investment: FixedIncomeInvestment) -> FixedIncomeTerms:
+    return FixedIncomeTerms(
+        product_type=investment.product_type,
+        indexer=investment.indexer,
+        rate=investment.rate,
+        maturity_date=investment.maturity_date,
+    )
+
+
+def marked_investments(
+    session: Session, today: date, investment_id: int | None = None
+) -> list[MarkedInvestment]:
+    """Os títulos marcados em `today` pelas séries em cache; sem `investment_id`,
+    todos."""
+    investments = select(FixedIncomeInvestment).order_by(FixedIncomeInvestment.label)
+    if investment_id is not None:
+        investments = investments.where(FixedIncomeInvestment.id == investment_id)
+    by_investment = movements_by_investment(session, investment_id)
     rates = index_rates(session)
     return [
         _marked(
             investment,
             mark(
-                FixedIncomeTerms(
-                    product_type=investment.product_type,
-                    indexer=investment.indexer,
-                    rate=investment.rate,
-                    maturity_date=investment.maturity_date,
-                ),
-                by_investment[investment.id],
+                investment_terms(investment),
+                by_investment.get(investment.id, []),
                 rates,
                 today,
             ),
+            today,
         )
         for investment in session.scalars(investments)
     ]
 
 
-def _marked(investment: FixedIncomeInvestment, marking: Marking) -> MarkedInvestment:
+def _marked(
+    investment: FixedIncomeInvestment, marking: Marking, today: date
+) -> MarkedInvestment:
     return MarkedInvestment(
         id=investment.id,
         label=investment.label,
@@ -92,6 +108,7 @@ def _marked(investment: FixedIncomeInvestment, marking: Marking) -> MarkedInvest
         daily_liquidity=investment.daily_liquidity,
         subportfolio_id=investment.subportfolio_id,
         tax_exempt=investment.product_type in TAX_EXEMPT_TYPES,
+        matured=investment_terms(investment).matured(today),
         invested=marking.invested,
         gross_value=marking.gross_value,
         estimated_tax=marking.estimated_tax,

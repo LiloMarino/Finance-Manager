@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from backend.core.dto import ERROR_RESPONSES
 from backend.features.assets.router import router as assets_router
+from backend.features.cash.router import router as cash_router
 from backend.features.correlation.router import router as correlation_router
 from backend.features.data_health.router import router as data_health_router
 from backend.features.evolution.router import router as evolution_router
@@ -36,6 +37,7 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(performance_router, responses=ERROR_RESPONSES)
     app.include_router(evolution_router, responses=ERROR_RESPONSES)
     app.include_router(fixed_income_router, responses=ERROR_RESPONSES)
+    app.include_router(cash_router, responses=ERROR_RESPONSES)
     app.include_router(tax_router, responses=ERROR_RESPONSES)
     app.include_router(data_health_router, responses=ERROR_RESPONSES)
     app.include_router(simulation_router, responses=ERROR_RESPONSES)

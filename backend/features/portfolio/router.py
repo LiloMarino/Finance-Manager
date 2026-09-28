@@ -94,9 +94,12 @@ class PortfolioDTO(BaseDTO):
 
     A variação do dia da renda variável compara o fechamento de `price_date`, o
     pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
-    a marcação de hoje contra a do dia útil anterior."""
+    a marcação de hoje contra a do dia útil anterior.
+
+    `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura."""
 
     total: DecimalStr
+    cash: DecimalStr | None
     day_change: DecimalStr | None
     day_return: DecimalStr | None
     price_date: date | None

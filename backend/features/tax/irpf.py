@@ -20,6 +20,7 @@ from backend.core.models.models import Asset
 from backend.domain.irpf import income_form, is_declared
 from backend.domain.position import Position, current_positions
 from backend.domain.tax import CENT, DARF_CODE, ZERO
+from backend.features.brazilian import brazilian
 from backend.features.tax.dto import (
     IrpfAssetDTO,
     IrpfExemptMonthDTO,
@@ -42,15 +43,9 @@ ASSET_CODES: dict[AssetClass, tuple[str, str, str]] = {
 }
 
 
-def _brazilian(value: Decimal, places: int) -> str:
-    """Número no formato pt-BR, com separador de milhar."""
-    text = f"{value:,.{places}f}"
-    return text.replace(",", "_").replace(".", ",").replace("_", ".")
-
-
 def _quantity(value: Decimal) -> str:
     integral, _, fraction = fmt(value.normalize()).partition(".")
-    grouped = _brazilian(Decimal(integral), 0)
+    grouped = brazilian(Decimal(integral), 0)
     return f"{grouped},{fraction}" if fraction else grouped
 
 
@@ -64,7 +59,7 @@ def _description(asset: Asset, ticker: str, position: Position) -> str:
         return f"{ticker}: posição encerrada no ano."
     return (
         f"{_quantity(position.quantity)} {noun} {ticker}, custo médio de "
-        f"R$ {_brazilian(position.average_price, 2)}."
+        f"R$ {brazilian(position.average_price, 2)}."
     )
 
 

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { DeleteFixedIncomeDialog } from "@/features/fixed-income/delete-fixed-income-dialog";
 import { FixedIncomeFormDialog } from "@/features/fixed-income/fixed-income-form-dialog";
 import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,
@@ -43,6 +44,11 @@ export function FixedIncomeTable({ investments }: { investments: FixedIncome[] }
             <TableCell>{describeRate(investment.indexer, investment.rate)}</TableCell>
             <TableCell className="tabular-nums">
               {investment.maturity_date ? formatDate(investment.maturity_date) : "—"}
+              {investment.matured && (
+                <Badge variant="secondary" className="ml-2">
+                  Vencido
+                </Badge>
+              )}
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatBRL(investment.invested)}

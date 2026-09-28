@@ -17,6 +17,7 @@ import {
   Scale,
   Shapes,
   TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 import { useDataHealth } from "@/features/data-health/use-data-health";
@@ -60,6 +61,7 @@ const navItems = [
   { to: "/sectors", label: "Setores", icon: Shapes },
   { to: "/subportfolios", label: "Subcarteiras", icon: FolderTree },
   { to: "/fixed-income", label: "Renda fixa", icon: Landmark },
+  { to: "/cash", label: "Saldo", icon: Wallet },
   { to: "/market", label: "Mercado", icon: LineChart },
   { to: "/fixed-income-comparator", label: "Comparador de RF", icon: Scale },
   { to: "/installments", label: "À vista ou parcelado", icon: CreditCard },

@@ -3,6 +3,7 @@ import type { components } from "@/types/openapi.generated";
 
 export type PortfolioCategory = components["schemas"]["PortfolioCategory"];
 
+// As categorias investidas, que os filtros oferecem; o saldo fica de fora
 export const portfolioCategories: PortfolioCategory[] = [
   "stock",
   "fii",
@@ -17,6 +18,7 @@ export const portfolioCategoryLabels: Record<PortfolioCategory, string> = {
   etf: "ETFs",
   bdr: "BDRs",
   fixed_income: "Renda fixa",
+  cash: "Saldo",
 };
 
 export function isPortfolioCategory(value: string): value is PortfolioCategory {
@@ -30,4 +32,6 @@ export const portfolioCategoryConfig = {
   etf: { label: portfolioCategoryLabels.etf, color: "var(--chart-3)" },
   bdr: { label: portfolioCategoryLabels.bdr, color: "var(--chart-4)" },
   fixed_income: { label: portfolioCategoryLabels.fixed_income, color: "var(--chart-5)" },
+  // O saldo não é investimento: fica neutro, fora da paleta das categorias
+  cash: { label: portfolioCategoryLabels.cash, color: "var(--muted-foreground)" },
 } satisfies ChartConfig & Record<PortfolioCategory, { label: string; color: string }>;

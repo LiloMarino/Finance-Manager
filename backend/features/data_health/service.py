@@ -16,7 +16,9 @@ from backend.core.models.models import (
 )
 from backend.domain.coverage import DateRange, expected_close, index_overdue, price_gaps
 from backend.domain.irpf import declared_years
+from backend.features.brazilian import brl
 from backend.features.data_health.dto import DataIssueDTO
+from backend.repository.cash import cash_ledger, cash_settings
 from backend.repository.market import (
     business_calendar,
     cached_price_ranges,
@@ -184,6 +186,26 @@ def _segment_issues(session: Session) -> list[DataIssueDTO]:
     ]
 
 
+def _cash_issues(session: Session, today: date) -> list[DataIssueDTO]:
+    """Saldo acima do limite: dinheiro de investimento esperando reinvestimento."""
+    found = cash_ledger(session, today)
+    threshold = cash_settings(session).alert_threshold
+    if found is None or found.balance <= threshold:
+        return []
+    return [
+        DataIssueDTO(
+            kind=DataIssueKind.IDLE_CASH,
+            subject="Saldo",
+            missing=(
+                f"Reinvestir {brl(found.balance)} parados no saldo, acima do limite "
+                f"de {brl(threshold)}."
+            ),
+            affects="Rendimento: o saldo não rende enquanto espera.",
+            path="/cash",
+        )
+    ]
+
+
 def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
     return [
         *_price_issues(session, now),
@@ -191,4 +213,5 @@ def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
         *_fixed_income_issues(session),
         *_cnpj_issues(session, now.date()),
         *_segment_issues(session),
+        *_cash_issues(session, now.date()),
     ]

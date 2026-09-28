@@ -25,7 +25,8 @@ RECENT_MONTHS = (6, 12, 24)
 @dataclass(frozen=True, slots=True, kw_only=True)
 class EvolutionPoint:
     """`invested` é o que entrou menos o que saiu até o dia, e `gain` é o
-    patrimônio menos ele."""
+    patrimônio menos ele. Da abertura do saldo em diante, na carteira geral, o que
+    entra e sai é só o dinheiro de fora."""
 
     day: date
     value: Decimal
@@ -83,9 +84,11 @@ def evolution(
 ) -> Evolution:
     scope = members(session, subportfolio_id)
     series = daily_series(session, today)
+    # O saldo é da carteira geral
+    cash = [series.cash] if series.cash is not None and scope is None else []
 
     by_category: defaultdict[PortfolioCategory, Decimal] = defaultdict(Decimal)
-    for line in select_lines(series, members=scope):
+    for line in [*select_lines(series, members=scope), *cash]:
         by_category[line.category] += line.values[-1]
     categories = [
         CategoryValue(category=found, value=by_category[found])
@@ -93,7 +96,10 @@ def evolution(
         if by_category[found] > ZERO
     ]
 
-    points = aggregate(series.days, select_lines(series, category, members=scope))
+    chosen = select_lines(series, category, members=scope)
+    if category in (None, PortfolioCategory.CASH):
+        chosen += cash
+    points = aggregate(series.days, chosen)
     if not points:
         return Evolution(
             total=ZERO,

@@ -234,16 +234,18 @@ def test_tax_exempt_product_has_no_tax() -> None:
     assert marking.net_value == marking.gross_value
 
 
-def test_value_stops_at_maturity() -> None:
-    """Depois do vencimento o título para de render: a marcação é a do vencimento."""
+def test_title_is_worth_zero_from_maturity_on() -> None:
+    """O vencimento resgata o título: até a véspera ele vale a marcação, e do
+    vencimento em diante vale zero, com a marcação datada no vencimento."""
     start, maturity = date(2024, 1, 1), date(2024, 3, 1)
     terms = _terms(maturity_date=maturity)
 
+    eve = mark(terms, [_movement(start, "1000")], {}, date(2024, 2, 29))
     late = mark(terms, [_movement(start, "1000")], {}, date(2024, 9, 2))
-    on_maturity = mark(terms, [_movement(start, "1000")], {}, maturity)
 
+    assert eve.gross_value > Decimal(1000)
     assert late.as_of == maturity
-    assert late.gross_value == on_maturity.gross_value
+    assert late.gross_value == late.invested == 0
 
 
 def test_day_change_is_one_business_day_of_yield() -> None:

@@ -16,6 +16,7 @@ from backend.core.enum import (
 )
 from backend.core.models.models import Asset
 from backend.domain.position import ZERO, Position, current_positions
+from backend.repository.cash import cash_ledger
 from backend.repository.fixed_income import MarkedInvestment, marked_investments
 from backend.repository.market import AssetPrice, latest_prices
 from backend.repository.operations import operation_records
@@ -109,9 +110,13 @@ class Portfolio:
 
     A variação do dia da renda variável é o fechamento de `price_date`, o pregão
     mais recente do cache, contra o de `previous_price_date`; a da renda fixa é a
-    marcação de hoje contra a do dia útil anterior."""
+    marcação de hoje contra a do dia útil anterior.
+
+    `cash` é o saldo de investimento de hoje, só na carteira geral e depois da
+    abertura dele; ele entra no total e na categoria própria."""
 
     total: Decimal
+    cash: Decimal | None
     day_change: Decimal | None
     day_return: Decimal | None
     price_date: date | None
@@ -340,6 +345,10 @@ def portfolio(
         by_category[PortfolioCategory.FIXED_INCOME].add(
             investment.gross_value, investment.invested, investment.day_change
         )
+    found_ledger = cash_ledger(session, today) if scope is None else None
+    cash = found_ledger.balance if found_ledger else None
+    if cash:
+        by_category[PortfolioCategory.CASH].add(cash, cash, None)
     total = sum((totals.value for totals in by_category.values()), ZERO)
     changed = [
         totals for totals in by_category.values() if totals.day_change is not None
@@ -353,6 +362,7 @@ def portfolio(
 
     return Portfolio(
         total=total,
+        cash=cash,
         day_change=day_change,
         day_return=(
             None

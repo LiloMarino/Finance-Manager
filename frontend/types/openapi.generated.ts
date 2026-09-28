@@ -557,6 +557,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_cash_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Check */
+        post: operations["create_check_api_cash_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/checks/{check_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Check */
+        delete: operations["remove_check_api_cash_checks__check_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/withdrawals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Withdrawal */
+        post: operations["create_withdrawal_api_cash_withdrawals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/withdrawals/{withdrawal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Withdrawal */
+        delete: operations["remove_withdrawal_api_cash_withdrawals__withdrawal_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Settings */
+        put: operations["put_settings_api_cash_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tax/months": {
         parameters: {
             query?: never;
@@ -866,6 +968,99 @@ export interface components {
             indexer: components["schemas"]["Indexer"];
             /** Rate */
             rate: DecimalString | null;
+        };
+        /**
+         * CashCheckInDTO
+         * @description O saldo do extrato no fim do dia.
+         */
+        CashCheckInDTO: {
+            /**
+             * Check Date
+             * Format: date
+             */
+            check_date: string;
+            /**
+             * Balance
+             * Format: decimal
+             */
+            balance: DecimalString;
+        };
+        /**
+         * CashDTO
+         * @description `balance` e `opened_on` são nulos antes da primeira conferência. O extrato
+         *     vem do mais recente para o mais antigo. `above_threshold` é o saldo parado que
+         *     aparece em Saúde dos dados.
+         */
+        CashDTO: {
+            /** Opened On */
+            opened_on: string | null;
+            /** Balance */
+            balance: DecimalString | null;
+            /**
+             * Alert Threshold
+             * Format: decimal
+             */
+            alert_threshold: DecimalString;
+            /** Above Threshold */
+            above_threshold: boolean;
+            /** Entries */
+            entries: components["schemas"]["CashEntryDTO"][];
+        };
+        /**
+         * CashEntryDTO
+         * @description Uma linha do extrato derivado. `amount` é o efeito no saldo, com sinal, e
+         *     `record_id` é a conferência ou o saque gravado que gerou a linha.
+         */
+        CashEntryDTO: {
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            kind: components["schemas"]["CashEntryKind"];
+            /** Label */
+            label: string | null;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Balance
+             * Format: decimal
+             */
+            balance: DecimalString;
+            /** Record Id */
+            record_id: number | null;
+        };
+        /**
+         * CashEntryKind
+         * @description O que moveu o saldo de investimento. `deposit` é o aporte de fora que cobre a
+         *     compra maior que o saldo, e `check` é a conferência com o extrato, pela
+         *     diferença contra o saldo derivado.
+         * @enum {string}
+         */
+        CashEntryKind: "opening" | "sale" | "income" | "redemption" | "maturity" | "deposit" | "purchase" | "application" | "withdrawal" | "check";
+        /** CashSettingsInDTO */
+        CashSettingsInDTO: {
+            /**
+             * Alert Threshold
+             * Format: decimal
+             */
+            alert_threshold: DecimalString;
+        };
+        /** CashWithdrawalInDTO */
+        CashWithdrawalInDTO: {
+            /**
+             * Withdrawal Date
+             * Format: date
+             */
+            withdrawal_date: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
         };
         /**
          * CategoryAllocationDTO
@@ -1187,7 +1382,7 @@ export interface components {
          * @description Os tipos de problema de dado que afetam algum número do app.
          * @enum {string}
          */
-        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset";
+        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -1267,7 +1462,8 @@ export interface components {
         };
         /**
          * FixedIncomeDTO
-         * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou.
+         * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou. O
+         *     título vencido (`matured`) foi resgatado para o saldo e vale zero.
          *     `subportfolio_id` nulo é título só da carteira geral.
          */
         FixedIncomeDTO: {
@@ -1290,6 +1486,8 @@ export interface components {
             subportfolio_id: number | null;
             /** Tax Exempt */
             tax_exempt: boolean;
+            /** Matured */
+            matured: boolean;
             /**
              * Invested
              * Format: decimal
@@ -1339,6 +1537,8 @@ export interface components {
             subportfolio_id: number | null;
             /** Tax Exempt */
             tax_exempt: boolean;
+            /** Matured */
+            matured: boolean;
             /**
              * Invested
              * Format: decimal
@@ -2445,10 +2645,10 @@ export interface components {
         /**
          * PortfolioCategory
          * @description Categoria da carteira: as classes de ativo da B3, com o mesmo valor do
-         *     `AssetClass`, mais a renda fixa.
+         *     `AssetClass`, a renda fixa e o saldo de investimento.
          * @enum {string}
          */
-        PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income";
+        PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income" | "cash";
         /**
          * PortfolioDTO
          * @description Frações (`share`, `unrealized_return`, `day_return`) vão de 0 a 1. A de setor
@@ -2457,6 +2657,8 @@ export interface components {
          *     A variação do dia da renda variável compara o fechamento de `price_date`, o
          *     pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
          *     a marcação de hoje contra a do dia útil anterior.
+         *
+         *     `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura.
          */
         PortfolioDTO: {
             /**
@@ -2464,6 +2666,8 @@ export interface components {
              * Format: decimal
              */
             total: DecimalString;
+            /** Cash */
+            cash: DecimalString | null;
             /** Day Change */
             day_change: DecimalString | null;
             /** Day Return */
@@ -4630,6 +4834,240 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_api_cash_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_check_api_cash_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashCheckInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remove_check_api_cash_checks__check_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_withdrawal_api_cash_withdrawals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashWithdrawalInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remove_withdrawal_api_cash_withdrawals__withdrawal_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                withdrawal_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    put_settings_api_cash_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashSettingsInDTO"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {

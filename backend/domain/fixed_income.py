@@ -4,6 +4,9 @@ O valor de cada fluxo cresce por um fator acumulado `F`, que é o mesmo para tod
 fluxos do título. Por isso o saldo bruto é linear, `Σ aplicação * F(t)/F(a) -
 Σ resgate * F(t)/F(r)`, e independe de qual aplicação o resgate consumiu. Os lotes
 existem só para o IR regressivo, que depende da idade de cada aplicação.
+
+No dia do vencimento o título é resgatado inteiro: dali em diante vale zero, e o
+bruto do vencimento vai para o saldo de investimento.
 """
 
 from __future__ import annotations
@@ -87,6 +90,9 @@ class FixedIncomeTerms:
     @property
     def tax_exempt(self) -> bool:
         return self.product_type in TAX_EXEMPT_TYPES
+
+    def matured(self, day: date) -> bool:
+        return self.maturity_date is not None and day >= self.maturity_date
 
 
 def terms_problem(
@@ -211,21 +217,114 @@ class Application:
         return net / (ONE - gain_share * (iof + income * (ONE - iof)))
 
 
-def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:
-    """Consome as unidades das aplicações mais antigas primeiro. Resgate maior que
-    o saldo zera o título: a diferença é o erro da estimativa."""
+def _take(lots: list[_Lot], units: Decimal) -> tuple[list[_Lot], list[_Lot]]:
+    """Consome as unidades das aplicações mais antigas primeiro e devolve o que
+    ficou e o que saiu. Resgate maior que o saldo zera o título: a diferença é o
+    erro da estimativa."""
     remaining = units
-    result: list[_Lot] = []
+    kept_lots: list[_Lot] = []
+    taken_lots: list[_Lot] = []
     for lot in lots:
         taken = min(lot.units, remaining)
         remaining -= taken
+        if taken:
+            taken_lots.append(
+                replace(lot, units=taken, principal=lot.principal * taken / lot.units)
+            )
         if taken == lot.units:
             continue
         kept = lot.units - taken
-        result.append(
+        kept_lots.append(
             replace(lot, units=kept, principal=lot.principal * kept / lot.units)
         )
-    return result
+    return kept_lots, taken_lots
+
+
+def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:
+    return _take(lots, units)[0]
+
+
+def _withheld(
+    lots: Sequence[_Lot], factor: Decimal, day: date, exempt: bool
+) -> Decimal:
+    """O IOF e o IR retidos no resgate dos `lots` no dia, cada um pela idade da
+    aplicação dele, como em `Application.redeem`."""
+    total = ZERO
+    for lot in lots:
+        gain = lot.units * factor - lot.principal
+        if gain <= ZERO:
+            continue
+        days = (day - lot.opened).days
+        iof = gain * iof_rate(days)
+        total += iof + (ZERO if exempt else (gain - iof) * tax_rate(days))
+    return total
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Payout:
+    """Um resgate: o registrado, pelo bruto do extrato, ou o do vencimento, pelo
+    bruto marcado. `net` é o que chega ao saldo, sem o IOF e o IR."""
+
+    payout_date: date
+    gross: Decimal
+    net: Decimal
+    at_maturity: bool
+
+
+def payouts(
+    terms: FixedIncomeTerms,
+    movements: Sequence[Movement],
+    rates: Mapping[IndexSeries, Sequence[DailyRate]],
+    until: date,
+) -> list[Payout]:
+    """Os resgates do título até `until`, inclusive, em ordem: os registrados e, se o
+    vencimento já chegou, o automático dele, com o que sobrou."""
+    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    maturity = terms.maturity_date
+    end = min(until, maturity) if maturity else until
+    if not ordered or end < ordered[0].movement_date:
+        return []
+
+    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+    factor = accumulation(
+        daily_factor(terms.indexer, terms.rate, rates, business),
+        ordered[0].movement_date,
+        end,
+    )
+    lots: list[_Lot] = []
+    found: list[Payout] = []
+    for movement in ordered:
+        if movement.movement_date > end:
+            break
+        day = movement.movement_date
+        units = movement.amount / factor(day)
+        if movement.movement_type is FixedIncomeMovementType.APPLICATION:
+            lots.append(_Lot(opened=day, units=units, principal=movement.amount))
+            continue
+        lots, taken = _take(lots, units)
+        withheld = _withheld(taken, factor(day), day, terms.tax_exempt)
+        found.append(
+            Payout(
+                payout_date=day,
+                gross=movement.amount,
+                net=movement.amount - withheld,
+                at_maturity=False,
+            )
+        )
+
+    if maturity is not None and maturity <= until and lots:
+        now = factor(maturity)
+        gross = sum((lot.units * now for lot in lots), ZERO)
+        withheld = _withheld(lots, now, maturity, terms.tax_exempt)
+        found.append(
+            Payout(
+                payout_date=maturity,
+                gross=gross,
+                net=gross - withheld,
+                at_maturity=True,
+            )
+        )
+    return found
 
 
 def daily_gross(
@@ -235,8 +334,8 @@ def daily_gross(
     days: Sequence[date],
 ) -> list[Decimal]:
     """O saldo bruto no fim de cada um dos `days`, em ordem: o de `mark` com as
-    movimentações até o dia. Uma acumulação só serve a série toda, porque `F(d)` só
-    depende dos dias até `d`."""
+    movimentações até o dia, e zero do vencimento em diante. Uma acumulação só serve
+    a série toda, porque `F(d)` só depende dos dias até `d`."""
     ordered = sorted(movements, key=lambda movement: movement.movement_date)
     if not ordered or not days:
         return [ZERO] * len(days)
@@ -261,7 +360,8 @@ def daily_gross(
                 # Resgate maior que o saldo zera o título, como em `_redeem`
                 units = max(ZERO, units - moved)
             cursor += 1
-        values.append(units * factor(day) if units else ZERO)
+        matured = terms.matured(day)
+        values.append(units * factor(day) if units and not matured else ZERO)
     return values
 
 
@@ -271,14 +371,15 @@ def mark(
     rates: Mapping[IndexSeries, Sequence[DailyRate]],
     today: date,
 ) -> Marking:
-    """Saldo bruto, principal e IR estimado do título em `today`, ou no vencimento
-    se ele já passou. `movements` vem na ordem de gravação; o IOF não entra."""
+    """Saldo bruto, principal e IR estimado do título em `today`. Do vencimento em
+    diante o título já foi resgatado e vale zero, com `as_of` no vencimento.
+    `movements` vem na ordem de gravação; o IOF não entra."""
     as_of = min(today, terms.maturity_date) if terms.maturity_date else today
     series = INDEX_SERIES.get(terms.indexer)
     series_date = PublishedSeries(rates.get(series, ())).last_date if series else None
 
     ordered = sorted(movements, key=lambda movement: movement.movement_date)
-    if not ordered:
+    if not ordered or terms.matured(today):
         return Marking(
             invested=ZERO,
             gross_value=ZERO,

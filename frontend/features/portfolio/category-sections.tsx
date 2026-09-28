@@ -339,11 +339,13 @@ function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {
 }
 
 /** Uma seção recolhível por categoria, com as posições dela. As seções de renda
-variável ordenam juntas; a de renda fixa tem colunas e ordenação próprias. */
+variável ordenam juntas; a de renda fixa tem colunas e ordenação próprias. O saldo
+não tem posições e fica no card do patrimônio. */
 export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
   const [equitySorting, setEquitySorting] = useState<SortingState>([]);
   const [holdingSorting, setHoldingSorting] = useState<SortingState>([]);
-  const categories: PortfolioCategory[] = portfolio.categories.map((item) => item.category);
+  const allocations = portfolio.categories.filter((item) => item.category !== "cash");
+  const categories: PortfolioCategory[] = allocations.map((item) => item.category);
 
   if (categories.length === 0) {
     return (
@@ -355,7 +357,7 @@ export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
 
   return (
     <Accordion type="multiple" defaultValue={categories}>
-      {portfolio.categories.map((allocation) => (
+      {allocations.map((allocation) => (
         <AccordionItem key={allocation.category} value={allocation.category}>
           <AccordionTrigger className="items-center hover:no-underline">
             <CategoryHeader allocation={allocation} />

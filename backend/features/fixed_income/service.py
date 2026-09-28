@@ -63,6 +63,32 @@ def _check_starts_with_application(session: Session, investment_id: int) -> None
         raise MovementOrderError("A primeira movimentação do título é uma aplicação.")
 
 
+def _check_before_maturity(session: Session, investment_id: int) -> None:
+    """O vencimento resgata o título inteiro, então toda movimentação vem até ele.
+    Roda antes do commit de toda escrita em movimentação e no vencimento."""
+    session.flush()
+    maturity = session.scalar(
+        select(FixedIncomeInvestment.maturity_date).where(
+            FixedIncomeInvestment.id == investment_id
+        )
+    )
+    if maturity is None:
+        return
+    late = session.scalar(
+        select(
+            exists().where(
+                FixedIncomeMovement.investment_id == investment_id,
+                FixedIncomeMovement.movement_date > maturity,
+            )
+        )
+    )
+    if late:
+        raise MovementOrderError(
+            f"O título vence em {maturity:%d/%m/%Y}: o resgate é automático no "
+            "vencimento, e nenhuma movimentação vem depois dele."
+        )
+
+
 def list_investments(session: Session, today: date) -> list[FixedIncomeDTO]:
     return [
         FixedIncomeDTO.model_validate(investment)
@@ -114,6 +140,7 @@ def create_investment(
             amount=payload.application.amount,
         )
     )
+    _check_before_maturity(session, investment.id)
     session.commit()
     return get_investment(session, investment.id, today)
 
@@ -131,6 +158,7 @@ def update_investment(
     investment.maturity_date = payload.maturity_date
     investment.daily_liquidity = payload.daily_liquidity
     investment.subportfolio_id = payload.subportfolio_id
+    _check_before_maturity(session, investment_id)
     session.commit()
     return get_investment(session, investment_id, today)
 
@@ -160,6 +188,7 @@ def add_movement(
     )
     session.add(movement)
     _check_starts_with_application(session, investment_id)
+    _check_before_maturity(session, investment_id)
     session.commit()
     return MovementDTO.model_validate(movement)
 

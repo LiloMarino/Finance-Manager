@@ -369,3 +369,47 @@ class DarfPayment(Base):
     month: Mapped[int]
     paid_on: Mapped[date]
     amount: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class CashBalanceCheck(Base):
+    """Dado primário do saldo de investimento: o saldo do extrato no fim do dia. A
+    primeira conferência abre o saldo; as outras substituem o saldo derivado."""
+
+    __tablename__ = "cash_checks"
+    __table_args__ = (
+        CheckConstraint("CAST(balance AS REAL) >= 0", name="balance_non_negative"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    check_date: Mapped[date] = mapped_column(unique=True)
+    balance: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class CashWithdrawal(Base):
+    """Dado primário do saldo de investimento: o dinheiro que saiu dele para fora dos
+    investimentos."""
+
+    __tablename__ = "cash_withdrawals"
+    __table_args__ = (
+        CheckConstraint("CAST(amount AS REAL) > 0", name="amount_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    withdrawal_date: Mapped[date]
+    amount: Mapped[Decimal] = mapped_column(DecimalText)
+
+
+class CashSettings(Base):
+    """A configuração do saldo, numa linha só, criada pela migration.
+    `alert_threshold` é o saldo acima do qual ele aparece como parado."""
+
+    __tablename__ = "cash_settings"
+    __table_args__ = (
+        CheckConstraint("id = 1", name="single_row"),
+        CheckConstraint(
+            "CAST(alert_threshold AS REAL) >= 0", name="alert_threshold_non_negative"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    alert_threshold: Mapped[Decimal] = mapped_column(DecimalText)

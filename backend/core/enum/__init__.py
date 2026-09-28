@@ -1,4 +1,5 @@
 from backend.core.enum.asset_class import AssetClass
+from backend.core.enum.cash_entry_kind import CashEntryKind
 from backend.core.enum.correlation_window import CorrelationWindow
 from backend.core.enum.darf_status import DarfStatus
 from backend.core.enum.data_issue_kind import DataIssueKind
@@ -19,6 +20,7 @@ from backend.core.enum.trade_type import TradeType
 
 __all__ = [
     "AssetClass",
+    "CashEntryKind",
     "CorrelationWindow",
     "DarfStatus",
     "DataIssueKind",
