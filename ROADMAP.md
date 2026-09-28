@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** O saldo de investimento (F54) entra no M6, antes da liquidez, do rebalanceamento e do alerta, que passam a depender dele.
+> **Última mudança (2026-09-28):** O saldo de investimento (F54) existe: venda, provento e vencimento entram nele, fora da cota e só na carteira geral, e a liquidez (F32) fica livre para pegar.
 
 ## Glossário
 
@@ -44,10 +44,9 @@
 | **F51** | Máscaras nos campos | — | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 | **F53** | Simulador: escada de títulos | — | ⏳ |
-| **F54** | Saldo de investimento | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (45 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (46 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -96,6 +95,7 @@
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
 | **F47** | Comparador de renda fixa | — | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ |
+| **F54** | Saldo de investimento | — | ✅ |
 
 </details>
 
@@ -107,7 +107,7 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F54** | Saldo de investimento | M6 | 3 | ⏳ |
+| **F32** | Liquidez em três camadas | M6 | 2 | ⏳ |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
@@ -254,20 +254,20 @@
 >
 > **Serve:** N2, N6, N7
 >
-> **Progresso:** 1/5 concluídas
+> **Progresso:** 2/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F24** | Rebalanceamento | F11, F25, F32, F54 | ⏳ |
 | **F28** | Alerta de rebalanceamento com o app fechado | F24, F54 | ⏳ |
 | **F32** | Liquidez em três camadas | F11, F12, F54 | ⏳ |
-| **F54** | Saldo de investimento | F12, F17, F20 | ⏳ |
 
-<details><summary>Concluído (1 item)</summary>
+<details><summary>Concluído (2 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F25** | Subcarteiras | F15 | ✅ |
+| **F54** | Saldo de investimento | F12, F17, F20 | ✅ |
 
 </details>
 
@@ -399,7 +399,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F53** | Simulador: escada de títulos | N9 | — | M7 | F49 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
-| **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ⏳ Pendente |
+| **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ✅ Concluído |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -958,18 +958,31 @@ Plano:
 
 Com a mesma taxa em todos os degraus, a escada empata com a liquidez diária: cada real resgatado paga o IR da idade da aplicação nos dois casos. Ela só muda o resultado quando o degrau mais longo rende mais, como um CDB de prazo maior.
 
-**F54 — Saldo de investimento.** O dinheiro de investimento que espera ser reinvestido: o que entrou por venda, provento ou vencimento de renda fixa e ainda não voltou para um ativo. Hoje a venda, o resgate e o provento saem da carteira como se fossem saque, e o título vencido fica congelado como renda fixa. Serve N2 e N6.
+**F54 — Saldo de investimento.** O dinheiro de investimento que espera ser reinvestido. `backend/domain/cash.py` deriva o extrato (`ledger`) a partir da primeira conferência com o extrato:
+- entram o valor da venda, o líquido do provento e o resgate de renda fixa;
+- saem a compra, a aplicação e o saque;
+- os fluxos do mesmo dia se compensam, e o que a compra passa do saldo é "aporte de fora", então nenhuma linha fica negativa;
+- cada conferência seguinte substitui o saldo derivado, e a diferença fica no extrato.
 
-Plano:
-- **derivado dos movimentos:** entram o valor de cada venda (quantidade × preço), o líquido de cada provento, cada resgate de renda fixa e o resgate automático no vencimento; saem o valor de cada compra, cada aplicação e os saques. Os fluxos do mesmo dia se compensam, e a compra que passa do saldo é aporte de fora, sem registro;
-- **dado primário (D2):** a conferência com o extrato (data e saldo) e o saque (data e valor). A conferência substitui o saldo derivado no fim do dia, e a diferença é um ajuste de fora, que cobre, por exemplo, as taxas da nota que o app não grava. A primeira conferência é a abertura: antes dela não há saldo, e o histórico segue como está;
-- **vencimento:** o título vale 0 depois do vencimento, e o bruto do vencimento vai para o saldo no dia. Movimentação depois do vencimento é recusada, e o resgate registrado na data do vencimento é abatido antes do automático;
-- **série diária:** uma linha de saldo, sem ativo e sem título. Com ela, entradas menos saídas de todas as linhas é só o dinheiro de fora, e o provento entra no ganho da Evolução a partir da abertura. A linha fica fora da cota (D5) e das subcarteiras (D12);
-- **Carteira:** o saldo entra no total e numa categoria própria, só na carteira geral;
-- **tela Saldo:** o saldo de hoje, o extrato derivado (venda, provento, vencimento, compra, aporte de fora, saque, conferência), os diálogos de conferência e de saque, e o limite de saldo parado;
-- **Saúde dos dados:** "Saldo parado acima do limite" (padrão R$ 100, configurável), passivo como os outros itens do painel.
+As tabelas `cash_checks` (conferências) e `cash_withdrawals` (saques) guardam o dado primário (D2), e a `cash_settings`, de uma linha só, o limite de saldo parado (padrão R$ 100). Serve N2 e N6.
 
-**Aceite:** numa conferência feita semanas depois da abertura, o saldo derivado bate com o extrato da corretora, com diferença só das taxas da nota.
+- **Vencimento:** o título vale zero do vencimento em diante, e `payouts` em `backend/domain/fixed_income.py` gera o resgate automático com o que sobrou. Movimentação depois do vencimento dá 422, também ao mudar o vencimento para antes de uma movimentação. O título vencido tem o selo "Vencido" na lista.
+- **Resgate pelo líquido:** o resgate (registrado ou o do vencimento) chega ao saldo sem o IOF e o IR de cada aplicação consumida, pela idade dela. Na série, a saída do título segue pelo bruto, e o imposto vira custo no ganho da Evolução.
+- **Série diária:** a linha do saldo mora em `DailySeries.cash`, fora de `lines`. A rentabilidade lê só `lines`, então o saldo fica fora da cota por construção (D5). A Evolução soma o saldo à carteira geral, e a subcarteira não o vê (D12). Os fluxos da linha espelham os dos ativos e títulos, então o aplicado da Evolução, da abertura em diante, é só o dinheiro de fora, e o provento entra no ganho.
+- **Carteira:** o `GET /api/portfolio` devolve `cash` e a categoria `cash` ("Saldo"), no total e no donut, em cinza neutro, fora da paleta das categorias. As seções por categoria pulam o saldo, que aparece no card do patrimônio.
+- **Tela Saldo** (`/cash`): o saldo com a dica, "Abrir o saldo" ou "Conferir com o extrato", "Registrar saque", o limite e o extrato. A conferência e o saque se apagam pela linha deles.
+- **Saúde dos dados:** "Saldo" acima do limite vira item do painel, com o link para a tela.
+
+Decisões tomadas durante:
+- **O resgate chega pelo líquido.** Com o bruto, todo vencimento deixaria o saldo acima do extrato pelo IR, e a conferência registraria o imposto como se fosse um saque.
+- **A abertura vale no fim do dia:** a venda ou o provento da data da abertura já estão no saldo informado.
+- **O saque só vale depois do dia da abertura**, e a conferência não pode ser futura.
+- O `_brazilian` do IRPF subiu para `backend/features/brazilian.py`, porque o painel de saúde também monta texto em reais.
+- O provento passou a invalidar os problemas de dado no front, porque ele move o saldo.
+
+**Verificado** numa cópia do banco migrado, com o dry run da migration: abrir o saldo deixou a rentabilidade desde o início e o ano a ano idênticos, a Carteira subiu exatamente pelo saldo, o total da Evolução ficou igual ao da Carteira, e o saldo acima do limite apareceu no painel. No app de pé, a tela do Saldo e a Carteira foram conferidas nos temas claro e escuro.
+
+**Aceite:** numa conferência feita semanas depois da abertura, o saldo derivado bate com o extrato da corretora, com diferença só das taxas da nota. Fica com o usuário.
 
 ---
 ## 2. Nice-to-have
