@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { ScheduleCard } from "@/features/alert/schedule-card";
 import { useCash } from "@/features/cash/use-cash";
 import { ContributionCard } from "@/features/rebalance/contribution-card";
 import { DeviationTable } from "@/features/rebalance/deviation-table";
@@ -55,6 +56,9 @@ export function RebalancePage() {
           )}
         </>
       )}
+
+      {/* Alerta com o app fechado */}
+      <ScheduleCard />
     </div>
   );
 }

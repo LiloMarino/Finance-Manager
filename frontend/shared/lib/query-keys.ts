@@ -23,6 +23,7 @@ export const queryKeys = {
   dataHealth: ["data-health"] as const,
   sectors: ["sectors"] as const,
   subportfolios: ["subportfolios"] as const,
+  alertSchedule: ["alert", "schedule"] as const,
 };
 
 /** Invalida toda query cuja chave começa por uma das `keys`. */

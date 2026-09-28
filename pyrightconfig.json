@@ -1,7 +1,7 @@
 {
   "typeCheckingMode": "strict",
   "pythonVersion": "3.13",
-  "include": ["backend", "scripts", "tests", "main.py"],
+  "include": ["backend", "scripts", "tests", "main.py", "alert.py"],
   "exclude": ["**/__pycache__", ".venv"],
   "reportMissingTypeStubs": "error",
   "executionEnvironments": [

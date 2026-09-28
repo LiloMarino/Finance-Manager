@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from backend.core.dto import ERROR_RESPONSES
+from backend.features.alert.router import router as alert_router
 from backend.features.assets.router import router as assets_router
 from backend.features.cash.router import router as cash_router
 from backend.features.correlation.router import router as correlation_router
@@ -36,6 +37,7 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(subportfolios_router, responses=ERROR_RESPONSES)
     app.include_router(portfolio_router, responses=ERROR_RESPONSES)
     app.include_router(rebalance_router, responses=ERROR_RESPONSES)
+    app.include_router(alert_router, responses=ERROR_RESPONSES)
     app.include_router(performance_router, responses=ERROR_RESPONSES)
     app.include_router(evolution_router, responses=ERROR_RESPONSES)
     app.include_router(fixed_income_router, responses=ERROR_RESPONSES)

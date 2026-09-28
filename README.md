@@ -39,7 +39,7 @@ backend/
 │   ├── enum/         # enums do domínio
 │   └── models/       # models.py: Base, DecimalText e todas as tabelas
 ├── migrations/       # Alembic: env.py e versions/
-├── adapters/         # fronteira de pandas, yfinance, BCB SGS, openpyxl e pdfplumber (pyright relaxado)
+├── adapters/         # fronteira de pandas, yfinance, BCB SGS, openpyxl, pdfplumber e schtasks (pyright relaxado)
 ├── domain/           # dataclasses e funções puras
 ├── repository/       # acesso a dados compartilhado; devolve dataclass, nunca Row
 └── features/<dominio>/router.py
@@ -58,6 +58,13 @@ migrations pendentes. Antes, cada migration roda numa cópia do banco, e só che
 banco real se nenhuma tabela perder linha ou célula preenchida. Pasta e quantidade de
 snapshots ficam em `[backup]` no `config.toml`. A pasta pode ser a do Google Drive:
 o que se sincroniza é o snapshot, nunca o banco vivo.
+
+## Alerta diário
+
+O `alert.py` roda sem subir o servidor: atualiza as cotações e as séries e abre uma
+janela quando alguma subcarteira passou do limite de rebalanceamento ou quando o saldo
+está parado, que são os mesmos itens de Saúde dos dados. A tela Rebalanceamento agenda
+o script no Agendador de Tarefas do Windows, e o log fica em `logs/alert.log`.
 
 ## Configuração
 
