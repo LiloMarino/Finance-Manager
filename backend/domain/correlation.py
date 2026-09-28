@@ -116,6 +116,33 @@ def correlation_matrix(
     return cells
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CorrelatedPair:
+    first: str
+    second: str
+    value: float
+    returns: int
+
+
+def strongest_pairs(
+    symbols: Sequence[str], cells: Sequence[Sequence[MatrixCell]], limit: int
+) -> list[CorrelatedPair]:
+    """Os `limit` pares de maior correlação, cada par uma vez, do maior para o menor.
+    O par sem valor fica de fora."""
+    pairs = [
+        CorrelatedPair(
+            first=symbols[row],
+            second=symbols[column],
+            value=cell.value,
+            returns=cell.returns,
+        )
+        for row in range(len(symbols))
+        for column in range(row + 1, len(symbols))
+        if (cell := cells[row][column]).value is not None
+    ]
+    return sorted(pairs, key=lambda pair: pair.value, reverse=True)[:limit]
+
+
 def correlate(first: Mapping[date, float], second: Mapping[date, float]) -> Correlation:
     pair = _pair(first, second)
     if len(pair.first_returns) < MIN_RETURNS:

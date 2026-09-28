@@ -6,6 +6,7 @@ import {
   Boxes,
   CalendarRange,
   ChartArea,
+  ChartScatter,
   Crosshair,
   Coins,
   CreditCard,
@@ -54,6 +55,7 @@ const PORTFOLIO_VIEWS = [
   "/evolution",
   "/performance",
   "/monthly-returns",
+  "/risk-correlation",
   "/rebalance",
   "/income",
 ];
@@ -64,6 +66,7 @@ const navItems = [
   { to: "/evolution", label: "Evolução", icon: ChartArea },
   { to: "/performance", label: "Rentabilidade", icon: TrendingUp },
   { to: "/monthly-returns", label: "Ano a ano", icon: CalendarRange },
+  { to: "/risk-correlation", label: "Risco e correlação", icon: ChartScatter },
   { to: "/rebalance", label: "Rebalanceamento", icon: Crosshair },
   { to: "/operations", label: "Operações", icon: ArrowLeftRight },
   { to: "/assets", label: "Ativos", icon: Boxes },

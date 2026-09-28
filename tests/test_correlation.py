@@ -14,18 +14,34 @@ from sqlalchemy.orm import Session
 
 from backend.app import create_app
 from backend.core.database.session import get_session
-from backend.core.enum import CorrelationWindow, IndexSeries
-from backend.core.models.models import FetchLog, IndexHistory, TickerPriceHistory
+from backend.core.enum import (
+    AssetClass,
+    CorrelationWindow,
+    IndexSeries,
+    OperationType,
+    PortfolioCategory,
+)
+from backend.core.models.models import (
+    Asset,
+    FetchLog,
+    IndexHistory,
+    Operation,
+    Subportfolio,
+    TickerPriceHistory,
+)
 from backend.domain.correlation import (
     ROLLING_WINDOW,
     CorrelationError,
+    MatrixCell,
     correlate,
     correlation_matrix,
+    strongest_pairs,
 )
 from backend.domain.market_data import DailyClose
 from backend.features.correlation.service import (
     SourceUnavailableError,
     correlation,
+    portfolio_matrix,
     ticker_closes,
 )
 from backend.features.providers import get_provider
@@ -348,10 +364,10 @@ def test_unknown_ticker_is_not_found(
     assert "ZZZZ3" in response.json()["detail"]
 
 
-def test_matrix_needs_two_to_twelve_symbols(
+def test_matrix_needs_two_to_twenty_symbols(
     correlation_client: tuple[TestClient, FakeProvider],
 ) -> None:
-    """A matriz pede de 2 a 12 itens diferentes: o repetido conta uma vez só."""
+    """A matriz pede de 2 a 20 itens diferentes: o repetido conta uma vez só."""
     client, _ = correlation_client
 
     repeated = client.get(
@@ -360,11 +376,11 @@ def test_matrix_needs_two_to_twelve_symbols(
     )
     too_many = client.get(
         "/api/correlation/matrix",
-        params={"symbols": [f"T{index:03d}3" for index in range(13)], "window": "1y"},
+        params={"symbols": [f"T{index:03d}3" for index in range(21)], "window": "1y"},
     )
 
     assert repeated.status_code == 422
-    assert "de 2 a 12" in repeated.json()["detail"]
+    assert "de 2 a 20" in repeated.json()["detail"]
     assert too_many.status_code == 422
 
 
@@ -414,3 +430,130 @@ def test_correlation_endpoint_returns_both_series(
     assert body["points"][0]["first"] == 100
     assert body["rolling_window"] == ROLLING_WINDOW
     assert len(body["rolling"]) > 0
+
+
+def test_strongest_pairs_come_first_without_the_diagonal() -> None:
+    """Os pares saem do mais correlacionado para o menos, cada um uma vez, sem a
+    diagonal e sem o par que ficou sem valor."""
+
+    def cell(value: float | None) -> MatrixCell:
+        return MatrixCell(value=value, returns=100)
+
+    cells = [
+        [cell(1.0), cell(0.2), cell(0.9)],
+        [cell(0.2), cell(1.0), cell(None)],
+        [cell(0.9), cell(None), cell(1.0)],
+    ]
+
+    pairs = strongest_pairs(["AAAA3", "BBBB3", "CCCC3"], cells, 5)
+
+    assert [(pair.first, pair.second, pair.value) for pair in pairs] == [
+        ("AAAA3", "CCCC3", 0.9),
+        ("AAAA3", "BBBB3", 0.2),
+    ]
+
+
+def _hold(
+    session: Session,
+    ticker: str,
+    asset_class: AssetClass = AssetClass.STOCK,
+    *,
+    sold_out: bool = False,
+    subportfolio: Subportfolio | None = None,
+) -> None:
+    asset = Asset(
+        ticker=ticker,
+        asset_class=asset_class,
+        subportfolio_id=subportfolio.id if subportfolio else None,
+    )
+    session.add(asset)
+    session.flush()
+    trades = (
+        [OperationType.BUY, OperationType.SELL] if sold_out else [OperationType.BUY]
+    )
+    session.add_all(
+        Operation(
+            asset_id=asset.id,
+            operation_date=date(2024, 2, 5) + timedelta(days=offset),
+            operation_type=trade,
+            quantity=Decimal(10),
+            unit_price=Decimal(20),
+        )
+        for offset, trade in enumerate(trades)
+    )
+    session.commit()
+
+
+def test_portfolio_matrix_covers_only_held_assets(session: Session) -> None:
+    """A matriz da carteira tem os ativos com posição hoje, em ordem alfabética: o
+    ativo vendido por inteiro fica de fora, e o sem cotação fica com as células
+    vazias."""
+    provider = _provider("BBBB3", "AAAA11", "CCCC3")
+    _hold(session, "BBBB3")
+    _hold(session, "AAAA11", AssetClass.FII)
+    _hold(session, "CCCC3", sold_out=True)
+    _hold(session, "ZZZZ3")
+
+    result = portfolio_matrix(
+        session,
+        provider,
+        window=CorrelationWindow.ONE_YEAR,
+        category=None,
+        subportfolio_id=None,
+        now=NOW,
+    )
+
+    assert result.matrix.symbols == ["AAAA11", "BBBB3", "ZZZZ3"]
+    assert result.missing == ["ZZZZ3"]
+    assert result.matrix.cells[1][2].value is None
+    assert [(pair.first, pair.second) for pair in result.pairs] == [("AAAA11", "BBBB3")]
+
+
+def test_portfolio_matrix_follows_category_and_subportfolio(session: Session) -> None:
+    """A categoria e a subcarteira recortam os ativos, e a renda fixa, sem cotação
+    diária, deixa a matriz vazia."""
+    provider = _provider("AAAA3", "BBBB3", "CCCC11", "DDDD3")
+    growth = Subportfolio(name="Crescimento")
+    session.add(growth)
+    session.flush()
+    _hold(session, "AAAA3", subportfolio=growth)
+    _hold(session, "BBBB3", subportfolio=growth)
+    _hold(session, "CCCC11", AssetClass.FII, subportfolio=growth)
+    _hold(session, "DDDD3")
+
+    def symbols(
+        category: PortfolioCategory | None, subportfolio_id: int | None
+    ) -> list[str]:
+        return portfolio_matrix(
+            session,
+            provider,
+            window=CorrelationWindow.ONE_YEAR,
+            category=category,
+            subportfolio_id=subportfolio_id,
+            now=NOW,
+        ).matrix.symbols
+
+    assert symbols(None, growth.id) == ["AAAA3", "BBBB3", "CCCC11"]
+    assert symbols(PortfolioCategory.STOCK, growth.id) == ["AAAA3", "BBBB3"]
+    assert symbols(PortfolioCategory.STOCK, None) == ["AAAA3", "BBBB3", "DDDD3"]
+    assert symbols(PortfolioCategory.FIXED_INCOME, None) == []
+
+
+def test_portfolio_endpoint_returns_matrix_and_pairs(
+    correlation_client: tuple[TestClient, FakeProvider],
+    session: Session,
+) -> None:
+    """A API devolve a matriz da carteira com os pares, na janela de 1 ano por
+    padrão."""
+    client, provider = correlation_client
+    provider.closes["EFGH3"] = provider.closes["ABCD11"]
+    _hold(session, "ABCD11", AssetClass.FII)
+    _hold(session, "EFGH3")
+
+    response = client.get("/api/correlation/portfolio")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["matrix"]["symbols"] == ["ABCD11", "EFGH3"]
+    assert body["pairs"][0]["value"] == pytest.approx(1)
+    assert body["missing"] == []

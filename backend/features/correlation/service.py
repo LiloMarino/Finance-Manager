@@ -18,20 +18,24 @@ from threading import Lock
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import CorrelationWindow, IndexSeries
+from backend.core.enum import CorrelationWindow, IndexSeries, PortfolioCategory
 from backend.core.errors import FinanceError
-from backend.core.models.models import FetchLog, TickerPriceHistory
+from backend.core.models.models import Asset, FetchLog, TickerPriceHistory
 from backend.domain.correlation import (
+    CorrelatedPair,
     Correlation,
     CorrelationError,
     MatrixCell,
     correlate,
     correlation_matrix,
+    strongest_pairs,
 )
 from backend.domain.coverage import CachedRange, price_gaps, price_request
 from backend.domain.market_data import DailyClose, MarketDataProvider
-from backend.domain.position import HoldingWindow
+from backend.domain.position import HoldingWindow, current_positions
 from backend.repository.market import business_calendar, index_rates, last_fetch
+from backend.repository.operations import operation_records
+from backend.repository.subportfolios import members
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +51,8 @@ WINDOW_MONTHS = {
 # letras e um número
 BENCHMARKS = {"IBOV": IndexSeries.IBOV, "CDI": IndexSeries.CDI}
 MIN_SYMBOLS = 2
-MAX_SYMBOLS = 12
+MAX_SYMBOLS = 20
+STRONGEST_PAIRS = 5
 
 
 class TickerNotFoundError(FinanceError):
@@ -69,6 +74,16 @@ class PairCorrelation:
 class SymbolMatrix:
     symbols: list[str]
     cells: list[list[MatrixCell]]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class PortfolioMatrix:
+    """`missing` são os ativos sem nenhuma cotação na janela: ficam na matriz, com
+    as células vazias."""
+
+    matrix: SymbolMatrix
+    pairs: list[CorrelatedPair]
+    missing: list[str]
 
 
 def normalize_symbol(text: str) -> str:
@@ -256,3 +271,41 @@ def matrix(
     start = window_start(now.date(), window)
     series = [symbol_closes(session, provider, symbol, start, now) for symbol in unique]
     return SymbolMatrix(symbols=unique, cells=correlation_matrix(series))
+
+
+def portfolio_matrix(
+    session: Session,
+    provider: MarketDataProvider,
+    *,
+    window: CorrelationWindow,
+    category: PortfolioCategory | None,
+    subportfolio_id: int | None,
+    now: datetime,
+) -> PortfolioMatrix:
+    """A matriz dos ativos em carteira hoje, da carteira geral ou de uma
+    subcarteira. A renda fixa não tem cotação diária e fica de fora."""
+    scope = members(session, subportfolio_id)
+    positions = current_positions(operation_records(session))
+    tickers = [
+        asset.ticker
+        for asset in session.scalars(select(Asset).order_by(Asset.ticker))
+        if (scope is None or asset.id in scope.asset_ids)
+        and (category is None or PortfolioCategory(asset.asset_class) is category)
+        and (position := positions.get(asset.ticker)) is not None
+        and position.quantity != 0
+    ]
+    start = window_start(now.date(), window)
+    series: list[dict[date, float]] = []
+    missing: list[str] = []
+    for ticker in tickers:
+        try:
+            series.append(ticker_closes(session, provider, ticker, start, now))
+        except (TickerNotFoundError, SourceUnavailableError):
+            series.append({})
+            missing.append(ticker)
+    cells = correlation_matrix(series)
+    return PortfolioMatrix(
+        matrix=SymbolMatrix(symbols=tickers, cells=cells),
+        pairs=strongest_pairs(tickers, cells, STRONGEST_PAIRS),
+        missing=missing,
+    )

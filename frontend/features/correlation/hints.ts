@@ -22,3 +22,9 @@ export function describeCorrelation(value: number): string {
 
 export const matrixHint =
   "Cada célula é a correlação entre o ativo da linha e o da coluna, a mesma dos dois lados da diagonal. Verde forte é perto de +1 (andam juntos), neutro é perto de 0 (sem relação) e vermelho forte é perto de −1 (sentidos opostos). Clique numa célula para ver o par embaixo.";
+
+export const portfolioMatrixHint =
+  "A correlação entre os ativos que a carteira tem hoje, pelos retornos diários da janela escolhida. Verde forte é perto de +1 (andam juntos), neutro é perto de 0 (sem relação) e vermelho forte é perto de −1 (sentidos opostos). A renda fixa fica de fora: não tem cotação diária. Clique numa célula para abrir o par na ferramenta Correlação.";
+
+export const strongestPairsHint =
+  "Os pares da matriz que mais andam juntos. Acima de uns 0,7, os dois se sobrepõem na carteira: quando um cai, o outro costuma cair junto, e ter os dois quase não diversifica.";

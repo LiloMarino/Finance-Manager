@@ -7,9 +7,14 @@ from fastapi import APIRouter, Query
 
 from backend.core.database.session import SessionDep
 from backend.core.dto import BaseDTO
-from backend.core.enum import CorrelationWindow
+from backend.core.enum import CorrelationWindow, PortfolioCategory
 from backend.domain.correlation import ROLLING_WINDOW
-from backend.features.correlation.service import correlation, matrix
+from backend.features.correlation.service import (
+    SymbolMatrix,
+    correlation,
+    matrix,
+    portfolio_matrix,
+)
 from backend.features.providers import ProviderDep
 
 router = APIRouter(prefix="/api/correlation", tags=["correlation"])
@@ -58,6 +63,32 @@ class CorrelationMatrixDTO(BaseDTO):
     cells: list[list[MatrixCellDTO]]
 
 
+class CorrelatedPairDTO(BaseDTO):
+    first: str
+    second: str
+    value: float
+    returns: int
+
+
+class PortfolioCorrelationDTO(BaseDTO):
+    """A matriz dos ativos em carteira hoje, em ordem alfabética, e os pares de
+    maior correlação, do maior para o menor. `missing` são os ativos sem cotação
+    na janela, com as células vazias."""
+
+    matrix: CorrelationMatrixDTO
+    pairs: list[CorrelatedPairDTO]
+    missing: list[str]
+
+
+def _matrix_dto(result: SymbolMatrix) -> CorrelationMatrixDTO:
+    return CorrelationMatrixDTO(
+        symbols=result.symbols,
+        cells=[
+            [MatrixCellDTO.model_validate(cell) for cell in row] for row in result.cells
+        ],
+    )
+
+
 @router.get("/pair")
 def pair(
     session: SessionDep,
@@ -92,13 +123,30 @@ def correlation_matrix(
     symbols: Annotated[list[str], Query()],
     window: CorrelationWindow,
 ) -> CorrelationMatrixDTO:
-    """A correlação de cada par entre 2 e 12 tickers ou referências."""
-    result = matrix(
-        session, provider, symbols=symbols, window=window, now=datetime.now()
+    """A correlação de cada par entre 2 e 20 tickers ou referências."""
+    return _matrix_dto(
+        matrix(session, provider, symbols=symbols, window=window, now=datetime.now())
     )
-    return CorrelationMatrixDTO(
-        symbols=result.symbols,
-        cells=[
-            [MatrixCellDTO.model_validate(cell) for cell in row] for row in result.cells
-        ],
+
+
+@router.get("/portfolio")
+def portfolio_correlation(
+    session: SessionDep,
+    provider: ProviderDep,
+    window: CorrelationWindow = CorrelationWindow.ONE_YEAR,
+    category: PortfolioCategory | None = None,
+    subportfolio_id: int | None = None,
+) -> PortfolioCorrelationDTO:
+    result = portfolio_matrix(
+        session,
+        provider,
+        window=window,
+        category=category,
+        subportfolio_id=subportfolio_id,
+        now=datetime.now(),
+    )
+    return PortfolioCorrelationDTO(
+        matrix=_matrix_dto(result.matrix),
+        pairs=[CorrelatedPairDTO.model_validate(pair) for pair in result.pairs],
+        missing=result.missing,
     )

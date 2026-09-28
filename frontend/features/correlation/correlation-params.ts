@@ -3,7 +3,7 @@ import type { components } from "@/types/openapi.generated";
 export type CorrelationWindow = components["schemas"]["CorrelationWindow"];
 export type Benchmark = "IBOV" | "CDI";
 
-export const MAX_SYMBOLS = 12;
+export const MAX_SYMBOLS = 20;
 
 export const windowLabels: Record<CorrelationWindow, string> = {
   "6m": "6 meses",

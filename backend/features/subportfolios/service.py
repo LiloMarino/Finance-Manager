@@ -87,9 +87,7 @@ def delete_subportfolio(session: Session, subportfolio_id: int) -> None:
     session.commit()
 
 
-def set_members(
-    session: Session, subportfolio_id: int, payload: MembersInDTO
-) -> None:
+def set_members(session: Session, subportfolio_id: int, payload: MembersInDTO) -> None:
     subportfolio(session, subportfolio_id)
     asset_ids = set(payload.asset_ids)
     investment_ids = set(payload.investment_ids)

@@ -935,9 +935,26 @@ export interface paths {
         };
         /**
          * Correlation Matrix
-         * @description A correlação de cada par entre 2 e 12 tickers ou referências.
+         * @description A correlação de cada par entre 2 e 20 tickers ou referências.
          */
         get: operations["correlation_matrix_api_correlation_matrix_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/correlation/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Portfolio Correlation */
+        get: operations["portfolio_correlation_api_correlation_portfolio_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1376,6 +1393,17 @@ export interface components {
             net_annual_return: DecimalString | null;
             /** Cdi Equivalent */
             cdi_equivalent: DecimalString | null;
+        };
+        /** CorrelatedPairDTO */
+        CorrelatedPairDTO: {
+            /** First */
+            first: string;
+            /** Second */
+            second: string;
+            /** Value */
+            value: number;
+            /** Returns */
+            returns: number;
         };
         /**
          * CorrelationDTO
@@ -2885,6 +2913,19 @@ export interface components {
          * @enum {string}
          */
         PortfolioCategory: "stock" | "fii" | "etf" | "bdr" | "fixed_income" | "cash";
+        /**
+         * PortfolioCorrelationDTO
+         * @description A matriz dos ativos em carteira hoje, em ordem alfabética, e os pares de
+         *     maior correlação, do maior para o menor. `missing` são os ativos sem cotação
+         *     na janela, com as células vazias.
+         */
+        PortfolioCorrelationDTO: {
+            matrix: components["schemas"]["CorrelationMatrixDTO"];
+            /** Pairs */
+            pairs: components["schemas"]["CorrelatedPairDTO"][];
+            /** Missing */
+            missing: string[];
+        };
         /**
          * PortfolioDTO
          * @description Frações (`share`, `unrealized_return`, `day_return`) vão de 0 a 1. A de setor
@@ -6209,6 +6250,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CorrelationMatrixDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    portfolio_correlation_api_correlation_portfolio_get: {
+        parameters: {
+            query?: {
+                window?: components["schemas"]["CorrelationWindow"];
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                subportfolio_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioCorrelationDTO"];
                 };
             };
             /** @description Unprocessable Content */

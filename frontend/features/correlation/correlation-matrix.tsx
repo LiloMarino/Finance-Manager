@@ -11,6 +11,8 @@ const correlationFormatter = new Intl.NumberFormat("pt-BR", {
 
 // A cor mais forte não chega a 100%: o número da célula continua legível
 const MAX_INTENSITY = 80;
+// Acima disso, a grade fica densa: célula e texto menores
+const COMPACT_FROM = 13;
 
 /** O fundo da célula: verde para +1, vermelho para −1, e o fundo do card no 0. */
 function cellColor(value: number): string {
@@ -40,15 +42,16 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
     ((symbols[row] === selected[0] && symbols[column] === selected[1]) ||
       (symbols[row] === selected[1] && symbols[column] === selected[0]));
   const hoveredCell = hovered && cells[hovered.row]?.[hovered.column];
+  const compact = symbols.length >= COMPACT_FROM;
 
   return (
     <div className="flex flex-col gap-4">
       {/* Grade da matriz */}
       <div className="overflow-x-auto">
         <div
-          className="grid gap-1 text-xs"
+          className={cn("grid", compact ? "gap-0.5 text-[0.625rem]" : "gap-1 text-xs")}
           style={{
-            gridTemplateColumns: `auto repeat(${symbols.length}, minmax(3.25rem, 1fr))`,
+            gridTemplateColumns: `auto repeat(${symbols.length}, minmax(${compact ? "2.5rem" : "3.25rem"}, 1fr))`,
           }}
           onMouseLeave={() => setHovered(null)}
         >
