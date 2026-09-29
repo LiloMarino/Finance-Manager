@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-28):** O M6 fechou: saldo de investimento, liquidez, rebalanceamento e o alerta diário com o app fechado; os aceites de uso (aporte guiado, agendamento) ficam com o usuário.
+> **Última mudança (2026-09-29):** O M7 fechou: risco × retorno e correlação da carteira na tela "Risco e correlação"; a escada de títulos foi descartada.
 
 ## Glossário
 
@@ -24,15 +24,13 @@
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32, F54 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
-| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F53 | — |
-| **F26** | Risco × retorno | — | 💤 |
+| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
 | **F33** | Custo da bonificação | — | 💤 |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
-| **F39** | Correlação da carteira | — | ⏳ |
 | **F43** | Sidebar | — | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
@@ -40,10 +38,9 @@
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ⏳ |
 | **F51** | Máscaras nos campos | — | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
-| **F53** | Simulador: escada de títulos | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (49 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (52 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -83,18 +80,21 @@
 | **F23** | Paridade funcional com o IR-Helper | — | ✅ |
 | **F24** | Rebalanceamento | — | ✅ |
 | **F25** | Subcarteiras | — | ✅ |
+| **F26** | Risco × retorno | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
 | **F28** | Alerta de rebalanceamento com o app fechado | — | ✅ |
 | **F32** | Liquidez em três camadas | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
 | **F38** | Desempenho e distribuição dos proventos | — | ✅ |
+| **F39** | Correlação da carteira | — | ✅ |
 | **F40** | Troca de ticker como renomeação | — | ✅ |
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
 | **F47** | Comparador de renda fixa | — | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ |
+| **F53** | Simulador: escada de títulos | — | 🚫 |
 | **F54** | Saldo de investimento | — | ✅ |
 
 </details>
@@ -110,7 +110,6 @@
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
-| **F39** | Correlação da carteira | M7 | 0 | ⏳ |
 | **F43** | Sidebar | M9 | 0 | ⏳ |
 | **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
 | **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
@@ -118,7 +117,6 @@
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | 0 | ⏳ |
 | **F51** | Máscaras nos campos | M9 | 0 | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
-| **F53** | Simulador: escada de títulos | M7 | 0 | ⏳ |
 
 ---
 
@@ -277,19 +275,19 @@
 >
 > **Serve:** N8, N9
 >
-> **Progresso:** 3/6 concluídas
+> **Progresso:** 5/5 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F26** | Risco × retorno | F10, F15 | 💤 |
-| **F39** | Correlação da carteira | F27 | ⏳ |
-| **F53** | Simulador: escada de títulos | F49 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (3 itens)</summary>
+<details><summary>Concluído (5 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
+| **F26** | Risco × retorno | F10, F15 | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | F10 | ✅ |
+| **F39** | Correlação da carteira | F27 | ✅ |
 | **F47** | Comparador de renda fixa | F46 | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | F47 | ✅ |
 
@@ -373,7 +371,7 @@
 | **F22** | Relatório anual do IRPF | N5 | — | M5 | F21 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F23** | Paridade funcional com o IR-Helper | N5 | D8 | M5 | F21, F22 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F24** | Rebalanceamento | N6 | D12 | M6 | F11, F25, F32, F54 | Médio | Baixo | Alto | Bom | ✅ Concluído |
-| **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | 💤 Registrado, sem prioridade |
+| **F26** | Risco × retorno | N8 | D4 | M7 | F10, F15 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 | **F27** | Ferramenta de correlação entre ativos | N9 | — | M7 | F10 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F33** | Custo da bonificação | N3, N5 | — | M5 | F21 | Baixo | Médio | Médio | Bom | 💤 Registrado, sem prioridade |
 | **F34** | Taxas da nota no resultado | N3, N5 | — | M5 | F21 | Médio | Médio | Médio | Médio | 💤 Registrado, sem prioridade |
@@ -383,7 +381,7 @@
 | **F38** | Desempenho e distribuição dos proventos | N4 | — | M4 | F20 | Médio | Baixo | Alto | Bom | ✅ Concluído |
 | **F28** | Alerta de rebalanceamento com o app fechado | N6 | — | M6 | F24, F54 | Baixo | Médio | Médio | Bom | ✅ Concluído |
 | **F32** | Liquidez em três camadas | N2, N6 | — | M6 | F11, F12, F54 | Médio | Baixo | Médio | Bom | ✅ Concluído |
-| **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F39** | Correlação da carteira | N8 | — | M7 | F27 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 | **F25** | Subcarteiras | N7 | D12, D13 | M6 | F15 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ✅ Concluído |
@@ -398,7 +396,6 @@
 | **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
-| **F53** | Simulador: escada de títulos | N9 | — | M7 | F49 | Médio | Baixo | Médio | Bom | ⏳ Pendente |
 | **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ✅ Concluído |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
@@ -646,15 +643,19 @@ Decisões tomadas durante:
 
 **Aceite:** o usuário faz um aporte inteiro guiado pela sugestão, sem abrir a planilha. Fica com o usuário.
 
-**F26 — Risco × retorno.** Gráfico de dispersão com um ponto por ativo e um para a carteira. Serve N8.
+**F26 — Risco × retorno.** Gráfico de dispersão com um ponto por ativo e por título, e um para a carteira, na tela "Risco e correlação". Serve N8. `GET /api/risk-return` com a categoria, a subcarteira e o período, como a Rentabilidade.
 
-Plano:
-- eixo x, o **risco**: a volatilidade anualizada, que mede o quanto o preço oscila de um dia para o outro, escalado para um ano (desvio-padrão dos retornos diários × √252, o número de pregões num ano). Volatilidade de 25% quer dizer, grosso modo, que em dois de cada três anos o retorno fica a até 25 pontos da média do ativo, para cima ou para baixo. Renda fixa pós-fixada fica perto de 0%; ação individual costuma ficar entre 20% e 40%;
-- eixo y, o **retorno**: a rentabilidade no período escolhido;
-- tamanho do ponto pelo valor na carteira, cor pela categoria;
-- tabela ao lado com retorno, risco e valor de cada ativo, e uma chave para tirar o ativo do gráfico, já que um ponto extremo achata os outros;
-- o ponto da carteira usa a cota da F15, e a volatilidade da carteira aparece como número no topo, com a mesma explicação;
-- cálculo em float no Python sobre `price_history` (D4).
+- **Eixo x, o risco:** a volatilidade anualizada, o quanto o valor oscila de um dia para o outro, escalado para um ano (desvio-padrão dos retornos diários × √252, o número de pregões num ano). Volatilidade de 25% quer dizer, grosso modo, que em dois de cada três anos o retorno fica a até 25 pontos da média, para cima ou para baixo. Renda fixa pós-fixada fica perto de 0%; ação individual costuma ficar entre 20% e 40%. Nula com menos de 20 retornos, o mesmo mínimo da correlação. Em float (D4), em `backend/domain/risk.py`.
+- **Eixo y, o retorno:** a variação da cota no período. O item comprado no meio do período conta desde a compra.
+- **Pontos:** tamanho pelo valor no fim do período, cor pela categoria, e a carteira como losango. Entram os itens com valor no fim do período; a carteira conta também o que foi vendido no meio dele.
+- **Tabela embaixo:** retorno, risco, valor e pregões de cada item, com uma caixa "no gráfico" para tirar um ponto extremo que achata os outros. A volatilidade e o retorno da carteira aparecem no topo, com a explicação.
+
+Decisões tomadas durante:
+- **Risco e retorno saem da cota de cada linha da série diária, e não do `price_history`:** o retorno de cada dia é o fator da cota daquele dia. Assim o provento entra, o título de renda fixa ganha ponto, e a carteira sai da mesma conta da Rentabilidade. O dia sem posição fica fora da conta, em vez de contar como retorno zero.
+- **A tela é conjunta com a correlação da carteira:** "Risco e correlação", entre as visões da carteira, com o seletor de subcarteira do topo e um filtro de categoria que vale para as duas seções.
+- O período e os pontos escondidos ficam em estado local, como o período da Rentabilidade.
+
+**Verificado** numa cópia do banco migrado: o retorno da carteira é idêntico ao da Rentabilidade em 12 meses e desde o início; o título aplicado há poucos dias fica sem volatilidade, e a caixa da tabela tira o ponto e reescala o gráfico. Conferido nos temas claro e escuro, com o tooltip.
 
 **F27 — Ferramenta de correlação entre ativos.** Para avaliar um ativo novo: escolhem-se tickers quaisquer, na carteira ou não, e o IBOV ou o CDI, e o app mostra o quanto eles andam juntos. Serve N9. A tela Correlação tem os tickers, as referências e a janela (6 meses, 1, 3 ou 5 anos), tudo na URL.
 
@@ -780,13 +781,20 @@ Decisões tomadas durante:
 
 **Verificado** numa cópia do banco migrado: as camadas somam o total da Carteira, as frações somam 1, e a escada troca entre mês e ano pela URL e sobrevive ao recarregar, nos temas claro e escuro.
 
-**F39 — Correlação da carteira.** A correlação entre os ativos que a carteira tem, sem precisar escolher cada um. Serve N8.
+**F39 — Correlação da carteira.** A correlação entre os ativos que a carteira tem hoje, sem escolher cada um, na tela "Risco e correlação". Serve N8. `GET /api/correlation/portfolio` com a janela (1 ano por padrão), a categoria e a subcarteira.
 
-Plano:
-- a matriz da F27, preenchida com os ativos da carteira: o mesmo cálculo e o mesmo componente, com janela de 12 meses por padrão. O componente sobe de `features/correlation` para o ancestral comum quando a segunda tela passar a usá-lo;
-- os pares mais correlacionados em destaque: são os ativos que se sobrepõem na carteira;
-- filtro de categoria, e o de carteira quando a F25 existir;
-- a matriz passa de 12 itens com a carteira inteira: o limite da F27 é revisto aqui, junto com o tamanho da célula.
+- **A matriz da F27** com os ativos em carteira, em ordem alfabética: o mesmo cálculo, o mesmo cache por ticker e o mesmo componente.
+- **Pares mais correlacionados:** os cinco maiores, com a leitura em palavras e os pregões. São os ativos que se sobrepõem na carteira.
+- Clicar numa célula ou num par abre a ferramenta Correlação com o par aberto.
+- A renda fixa fica de fora: não tem cotação diária. Com "Renda fixa" no filtro, a tela diz isso.
+
+Decisões tomadas durante:
+- **A matriz fica em `features/correlation`:** a segunda tela usa o componente de dentro da mesma feature, e nada precisou subir.
+- **A matriz da carteira não tem teto; a da ferramenta passou de 12 para 20 itens.** Acima de 12, a célula e o texto ficam menores; a coluna tem no máximo 6rem, e a matriz não se estica na tela larga.
+- **O ativo sem cotação na fonte fica na matriz, com as células vazias e o nome listado embaixo,** em vez de derrubar a matriz inteira com o 404 da ferramenta.
+- A janela fica em estado local.
+
+**Verificado** numa cópia do banco migrado: a matriz traz os ativos em carteira, nenhum sem cotação, e o filtro de categoria muda as duas seções. Conferido nos temas claro e escuro.
 
 **F25 — Subcarteiras.** Grupos nomeados de ativos e títulos, como pastas: a carteira geral tem tudo, e cada subcarteira tem só o que é dela, com cada ativo e cada título em no máximo uma (D12). Serve N7.
 
@@ -970,15 +978,6 @@ Achados:
 
 **Decisão:** a fonte da F20 é a B3 pelos dois relatórios, com o cadastro manual para o que faltar. O de movimentação é o preferido: já alimenta os eventos, é um arquivo só para tudo e traz o valor por unidade em 3 casas.
 
-**F53 — Simulador: escada de títulos.** O parcelado do simulador supõe um investimento de liquidez diária. A escada troca ele por títulos sem liquidez, um por parcela, vencendo antes de cada fatura. Serve N9.
-
-Plano:
-- um degrau por parcela, que começa com o investimento base e tem tipo, indexador e taxa editáveis. Cada degrau compra hoje o bruto que, no vencimento, deixa a parcela líquida do IR do próprio prazo;
-- a sobra (o valor menos o custo dos degraus) fica no investimento base até a última parcela, e se compara com o à vista no mesmo dia;
-- carência numa tabela fixa, pela Resolução CMN 5.118/2024: LCI 12 meses e LCA 9 meses; os outros produtos, sem carência. O degrau que vence antes da carência do produto é recusado com o motivo.
-
-Com a mesma taxa em todos os degraus, a escada empata com a liquidez diária: cada real resgatado paga o IR da idade da aplicação nos dois casos. Ela só muda o resultado quando o degrau mais longo rende mais, como um CDB de prazo maior.
-
 **F54 — Saldo de investimento.** O dinheiro de investimento que espera ser reinvestido. `backend/domain/cash.py` deriva o extrato (`ledger`) a partir da primeira conferência com o extrato:
 - entram o valor da venda, o líquido do provento e o resgate de renda fixa;
 - saem a compra, a aplicação e o saque;
@@ -1027,8 +1026,11 @@ Plano:
 | ID | Resumo | N# | Status |
 | --- | --- | --- | --- |
 | **F13** | Caixa e reserva | N2 | 🚫 Descartado |
+| **F53** | Simulador: escada de títulos | N9 | 🚫 Descartado |
 
 **F13 — Descartado.** 🚫 A reserva e o saldo da conta pessoal ficam fora: o app cobre só o financeiro de investimentos, separado dos gastos pessoais. O dinheiro de investimento que espera ser reinvestido (venda, provento, vencimento) é a F54; o tamanho do aporte sai das operações (F17); e a liquidez virou o card F32. A classe de ativo `cash` saiu do schema: o saldo não é um ativo.
+
+**F53 — Descartado.** 🚫 Pouco realista: não existe título vencendo exatamente antes de cada fatura, e a escada mês a mês é um limite teórico. O redesenho realista, com poucos títulos cadastrados (por exemplo 6, 12 e 18 meses num 24x) e o resto em liquidez diária, tem ganho marginal: o caso que muda o resultado é uma LCA ou LCI isenta, com carência, contra a liquidez tributada, e o Comparador de RF (F47) já responde isso aproximado para um prazo só. Com a mesma taxa, a escada empata com a liquidez diária (F49).
 
 ---
 ## 4. Incerta / exploratória
