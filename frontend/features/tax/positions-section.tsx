@@ -57,7 +57,7 @@ export function PositionsSection({ title, positions }: PositionsSectionProps) {
                     </TableCell>
                   </TableRow>
                   {group.items.map((position) => (
-                    <TableRow key={position.asset_id}>
+                    <TableRow key={position.asset_id} to={`/assets/${position.asset_id}`}>
                       <TableCell className="font-medium">
                         <Link to={`/assets/${position.asset_id}`} className="hover:underline">
                           {position.ticker}

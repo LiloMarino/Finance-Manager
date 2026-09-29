@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { cn } from "cn"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
@@ -49,14 +50,48 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+// O clique que nasce num controle da linha é dele, não da navegação da linha
+const INTERACTIVE = "a, button, input, select, textarea, label, [role=menuitem]"
+
+function TableRow({
+  className,
+  to,
+  onClick,
+  ...props
+}: React.ComponentProps<"tr"> & {
+  /** Destino do detalhe: a linha inteira leva a ele. O link do nome continua
+  existindo para o teclado e para abrir em outra aba. */
+  to?: string
+}) {
+  const navigate = useNavigate()
+
+  const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+    onClick?.(event)
+    // O evento do React atravessa portais: o clique num dialog aberto pela linha
+    // chega aqui sem estar dentro dela no DOM
+    const target = event.target
+    if (
+      to === undefined ||
+      event.defaultPrevented ||
+      !(target instanceof Element) ||
+      !event.currentTarget.contains(target) ||
+      target.closest(INTERACTIVE)
+    ) {
+      return
+    }
+    if (event.ctrlKey || event.metaKey) window.open(to, "_blank")
+    else void navigate(to)
+  }
+
   return (
     <tr
       data-slot="table-row"
       className={cn(
         "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        to !== undefined && "cursor-pointer",
         className
       )}
+      onClick={to === undefined ? onClick : handleClick}
       {...props}
     />
   )

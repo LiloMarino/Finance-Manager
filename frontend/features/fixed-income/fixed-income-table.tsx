@@ -35,7 +35,7 @@ export function FixedIncomeTable({ investments }: { investments: FixedIncome[] }
       </TableHeader>
       <TableBody>
         {investments.map((investment) => (
-          <TableRow key={investment.id}>
+          <TableRow key={investment.id} to={`/fixed-income/${investment.id}`}>
             <TableCell className="font-medium">
               <Link to={`/fixed-income/${investment.id}`} className="hover:underline">
                 {investment.label}

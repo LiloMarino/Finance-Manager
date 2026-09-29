@@ -34,7 +34,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
       </TableHeader>
       <TableBody>
         {assets.map((asset) => (
-          <TableRow key={asset.id}>
+          <TableRow key={asset.id} to={`/assets/${asset.id}`}>
             <TableCell className="font-medium">
               <Link to={`/assets/${asset.id}`} className="hover:underline">
                 {asset.ticker}

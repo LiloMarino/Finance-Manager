@@ -16,7 +16,6 @@ import { Link } from "react-router-dom";
 import { dayChangeHint, totalChangeHint } from "@/features/portfolio/hints";
 import { SortableHeader } from "@/features/portfolio/sortable-header";
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
-import { MetricHint } from "@/shared/components/metric-hint";
 import {
   type PortfolioCategory,
   portfolioCategoryLabels,
@@ -141,8 +140,8 @@ const positionColumns = positionHelper.columns([
     id: "day_change",
     ...numeric,
     header: ({ column }) => (
-      <SortableHeader column={column}>
-        <MetricHint hint={dayChangeHint}>Variação do dia</MetricHint>
+      <SortableHeader column={column} hint={dayChangeHint}>
+        Variação do dia
       </SortableHeader>
     ),
     cell: ({ row }) => <Change value={row.original.day_change} ratio={row.original.day_return} />,
@@ -151,8 +150,8 @@ const positionColumns = positionHelper.columns([
     id: "total_change",
     ...numeric,
     header: ({ column }) => (
-      <SortableHeader column={column}>
-        <MetricHint hint={totalChangeHint}>Variação total</MetricHint>
+      <SortableHeader column={column} hint={totalChangeHint}>
+        Variação total
       </SortableHeader>
     ),
     cell: ({ row }) => (
@@ -211,8 +210,8 @@ const holdingColumns = holdingHelper.columns([
     id: "day_change",
     ...numeric,
     header: ({ column }) => (
-      <SortableHeader column={column}>
-        <MetricHint hint={dayChangeHint}>Variação do dia</MetricHint>
+      <SortableHeader column={column} hint={dayChangeHint}>
+        Variação do dia
       </SortableHeader>
     ),
     cell: ({ row }) => <Change value={row.original.day_change} ratio={row.original.day_return} />,
@@ -221,8 +220,8 @@ const holdingColumns = holdingHelper.columns([
     id: "total_change",
     ...numeric,
     header: ({ column }) => (
-      <SortableHeader column={column}>
-        <MetricHint hint={totalChangeHint}>Variação total</MetricHint>
+      <SortableHeader column={column} hint={totalChangeHint}>
+        Variação total
       </SortableHeader>
     ),
     cell: ({ row }) => (
@@ -237,11 +236,14 @@ const holdingColumns = holdingHelper.columns([
   }),
 ]);
 
-// A primeira coluna é o nome; as outras são números, alinhados à direita
+// A primeira coluna é o nome; as outras são números, alinhados à direita. A linha
+// inteira leva ao detalhe do item.
 function SortedTable<TData extends RowData>({
   table,
+  rowLink,
 }: {
   table: ReactTable<typeof features, TData>;
+  rowLink: (item: TData) => string;
 }) {
   return (
     <Table>
@@ -258,7 +260,7 @@ function SortedTable<TData extends RowData>({
       </TableHeader>
       <TableBody>
         {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow key={row.id} to={rowLink(row.original)}>
             {row.getAllCells().map((cell, index) => (
               <TableCell
                 key={cell.id}
@@ -289,7 +291,7 @@ function PositionsSection({ data, sorting, onSortingChange }: SortedSectionProps
     onSortingChange: (updater) =>
       onSortingChange(typeof updater === "function" ? updater(sorting) : updater),
   });
-  return <SortedTable table={table} />;
+  return <SortedTable table={table} rowLink={(item) => `/assets/${item.asset_id}`} />;
 }
 
 function HoldingsSection({ data, sorting, onSortingChange }: SortedSectionProps<Holding>) {
@@ -301,7 +303,9 @@ function HoldingsSection({ data, sorting, onSortingChange }: SortedSectionProps<
     onSortingChange: (updater) =>
       onSortingChange(typeof updater === "function" ? updater(sorting) : updater),
   });
-  return <SortedTable table={table} />;
+  return (
+    <SortedTable table={table} rowLink={(item) => `/fixed-income/${item.investment_id}`} />
+  );
 }
 
 function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {
