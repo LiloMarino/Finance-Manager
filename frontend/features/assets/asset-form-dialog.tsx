@@ -8,6 +8,7 @@ import { useSaveAsset } from "@/features/assets/use-asset-mutations";
 import type { Asset } from "@/shared/hooks/use-assets";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
 import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
+import { TickerSearch } from "@/shared/components/ticker-search";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -87,7 +88,13 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
       <FieldGroup>
         <Field data-invalid={Boolean(errors.ticker)}>
           <FieldLabel htmlFor="asset-ticker">Ticker</FieldLabel>
-          <Input id="asset-ticker" {...form.register("ticker")} />
+          <Controller
+            control={form.control}
+            name="ticker"
+            render={({ field }) => (
+              <TickerSearch id="asset-ticker" value={field.value} onChange={field.onChange} />
+            )}
+          />
           <FieldError errors={[errors.ticker]} />
         </Field>
         <Field>

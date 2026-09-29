@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Replace } from "lucide-react";
 import { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { useChangeTicker } from "@/features/assets/use-asset-mutations";
+import { TickerSearch } from "@/shared/components/ticker-search";
 import { type Asset, useAssets } from "@/shared/hooks/use-assets";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -88,7 +89,13 @@ function TickerChangeForm({ asset, onSaved }: TickerChangeFormProps) {
       <FieldGroup>
         <Field data-invalid={Boolean(errors.ticker)}>
           <FieldLabel htmlFor="ticker-change-ticker">Ticker novo</FieldLabel>
-          <Input id="ticker-change-ticker" {...form.register("ticker")} />
+          <Controller
+            control={form.control}
+            name="ticker"
+            render={({ field }) => (
+              <TickerSearch id="ticker-change-ticker" value={field.value} onChange={field.onChange} />
+            )}
+          />
           {existing && (
             <FieldDescription>
               {existing.ticker} já é um ativo: os dois viram um só, com as operações de{" "}

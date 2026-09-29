@@ -94,6 +94,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/market/tickers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description Os tickers da B3 que a busca do yfinance associa ao texto, para sugerir
+         *     enquanto se digita. Menos de 2 caracteres devolve a lista vazia sem consultar a
+         *     fonte, e a fonte fora do ar dá 503.
+         */
+        get: operations["search_api_market_tickers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/operations": {
         parameters: {
             query?: never;
@@ -3404,6 +3426,13 @@ export interface components {
              */
             effective_date: string;
         };
+        /** TickerMatchDTO */
+        TickerMatchDTO: {
+            /** Ticker */
+            ticker: string;
+            /** Name */
+            name: string;
+        };
         /**
          * TradeType
          * @description Operação comum (a posição atravessa o dia) ou day trade.
@@ -3640,6 +3669,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefreshReportDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_market_tickers_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TickerMatchDTO"][];
                 };
             };
             /** @description Unprocessable Content */

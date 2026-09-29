@@ -7,6 +7,7 @@ import pandas as pd
 import yfinance as yf
 
 from backend.domain.market_data import DailyClose, to_cents
+from backend.domain.ticker_search import QuoteHit, TickerSearchUnavailableError
 
 
 class YFinanceProvider:
@@ -34,6 +35,28 @@ class YFinanceProvider:
         if not isinstance(index, pd.DatetimeIndex):
             raise TypeError(f"yfinance devolveu índice sem data para {ticker}")
         return to_daily_closes(zip(index, close.to_list(), strict=True))
+
+
+class YFinanceTickerSearch:
+    def search(self, query: str) -> list[QuoteHit]:
+        # A busca é a da caixa do site do Yahoo, de todas as bolsas; o filtro da B3
+        # é do domínio
+        try:
+            quotes = yf.Search(
+                query, max_results=20, news_count=0, lists_count=0
+            ).quotes
+        except Exception as error:
+            raise TickerSearchUnavailableError(
+                "A busca de tickers do yfinance não respondeu."
+            ) from error
+        return [
+            QuoteHit(
+                symbol=str(quote.get("symbol", "")),
+                exchange=str(quote.get("exchange", "")),
+                name=str(quote.get("shortname") or quote.get("longname") or ""),
+            )
+            for quote in quotes
+        ]
 
 
 def to_daily_closes(rows: Iterable[tuple[datetime, float]]) -> list[DailyClose]:
