@@ -21,6 +21,7 @@ from backend.core.models.models import (
     FixedIncomeMovement,
     IncomeEvent,
     Operation,
+    PriceHistory,
     Subportfolio,
 )
 from backend.domain.cash import CashCheck, CashEvent, ledger
@@ -280,6 +281,25 @@ def test_evolution_counts_only_outside_money_after_opening(
     assert Decimal(evolution["total"]) == Decimal(
         api.get("/api/portfolio").json()["total"]
     )
+
+
+def test_cash_stays_out_of_the_portfolio_result(
+    api: TestClient, session: Session
+) -> None:
+    """O saldo entra no total, mas não no resultado não realizado nem na base do
+    percentual dele."""
+    asset = _held(session)
+    session.add(
+        PriceHistory(asset_id=asset.id, price_date=date.today(), close=Decimal(120))
+    )
+    session.commit()
+    _open(api, "500")
+
+    portfolio = api.get("/api/portfolio").json()
+
+    assert Decimal(portfolio["total"]) == Decimal(1700)
+    assert Decimal(portfolio["unrealized_result"]) == Decimal(200)
+    assert Decimal(portfolio["unrealized_return"]) == Decimal("0.2")
 
 
 def test_performance_ignores_the_cash(api: TestClient, session: Session) -> None:

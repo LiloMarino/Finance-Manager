@@ -12,6 +12,7 @@ import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
 import { type PeriodChoice, periodRange } from "@/shared/lib/period";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
+import { signClass } from "@/shared/lib/sign";
 import { formatSignedPercent } from "@/types/decimal";
 
 interface RiskReturnPanelProps {
@@ -59,6 +60,7 @@ export function RiskReturnPanel({ category, subportfolioId }: RiskReturnPanelPro
               label="Retorno da carteira"
               hint={periodReturnHint}
               value={formatSignedPercent(data.portfolio.period_return)}
+              tone={signClass(data.portfolio.period_return)}
             />
             <Metric
               label="Período"

@@ -19,6 +19,7 @@ import {
   portfolioCategoryConfig,
   portfolioCategoryLabels,
 } from "@/shared/lib/portfolio-category";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatSignedPercent, toChartNumber } from "@/types/decimal";
 
 interface RiskReturnTableProps {
@@ -64,7 +65,9 @@ export function RiskReturnTable({ riskReturn, hidden, onToggle }: RiskReturnTabl
             </TableCell>
             <TableCell>Carteira</TableCell>
             <TableCell />
-            <TableCell className="text-right tabular-nums">
+            <TableCell
+              className={`text-right tabular-nums ${signClass(riskReturn.portfolio.period_return)}`}
+            >
               {formatSignedPercent(riskReturn.portfolio.period_return)}
             </TableCell>
             <TableCell className="text-right tabular-nums">
@@ -100,7 +103,9 @@ export function RiskReturnTable({ riskReturn, hidden, onToggle }: RiskReturnTabl
                   {portfolioCategoryLabels[item.category]}
                 </span>
               </TableCell>
-              <TableCell className="text-right tabular-nums">
+              <TableCell
+                className={`text-right tabular-nums ${signClass(item.risk.period_return)}`}
+              >
                 {formatSignedPercent(item.risk.period_return)}
               </TableCell>
               <TableCell className="text-right tabular-nums">

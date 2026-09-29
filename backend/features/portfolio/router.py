@@ -115,10 +115,13 @@ class PortfolioDTO(BaseDTO):
     pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
     a marcação de hoje contra a do dia útil anterior.
 
-    `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura."""
+    `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura. O
+    resultado não realizado é o das categorias investidas, sem o saldo."""
 
     total: DecimalStr
     cash: DecimalStr | None
+    unrealized_result: DecimalStr
+    unrealized_return: DecimalStr | None
     day_change: DecimalStr | None
     day_return: DecimalStr | None
     price_date: date | None

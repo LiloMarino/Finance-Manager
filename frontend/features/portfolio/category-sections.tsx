@@ -16,10 +16,12 @@ import { Link } from "react-router-dom";
 import { dayChangeHint, totalChangeHint } from "@/features/portfolio/hints";
 import { SortableHeader } from "@/features/portfolio/sortable-header";
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
+import { CategoryDot } from "@/shared/components/category-dot";
 import {
-  type PortfolioCategory,
+  portfolioCategoryConfig,
   portfolioCategoryLabels,
 } from "@/shared/lib/portfolio-category";
+import { signClass } from "@/shared/lib/sign";
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +29,7 @@ import {
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
 import { Badge } from "@/shared/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
 import {
   Table,
@@ -64,20 +67,17 @@ function sortKey(value: DecimalString | null): number | undefined {
 
 const numeric = { sortFn: "basic", sortUndefined: "last", sortDescFirst: true } as const;
 
-/** Valor com sinal e, embaixo, o percentual; "—" quando não há valor. */
+/** Valor com sinal e, embaixo, o percentual, na cor de alta ou baixa; "—" quando
+não há valor. */
 function Change({ value, ratio }: { value: DecimalString | null; ratio: DecimalString | null }) {
   if (value === null) {
     return <span className="text-muted-foreground">—</span>;
   }
   return (
-    <>
+    <span className={signClass(value)}>
       {formatSignedBRL(value)}
-      {ratio && (
-        <span className="text-muted-foreground block text-xs">
-          {formatSignedPercent(ratio)}
-        </span>
-      )}
-    </>
+      {ratio && <span className="block text-xs">{formatSignedPercent(ratio)}</span>}
+    </span>
   );
 }
 
@@ -115,7 +115,7 @@ const positionColumns = positionHelper.columns([
         <>
           {formatBRL(row.original.price)}
           {row.original.unrealized_return && (
-            <span className="text-muted-foreground block text-xs">
+            <span className={`block text-xs ${signClass(row.original.unrealized_return)}`}>
               {formatSignedPercent(row.original.unrealized_return)} sobre o PM
             </span>
           )}
@@ -191,7 +191,7 @@ const holdingColumns = holdingHelper.columns([
     sortFn: "alphanumeric",
     header: ({ column }) => <SortableHeader column={column}>Tipo</SortableHeader>,
     cell: ({ row }) => (
-      <Badge variant="secondary">{fixedIncomeTypeLabels[row.original.product_type]}</Badge>
+      <Badge variant="fixed_income">{fixedIncomeTypeLabels[row.original.product_type]}</Badge>
     ),
   }),
   holdingHelper.accessor((row) => sortKey(row.invested), {
@@ -314,10 +314,15 @@ function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {
 
   return (
     <div className="grid flex-1 grid-cols-2 items-center gap-x-6 gap-y-2 pr-4 sm:grid-cols-5">
-      <span>
-        <span className="text-base font-semibold">{portfolioCategoryLabels[allocation.category]}</span>
-        <span className="text-muted-foreground block text-xs font-normal">
-          {count} {count === 1 ? noun : `${noun}s`}
+      <span className="flex items-center gap-2">
+        <CategoryDot category={allocation.category} />
+        <span>
+          <span className="text-base font-semibold">
+            {portfolioCategoryLabels[allocation.category]}
+          </span>
+          <span className="text-muted-foreground block text-xs font-normal">
+            {count} {count === 1 ? noun : `${noun}s`}
+          </span>
         </span>
       </span>
       <span className="text-right tabular-nums">
@@ -336,22 +341,25 @@ function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {
         <span className="text-right text-xs font-normal tabular-nums">
           {formatPercent(allocation.share)} da carteira
         </span>
-        <Progress value={toChartNumber(allocation.share) * 100} />
+        <Progress
+          value={toChartNumber(allocation.share) * 100}
+          color={portfolioCategoryConfig[allocation.category].color}
+        />
       </span>
     </div>
   );
 }
 
-/** Uma seção recolhível por categoria, com as posições dela. As seções de renda
-variável ordenam juntas; a de renda fixa tem colunas e ordenação próprias. O saldo
-não tem posições e fica no card do patrimônio. */
+/** Uma seção recolhível por categoria, com as posições dela. As seções começam
+fechadas: o cabeçalho já traz o resumo. As de renda variável ordenam juntas; a de
+renda fixa tem colunas e ordenação próprias. O saldo não tem posições e fica no
+indicador do patrimônio. */
 export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
   const [equitySorting, setEquitySorting] = useState<SortingState>([]);
   const [holdingSorting, setHoldingSorting] = useState<SortingState>([]);
   const allocations = portfolio.categories.filter((item) => item.category !== "cash");
-  const categories: PortfolioCategory[] = allocations.map((item) => item.category);
 
-  if (categories.length === 0) {
+  if (allocations.length === 0) {
     return (
       <p className="text-muted-foreground">
         Nenhuma posição aberta. Registre ou importe operações para começar.
@@ -360,31 +368,38 @@ export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
   }
 
   return (
-    <Accordion type="multiple" defaultValue={categories}>
-      {allocations.map((allocation) => (
-        <AccordionItem key={allocation.category} value={allocation.category}>
-          <AccordionTrigger className="items-center hover:no-underline">
-            <CategoryHeader allocation={allocation} />
-          </AccordionTrigger>
-          <AccordionContent>
-            {allocation.category === "fixed_income" ? (
-              <HoldingsSection
-                data={portfolio.fixed_income}
-                sorting={holdingSorting}
-                onSortingChange={setHoldingSorting}
-              />
-            ) : (
-              <PositionsSection
-                data={portfolio.positions.filter(
-                  (position) => position.asset_class === allocation.category,
+    <Card>
+      <CardHeader>
+        <CardTitle>Posições</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="multiple">
+          {allocations.map((allocation) => (
+            <AccordionItem key={allocation.category} value={allocation.category}>
+              <AccordionTrigger className="items-center hover:no-underline">
+                <CategoryHeader allocation={allocation} />
+              </AccordionTrigger>
+              <AccordionContent>
+                {allocation.category === "fixed_income" ? (
+                  <HoldingsSection
+                    data={portfolio.fixed_income}
+                    sorting={holdingSorting}
+                    onSortingChange={setHoldingSorting}
+                  />
+                ) : (
+                  <PositionsSection
+                    data={portfolio.positions.filter(
+                      (position) => position.asset_class === allocation.category,
+                    )}
+                    sorting={equitySorting}
+                    onSortingChange={setEquitySorting}
+                  />
                 )}
-                sorting={equitySorting}
-                onSortingChange={setEquitySorting}
-              />
-            )}
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </CardContent>
+    </Card>
   );
 }

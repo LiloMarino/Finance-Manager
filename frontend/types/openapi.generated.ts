@@ -2952,7 +2952,8 @@ export interface components {
          *     pregão mais recente do cache, com o de `previous_price_date`; a da renda fixa é
          *     a marcação de hoje contra a do dia útil anterior.
          *
-         *     `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura.
+         *     `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura. O
+         *     resultado não realizado é o das categorias investidas, sem o saldo.
          */
         PortfolioDTO: {
             /**
@@ -2962,6 +2963,13 @@ export interface components {
             total: DecimalString;
             /** Cash */
             cash: DecimalString | null;
+            /**
+             * Unrealized Result
+             * Format: decimal
+             */
+            unrealized_result: DecimalString;
+            /** Unrealized Return */
+            unrealized_return: DecimalString | null;
             /** Day Change */
             day_change: DecimalString | null;
             /** Day Return */

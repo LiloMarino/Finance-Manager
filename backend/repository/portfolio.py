@@ -131,10 +131,15 @@ class Portfolio:
     marcação de hoje contra a do dia útil anterior.
 
     `cash` é o saldo de investimento de hoje, só na carteira geral e depois da
-    abertura dele; ele entra no total e na categoria própria."""
+    abertura dele; ele entra no total e na categoria própria.
+
+    O resultado não realizado é o das categorias investidas, sobre o custo delas:
+    o saldo não tem resultado e fica fora da base."""
 
     total: Decimal
     cash: Decimal | None
+    unrealized_result: Decimal
+    unrealized_return: Decimal | None
     day_change: Decimal | None
     day_return: Decimal | None
     price_date: date | None
@@ -414,6 +419,13 @@ def portfolio(
     if cash:
         by_category[PortfolioCategory.CASH].add(cash, cash, None)
     total = sum((totals.value for totals in by_category.values()), ZERO)
+    invested = [
+        totals
+        for category, totals in by_category.items()
+        if category is not PortfolioCategory.CASH
+    ]
+    cost = sum((totals.cost for totals in invested), ZERO)
+    result = sum((totals.value for totals in invested), ZERO) - cost
     changed = [
         totals for totals in by_category.values() if totals.day_change is not None
     ]
@@ -427,6 +439,8 @@ def portfolio(
     return Portfolio(
         total=total,
         cash=cash,
+        unrealized_result=result,
+        unrealized_return=result / cost if cost else None,
         day_change=day_change,
         day_return=(
             None

@@ -7,6 +7,7 @@ import {
   tradeTypeLabels,
 } from "@/features/tax/labels";
 import type { MonthlyTax } from "@/features/tax/use-tax";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
@@ -17,12 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { assetClassLabels } from "@/shared/lib/labels";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatPercent, formatSignedBRL, isZero } from "@/types/decimal";
 
 export function DarfCard({ month }: { month: MonthlyTax }) {
   const summary = [
-    { label: "Resultado bruto", value: formatSignedBRL(month.gross_result) },
+    {
+      label: "Resultado bruto",
+      value: formatSignedBRL(month.gross_result),
+      tone: signClass(month.gross_result),
+    },
     { label: "Lucro tributável", value: formatBRL(month.taxable) },
     { label: "Imposto do mês", value: formatBRL(month.tax) },
     { label: "DARF", value: month.darf_amount ? formatBRL(month.darf_amount) : "—" },
@@ -43,10 +48,10 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
         <p className="text-sm">{describeStatus(month)}</p>
 
         <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-          {summary.map(({ label, value }) => (
+          {summary.map(({ label, value, tone }) => (
             <div key={label}>
               <dt className="text-muted-foreground">{label}</dt>
-              <dd className="tabular-nums">{value}</dd>
+              <dd className={`tabular-nums ${tone ?? ""}`}>{value}</dd>
             </div>
           ))}
         </dl>
@@ -73,13 +78,15 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
               {month.categories.map((category) => (
                 <TableRow key={`${category.asset_class}-${category.trade_type}`}>
                   <TableCell>
-                    {assetClassLabels[category.asset_class]} ·{" "}
-                    {tradeTypeLabels[category.trade_type]}
+                    <span className="inline-flex items-center gap-2">
+                      <AssetClassBadge assetClass={category.asset_class} />
+                      {tradeTypeLabels[category.trade_type]}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatBRL(category.sales)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className={`text-right tabular-nums ${signClass(category.result)}`}>
                     {formatSignedBRL(category.result)}
                   </TableCell>
                   <TableCell>{category.exempt ? "Sim" : "Não"}</TableCell>

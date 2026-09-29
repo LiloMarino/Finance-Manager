@@ -6,10 +6,14 @@ import {
 } from "@/features/performance/hints";
 import type { Performance } from "@/features/performance/use-performance";
 import { Metric } from "@/shared/components/metric";
+import { signClass } from "@/shared/lib/sign";
 import { type DecimalString, formatPercent, formatSignedPercent } from "@/types/decimal";
 
-function signed(value: DecimalString | null): string | null {
-  return value === null ? null : formatSignedPercent(value);
+// O valor com sinal e a cor de alta ou baixa; nulo vira "—"
+function signed(value: DecimalString | null): { value: string | null; tone: string } {
+  return value === null
+    ? { value: null, tone: "" }
+    : { value: formatSignedPercent(value), tone: signClass(value) };
 }
 
 export function PerformanceSummary({ performance }: { performance: Performance }) {
@@ -18,24 +22,24 @@ export function PerformanceSummary({ performance }: { performance: Performance }
       <Metric
         label="Desde o início"
         hint={quotaHint}
-        value={signed(performance.since_inception)}
+        {...signed(performance.since_inception)}
       />
-      <Metric label="No período" hint={periodHint} value={signed(performance.period)} />
+      <Metric label="No período" hint={periodHint} {...signed(performance.period)} />
       <Metric
         label="% do CDI no período"
         hint={cdiShareHint}
         value={performance.cdi_share === null ? null : formatPercent(performance.cdi_share)}
       />
-      <Metric label="6 meses" hint={recentHint(6)} value={signed(performance.last_6_months)} />
+      <Metric label="6 meses" hint={recentHint(6)} {...signed(performance.last_6_months)} />
       <Metric
         label="12 meses"
         hint={recentHint(12)}
-        value={signed(performance.last_12_months)}
+        {...signed(performance.last_12_months)}
       />
       <Metric
         label="24 meses"
         hint={recentHint(24)}
-        value={signed(performance.last_24_months)}
+        {...signed(performance.last_24_months)}
       />
     </div>
   );

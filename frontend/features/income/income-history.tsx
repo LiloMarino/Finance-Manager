@@ -10,6 +10,7 @@ import {
   type IncomeFilters,
   useIncome,
 } from "@/features/income/use-income";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import { AssetSelect } from "@/shared/components/asset-select";
 import { CategorySelect } from "@/shared/components/category-select";
 import { MetricHint } from "@/shared/components/metric-hint";
@@ -34,7 +35,7 @@ import {
 } from "@/shared/components/ui/table";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
-import { assetClassLabels, incomeTypeLabels, isIncomeType } from "@/shared/lib/labels";
+import { incomeTypeLabels, isIncomeType } from "@/shared/lib/labels";
 import { formatBRL, formatQuantity } from "@/types/decimal";
 
 // O Select do Radix reserva o valor vazio para "nada escolhido"
@@ -136,7 +137,9 @@ function IncomeTable({ events }: { events: IncomeEvent[] }) {
         {events.map((event) => (
           <TableRow key={event.id}>
             <TableCell className="tabular-nums">{formatDate(event.payment_date)}</TableCell>
-            <TableCell>{assetClassLabels[event.asset_class]}</TableCell>
+            <TableCell>
+              <AssetClassBadge assetClass={event.asset_class} />
+            </TableCell>
             <TableCell className="font-medium">
               <Link to={`/assets/${event.asset_id}`} className="hover:underline">
                 {event.ticker}

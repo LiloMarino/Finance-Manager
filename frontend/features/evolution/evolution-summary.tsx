@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { portfolioCategoryConfig } from "@/shared/lib/portfolio-category";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatSignedBRL, formatSignedPercent } from "@/types/decimal";
 
 function GrowthMetric({
@@ -24,11 +25,13 @@ function GrowthMetric({
       <MetricHint hint={growthHint(months)}>
         <span className="text-muted-foreground text-sm">{months} meses</span>
       </MetricHint>
-      <span className="text-xl font-semibold tabular-nums">
+      <span
+        className={`text-xl font-semibold tabular-nums ${growth ? signClass(growth.change) : ""}`}
+      >
         {growth ? formatSignedBRL(growth.change) : "—"}
       </span>
       {growth?.growth_return && (
-        <span className="text-muted-foreground text-sm tabular-nums">
+        <span className={`text-sm tabular-nums ${signClass(growth.growth_return)}`}>
           {formatSignedPercent(growth.growth_return)}
         </span>
       )}

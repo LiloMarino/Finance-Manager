@@ -18,6 +18,12 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Uma por categoria, na cor da fatia dela no gráfico
+        stock: "border-chart-1/50 bg-chart-1/15 text-foreground",
+        fii: "border-chart-2/50 bg-chart-2/15 text-foreground",
+        etf: "border-chart-3/50 bg-chart-3/15 text-foreground",
+        bdr: "border-chart-4/50 bg-chart-4/15 text-foreground",
+        fixed_income: "border-chart-5/50 bg-chart-5/15 text-foreground",
       },
     },
     defaultVariants: {

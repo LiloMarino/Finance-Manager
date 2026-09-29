@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { AssetFormDialog } from "@/features/assets/asset-form-dialog";
 import { DeleteAssetDialog } from "@/features/assets/delete-asset-dialog";
-import { Badge } from "@/shared/components/ui/badge";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,
@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import type { Asset } from "@/shared/hooks/use-assets";
-import { assetClassLabels } from "@/shared/lib/labels";
 
 export function AssetsTable({ assets }: { assets: Asset[] }) {
   if (assets.length === 0) {
@@ -41,7 +40,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
               </Link>
             </TableCell>
             <TableCell>
-              <Badge variant="secondary">{assetClassLabels[asset.asset_class]}</Badge>
+              <AssetClassBadge assetClass={asset.asset_class} />
             </TableCell>
             <TableCell>{asset.cnpj ?? "—"}</TableCell>
             <TableCell>

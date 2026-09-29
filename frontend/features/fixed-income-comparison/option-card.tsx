@@ -23,6 +23,7 @@ import {
 } from "@/shared/components/ui/card";
 import { formatDate } from "@/shared/lib/format";
 import { describeRate, fixedIncomeTypeLabels } from "@/shared/lib/labels";
+import { signClass } from "@/shared/lib/sign";
 import {
   formatBRL,
   formatPercent,
@@ -89,6 +90,7 @@ export function OptionCard({ option, result, best, onSave, onRemove }: OptionCar
               label="Ganho líquido"
               hint={netValueHint}
               value={formatSignedBRL(result.net_gain)}
+              tone={signClass(result.net_gain)}
             />
             <Metric
               label="Líquido ao ano"

@@ -7,14 +7,14 @@ import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
 import { PerformancePanel } from "@/features/performance/performance-panel";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
-import { Badge } from "@/shared/components/ui/badge";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useAsset } from "@/shared/hooks/use-assets";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
-import { assetClassLabels } from "@/shared/lib/labels";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatQuantity, formatSignedBRL } from "@/types/decimal";
 
 export function AssetDetailPage() {
@@ -39,7 +39,7 @@ export function AssetDetailPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold">{asset.data.ticker}</h1>
-            <Badge variant="secondary">{assetClassLabels[asset.data.asset_class]}</Badge>
+            <AssetClassBadge assetClass={asset.data.asset_class} />
             <span className="text-muted-foreground text-sm">
               {asset.data.sector
                 ? `${asset.data.sector} / ${asset.data.segment}`
@@ -102,7 +102,9 @@ export function AssetDetailPage() {
               </div>
               <div>
                 <dt className="text-muted-foreground">Resultado</dt>
-                <dd className="tabular-nums">{formatSignedBRL(position.unrealized_result)}</dd>
+                <dd className={`tabular-nums ${signClass(position.unrealized_result)}`}>
+                  {formatSignedBRL(position.unrealized_result)}
+                </dd>
               </div>
             </dl>
           ) : (

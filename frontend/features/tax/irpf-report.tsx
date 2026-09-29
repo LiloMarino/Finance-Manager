@@ -21,6 +21,7 @@ import {
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
 import { incomeTypeLabels } from "@/shared/lib/labels";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatSignedBRL } from "@/types/decimal";
 
 type IncomeItem = IrpfReportData["income"][number];
@@ -189,13 +190,13 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
               {report.variable_income.map((item) => (
                 <TableRow key={item.month}>
                   <TableCell>{formatMonth(year, item.month)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className={`text-right tabular-nums ${signClass(item.common)}`}>
                     {formatSignedBRL(item.common)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className={`text-right tabular-nums ${signClass(item.day_trade)}`}>
                     {formatSignedBRL(item.day_trade)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className={`text-right tabular-nums ${signClass(item.fii)}`}>
                     {formatSignedBRL(item.fii)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{formatBRL(item.tax)}</TableCell>

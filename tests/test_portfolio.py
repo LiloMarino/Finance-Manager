@@ -101,6 +101,35 @@ def test_total_adds_market_value_and_fixed_income(
     assert Decimal(body["fixed_income"][0]["share"]) == Decimal("0.35")
 
 
+def test_portfolio_result_adds_the_categories(
+    api: TestClient, session: Session
+) -> None:
+    """O resultado não realizado da carteira soma o das categorias, e o percentual é
+    sobre o custo somado delas."""
+    _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")
+    _asset(session, "ABCD11", AssetClass.FII, "10", "100", close="90")
+    _fixed_income(session, "700")
+
+    body = api.get("/api/portfolio").json()
+
+    assert Decimal(body["unrealized_result"]) == Decimal(0)
+    assert Decimal(body["unrealized_return"]) == Decimal(0)
+
+
+def test_portfolio_result_over_the_total_cost(
+    api: TestClient, session: Session
+) -> None:
+    """Com ganho em uma categoria e perda em outra, o percentual da carteira é o
+    resultado líquido sobre o custo de tudo."""
+    _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="40")
+    _asset(session, "ABCD11", AssetClass.FII, "10", "100", close="95")
+
+    body = api.get("/api/portfolio").json()
+
+    assert Decimal(body["unrealized_result"]) == Decimal(150)
+    assert Decimal(body["unrealized_return"]) == Decimal("0.125")
+
+
 def test_position_carries_unrealized_result(api: TestClient, session: Session) -> None:
     """A posição traz preço, valor a mercado e lucro não realizado sobre o custo."""
     _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")

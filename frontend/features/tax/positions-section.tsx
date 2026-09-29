@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { Link } from "react-router-dom";
 
 import type { PeriodReport } from "@/features/tax/use-tax";
+import { CategoryDot } from "@/shared/components/category-dot";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   Table,
@@ -53,7 +54,10 @@ export function PositionsSection({ title, positions }: PositionsSectionProps) {
                       colSpan={4}
                       className="bg-muted/40 text-muted-foreground text-xs font-semibold uppercase"
                     >
-                      {assetClassLabels[group.assetClass]}
+                      <span className="inline-flex items-center gap-2">
+                        <CategoryDot category={group.assetClass} />
+                        {assetClassLabels[group.assetClass]}
+                      </span>
                     </TableCell>
                   </TableRow>
                   {group.items.map((position) => (

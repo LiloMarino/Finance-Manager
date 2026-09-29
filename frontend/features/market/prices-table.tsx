@@ -1,4 +1,4 @@
-import { Badge } from "@/shared/components/ui/badge";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import {
   Table,
   TableBody,
@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
-import { assetClassLabels } from "@/shared/lib/labels";
 import { formatBRL } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
@@ -42,9 +41,7 @@ export function PricesTable({ prices }: PricesTableProps) {
           <TableRow key={price.asset_id}>
             <TableCell className="font-medium">{price.ticker}</TableCell>
             <TableCell>
-              <Badge variant="secondary">
-                {assetClassLabels[price.asset_class]}
-              </Badge>
+              <AssetClassBadge assetClass={price.asset_class} />
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {price.close ? formatBRL(price.close) : "—"}

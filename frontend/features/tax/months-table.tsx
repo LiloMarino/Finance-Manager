@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
+import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatSignedBRL } from "@/types/decimal";
 
 interface MonthsTableProps {
@@ -54,7 +55,7 @@ export function MonthsTable({ months, onSelect }: MonthsTableProps) {
                 formatMonth(month.year, month.month)
               )}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
+            <TableCell className={`text-right tabular-nums ${signClass(month.gross_result)}`}>
               {formatSignedBRL(month.gross_result)}
             </TableCell>
             <TableCell className="text-right tabular-nums">

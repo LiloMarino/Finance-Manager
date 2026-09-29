@@ -7,8 +7,13 @@ import { Progress as ProgressPrimitive } from "radix-ui"
 function Progress({
   className,
   value,
+  color,
+  style,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+}: React.ComponentProps<typeof ProgressPrimitive.Root> & {
+  /** Cor do indicador, como valor CSS; sem ela, a primária. */
+  color?: string
+}) {
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -16,11 +21,12 @@ function Progress({
         "relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted",
         className
       )}
+      style={{ ...style, ...(color && { "--progress-color": color }) }}
       {...props}
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="size-full flex-1 bg-primary transition-all"
+        className="size-full flex-1 bg-[var(--progress-color,var(--primary))] transition-all"
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />
     </ProgressPrimitive.Root>
