@@ -1,22 +1,11 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { formatMonth } from "@/features/tax/labels";
+import { MonthPicker, YearPicker } from "@/features/tax/month-picker";
+import type { Period } from "@/features/tax/tax-params";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-
-const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
-
-export interface Period {
-  year: number;
-  month: number;
-}
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
 
 interface PeriodNavigatorProps {
   years: number[];
@@ -34,7 +23,10 @@ function shift({ year, month }: Period, step: number, byMonth: boolean): Period 
   return { year: Math.floor(index / 12), month: (index % 12) + 1 };
 }
 
+/** ‹ período › : as setas andam um mês (ou um ano), e o botão do meio abre a grade
+para escolher. */
 export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigatorProps) {
+  const [open, setOpen] = useState(false);
   const byMonth = month !== undefined;
   const current = { year, month: month ?? 1 };
   const previous = shift(current, -1, byMonth);
@@ -43,12 +35,12 @@ export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigato
   const hasNext = next.year <= (years.at(-1) ?? year);
 
   // ← e → navegam pelo período, exceto quando o foco está num controle que já usa
-  // as setas: campo de texto, abas e select
+  // as setas: campo de texto, abas, select e a grade aberta
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         event.target instanceof HTMLElement &&
-        event.target.closest("input, textarea, [role=tablist], [role=combobox]")
+        event.target.closest("input, textarea, [role=tablist], [role=combobox], [role=dialog]")
       ) {
         return;
       }
@@ -59,8 +51,13 @@ export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigato
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [hasPrevious, hasNext, previous, next, onChange]);
 
+  const choose = (period: Period) => {
+    onChange(period);
+    setOpen(false);
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2">
       <Button
         variant="ghost"
         size="icon"
@@ -70,38 +67,20 @@ export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigato
       >
         <ChevronLeft />
       </Button>
-      {byMonth && (
-        <Select
-          value={String(month)}
-          onValueChange={(value) => onChange({ year, month: Number(value) })}
-        >
-          <SelectTrigger className="w-40" aria-label="Mês">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTHS.map((item) => (
-              <SelectItem key={item} value={String(item)}>
-                {formatMonth(year, item).split(" ")[0]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-      <Select
-        value={String(year)}
-        onValueChange={(value) => onChange({ year: Number(value), month: current.month })}
-      >
-        <SelectTrigger className="w-28" aria-label="Ano">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {years.map((item) => (
-            <SelectItem key={item} value={String(item)}>
-              {item}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="min-w-48" aria-label="Escolher o período">
+            {byMonth ? formatMonth(year, current.month) : year}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2">
+          {byMonth ? (
+            <MonthPicker value={current} years={years} onSelect={choose} />
+          ) : (
+            <YearPicker value={current} years={years} onSelect={choose} />
+          )}
+        </PopoverContent>
+      </Popover>
       <Button
         variant="ghost"
         size="icon"

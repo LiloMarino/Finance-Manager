@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
@@ -7,8 +7,14 @@ import { IrpfReport } from "@/features/tax/irpf-report";
 import { formatMonth } from "@/features/tax/labels";
 import { LossesSection } from "@/features/tax/losses-section";
 import { MonthsTable } from "@/features/tax/months-table";
-import { type Period, PeriodNavigator } from "@/features/tax/period-navigator";
+import { PeriodNavigator } from "@/features/tax/period-navigator";
 import { PositionsSection } from "@/features/tax/positions-section";
+import {
+  type TaxParams,
+  isTaxTab,
+  readTaxParams,
+  writeTaxParams,
+} from "@/features/tax/tax-params";
 import {
   type MonthlyTax,
   useIrpfReport,
@@ -52,26 +58,33 @@ function isoDate(year: number, month: number, day: number): string {
   return new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
 }
 
+/** A aba e o período moram na URL: as setas, a grade e o voltar do navegador
+andam pelo histórico, e um link abre a mesma tela. */
 function TaxTabs({ months }: { months: MonthlyTax[] }) {
   const today = new Date();
-  const [tab, setTab] = useState("monthly");
-  const [period, setPeriod] = useState<Period>({
-    year: today.getFullYear(),
-    month: today.getMonth() + 1,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const current = readTaxParams(searchParams, today);
+  const { tab, year, month } = current;
+
+  const go = (next: Partial<TaxParams>) =>
+    setSearchParams((params) => writeTaxParams(params, { ...current, ...next }));
 
   // Anos navegáveis: da primeira apuração até o ano corrente
   const firstYear = months[0]?.year ?? today.getFullYear();
   const lastYear = Math.max(today.getFullYear(), months.at(-1)?.year ?? firstYear);
   const years = Array.from({ length: lastYear - firstYear + 1 }, (_, i) => firstYear + i);
 
-  const openMonth = (month: MonthlyTax) => {
-    setPeriod({ year: month.year, month: month.month });
-    setTab("monthly");
-  };
+  const openMonth = (item: MonthlyTax) =>
+    go({ tab: "monthly", year: item.year, month: item.month });
 
   return (
-    <Tabs value={tab} onValueChange={setTab} className="gap-6">
+    <Tabs
+      value={tab}
+      onValueChange={(value) => {
+        if (isTaxTab(value)) go({ tab: value });
+      }}
+      className="gap-6"
+    >
       <TabsList>
         <TabsTrigger value="monthly">Mensal</TabsTrigger>
         <TabsTrigger value="yearly">Anual</TabsTrigger>
@@ -80,22 +93,13 @@ function TaxTabs({ months }: { months: MonthlyTax[] }) {
       </TabsList>
 
       <TabsContent value="monthly" className="flex flex-col gap-6">
-        <PeriodNavigator
-          years={years}
-          year={period.year}
-          month={period.month}
-          onChange={setPeriod}
-        />
-        <PeriodView year={period.year} month={period.month} />
+        <PeriodNavigator years={years} year={year} month={month} onChange={go} />
+        <PeriodView year={year} month={month} />
       </TabsContent>
 
       <TabsContent value="yearly" className="flex flex-col gap-6">
-        <PeriodNavigator
-          years={years}
-          year={period.year}
-          onChange={({ year }) => setPeriod({ ...period, year })}
-        />
-        <PeriodView year={period.year} onSelectMonth={openMonth} />
+        <PeriodNavigator years={years} year={year} onChange={(next) => go({ year: next.year })} />
+        <PeriodView year={year} onSelectMonth={openMonth} />
       </TabsContent>
 
       <TabsContent value="all">
@@ -103,12 +107,8 @@ function TaxTabs({ months }: { months: MonthlyTax[] }) {
       </TabsContent>
 
       <TabsContent value="irpf" className="flex flex-col gap-6">
-        <PeriodNavigator
-          years={years}
-          year={period.year}
-          onChange={({ year }) => setPeriod({ ...period, year })}
-        />
-        <IrpfView year={period.year} />
+        <PeriodNavigator years={years} year={year} onChange={(next) => go({ year: next.year })} />
+        <IrpfView year={year} />
       </TabsContent>
     </Tabs>
   );
