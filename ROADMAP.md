@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-29):** O M7 fechou: risco × retorno e correlação da carteira na tela "Risco e correlação"; a escada de títulos foi descartada.
+> **Última mudança (2026-09-29):** Conforto de uso: Carteira reorganizada com cor por categoria e por sinal, seletor de ativo e filtros de operações na URL, mês do Fiscal na URL, linha clicável e máscaras nos campos; entrou e fechou a sugestão de ticker pela busca do yfinance. A sidebar fica para junto da identidade visual.
 
 ## Glossário
 
@@ -18,13 +18,13 @@
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
 | **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52, F54 | — |
-| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51 | — |
+| **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51, F55 | — |
 | **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F19, F20, F38 | — |
 | **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48, F51 | — |
 | **N6** | Rebalancear sem planilha (meta, desvio, divisão do aporte, alerta) | F24, F28, F32, F54 | — |
 | **N7** | Subcarteiras: grupos separados, vistos em todas as visões da carteira | F25 | — |
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
-| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49 | — |
+| **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F55 | — |
 | **F29** | Empacotamento desktop | — | 🔍 |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
@@ -32,15 +32,10 @@
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
 | **F43** | Sidebar | — | ⏳ |
-| **F44** | Carteira: layout, gráfico e cor | — | ⏳ |
-| **F45** | Operações: filtros e seletor de ativo | — | ⏳ |
-| **F48** | Fiscal: navegação por mês na URL | — | ⏳ |
-| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ⏳ |
-| **F51** | Máscaras nos campos | — | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (52 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (58 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -91,11 +86,17 @@
 | **F40** | Troca de ticker como renomeação | — | ✅ |
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
+| **F44** | Carteira: layout, gráfico e cor | — | ✅ |
+| **F45** | Operações: filtros e seletor de ativo | — | ✅ |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
 | **F47** | Comparador de renda fixa | — | ✅ |
+| **F48** | Fiscal: navegação por mês na URL | — | ✅ |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ✅ |
+| **F51** | Máscaras nos campos | — | ✅ |
 | **F53** | Simulador: escada de títulos | — | 🚫 |
 | **F54** | Saldo de investimento | — | ✅ |
+| **F55** | Sugestão de ticker nos campos livres | — | ✅ |
 
 </details>
 
@@ -107,15 +108,9 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
+| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 1 | 🔍 |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
-| **F43** | Sidebar | M9 | 0 | ⏳ |
-| **F44** | Carteira: layout, gráfico e cor | M9 | 0 | ⏳ |
-| **F45** | Operações: filtros e seletor de ativo | M9 | 0 | ⏳ |
-| **F48** | Fiscal: navegação por mês na URL | M9 | 0 | ⏳ |
-| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | 0 | ⏳ |
-| **F51** | Máscaras nos campos | M9 | 0 | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
 
 ---
@@ -321,18 +316,26 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 0/8 concluídas
+> **Progresso:** 6/9 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
-| **F43** | Sidebar | F2 | ⏳ |
-| **F44** | Carteira: layout, gráfico e cor | F11 | ⏳ |
-| **F45** | Operações: filtros e seletor de ativo | F9 | ⏳ |
-| **F48** | Fiscal: navegação por mês na URL | F23 | ⏳ |
-| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | F36 | ⏳ |
-| **F51** | Máscaras nos campos | F46 | ⏳ |
+| **F43** | Sidebar | F2, F30 | ⏳ |
 | **F52** | Setor e segmento sugeridos pelo yfinance | F37 | ⏳ |
+
+<details><summary>Concluído (6 itens)</summary>
+
+| ID | Resumo | Depende de | Status |
+| --- | --- | --- | --- |
+| **F44** | Carteira: layout, gráfico e cor | F11 | ✅ |
+| **F45** | Operações: filtros e seletor de ativo | F9 | ✅ |
+| **F48** | Fiscal: navegação por mês na URL | F23 | ✅ |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | F36 | ✅ |
+| **F51** | Máscaras nos campos | F46 | ✅ |
+| **F55** | Sugestão de ticker nos campos livres | F45 | ✅ |
+
+</details>
 
 ### Sem marco
 
@@ -386,17 +389,18 @@
 | **F40** | Troca de ticker como renomeação | N3, N2 | — | M8 | F9 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F41** | Cache de dados externos idempotente | N2, N1 | D6 | M8 | F10, F12 | Médio | Médio | Alto | Excelente | ✅ Concluído |
 | **F42** | Painel de saúde dos dados | N3, N2 | — | M8 | F41 | Médio | Baixo | Médio | Bom | ✅ Concluído |
-| **F44** | Carteira: layout, gráfico e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ⏳ Pendente |
-| **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
+| **F44** | Carteira: layout, gráfico e cor | N2 | — | M9 | F11 | Médio | Baixo | Alto | Bom | ✅ Concluído |
+| **F45** | Operações: filtros e seletor de ativo | N3 | D13 | M9 | F9 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 | F12 | Médio | Médio | Alto | Bom | ✅ Concluído |
 | **F47** | Comparador de renda fixa | N9 | — | M7 | F46 | Médio | Baixo | Médio | Bom | ✅ Concluído |
-| **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F48** | Fiscal: navegação por mês na URL | N5 | D13 | M9 | F23 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ✅ Concluído |
-| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ⏳ Pendente |
-| **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
+| **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 | **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ✅ Concluído |
+| **F55** | Sugestão de ticker nos campos livres | N3, N9 | — | M9 | F45 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -851,30 +855,33 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, com dado fictício: um ativo sem cotação, um título sem aplicação e um ativo sem CNPJ aparecem cada um na sua seção. Recarregar não repete o toast. Preencher o CNPJ pelo "Editar ativo" do painel baixa o contador na hora.
 
-**F44 — Carteira: layout, gráfico e cor.** A página da Carteira não se arruma como um todo. O card do patrimônio tem textos soltos acima do gráfico. As seções por categoria abrem todas expandidas e são um accordion solto entre dois cards. E tudo é monocromático: resultado positivo e negativo têm a mesma cor, a classe do ativo é texto cinza, e o donut divide a tela com uma tabela esticada. Serve N2.
+**F44 — Carteira: layout, gráfico e cor.** A Carteira ficou, de cima para baixo: uma faixa com três indicadores (`features/portfolio/indicator-cards.tsx`), a composição num card próprio, a liquidez, as posições e o setor. Serve N2.
 
-Plano:
-- **layout da página**, de cima para baixo:
-  - uma faixa de indicadores, cada um num card pequeno com rótulo, número e dica: patrimônio total, variação do dia e variação total. As datas dos dois pregões comparados saem do meio do card e vão para a dica da variação do dia;
-  - a composição por categoria num card próprio, com o donut e a legenda;
-  - as posições por categoria no mesmo idioma visual dos cards: cada seção um card recolhível, ou o accordion inteiro dentro de um card "Posições". A escolha sai na implementação, com os candidatos dos registries;
-  - a distribuição por setor e segmento como está;
-- **as seções começam fechadas:** o cabeçalho de cada uma já traz o resumo (valor, fração e as duas variações), e a tabela abre quando pedida;
-- gráfico e legenda na proporção do donut do SimuladorFinanceiro (`portfolio-pie-chart`, com legenda e tooltip próprios), que é a referência;
-- tooltip do gráfico próprio: marcador com a cor da categoria, nome, valor e fração, em fonte proporcional com números `tabular-nums`, e num tamanho legível;
-- tokens semânticos de alta e baixa (`--gain`, `--loss`) no `index.css`, usados em todo resultado com sinal. A F30 ajusta o tom, e o uso já fica certo;
-- **cor da categoria em todo lugar:** cada categoria tem uma cor fixa, a do gráfico, repetida no badge de classe, no cabeçalho das seções da F36 e nas barras de fração. A cor passa a identificar a categoria em qualquer tela. O `Badge` ganha a variante por categoria no próprio componente;
-- a paleta das categorias fica longe do verde e do vermelho, que são de alta e baixa: um badge de categoria não pode ser lido como resultado.
+- **Faixa de indicadores:** patrimônio total, variação do dia e variação total, cada um com dica, no molde do `section-cards` do `dashboard-01`. As datas dos dois pregões comparados foram para a dica da variação do dia. O saldo a reinvestir virou uma linha do card do patrimônio.
+- **Variação total da carteira:** o `GET /api/portfolio` ganhou `unrealized_result` e `unrealized_return`. O resultado soma as categorias investidas, e o percentual é sobre o custo delas; o saldo fica fora da base.
+- **Composição:** donut com a legenda ao lado, na proporção do `portfolio-pie-chart` do SimuladorFinanceiro. Passar o mouse na fatia ou na legenda destaca a categoria nos dois, e o tooltip é próprio: marcador, nome, valor e fração, em `tabular-nums`.
+- **Posições:** o accordion das categorias ficou dentro de um card "Posições", com as seções fechadas. O cabeçalho de cada seção leva o marcador e a barra de fração na cor da categoria.
+- **Cor da categoria em todo lugar:** o `Badge` ganhou uma variante por categoria (fundo e borda na cor do gráfico, texto `foreground`), e o `AssetClassBadge` a usa nas telas de ativos, detalhe do ativo, mercado, proventos, operações e fiscal. O `Progress` ganhou a prop `color`.
+- **Alta e baixa:** `signClass` foi para `shared/lib/sign.ts` e pinta todo resultado com sinal: Carteira, rentabilidade, evolução, risco × retorno, resultado do mês e IRPF no fiscal, ganho do comparador e resultado no detalhe do ativo. Desvio de meta e correlação não são resultado e ficam sem cor.
 
-Referências para a faixa de indicadores: o bloco `dashboard-01` do shadcn (cards de indicador com a tendência) e a Carteira do SimuladorFinanceiro.
+Decisões tomadas durante:
+- **As posições ficaram num accordion dentro de um card**, e não num card recolhível por categoria.
+- **Os tokens `--gain` e `--loss` já existiam** (o ano a ano os usava); a feature os estendeu a todo resultado com sinal, e o tom segue com a F30.
 
-**F45 — Operações: filtros e seletor de ativo.** A lista de ativos é um select comum que exige rolar até achar o ticker, e ela só cresce com o tempo. O "Limpar filtros" é um botão grande que pesa mais que os próprios filtros. Serve N3.
+**Aceite verificado** no app de pé, numa cópia do banco, nos temas claro e escuro: os três indicadores com cor pelo sinal, o donut com a legenda ao lado destacando a fatia, as seções abrindo fechadas e o badge de classe na cor da fatia.
 
-Plano:
-- `AssetCombobox` em `shared/components` (Popover + Command do shadcn, busca por ticker), usado em todo campo que escolhe ativo: filtros de operações, formulário de operação, e os que vierem (correlação, metas);
-- "Limpar filtros" como botão discreto ao lado dos filtros, visível só com filtro ativo;
-- filtros na URL (D13);
-- tipo de operação e classe do ativo com badge colorido: a classe com a cor da categoria (F44), a compra e a venda com cores próprias.
+**F45 — Operações: filtros e seletor de ativo.** Serve N3.
+
+- **`AssetCombobox`** (`shared/components/asset-combobox.tsx`): Popover e Command do shadcn, com busca pelo ticker atual ou por um antigo. Substituiu o `AssetSelect` nos filtros e no formulário de operação e nos filtros e no formulário de provento.
+- **Filtros na URL** (D13): `features/operations/filter-params.ts` lê e grava `asset`, `type`, `start` e `end`, e descarta o que vier inválido.
+- **"Limpar filtros"** virou um botão de link ao lado dos filtros, visível só com algum filtro ativo.
+- **Badges na tabela:** coluna "Classe" com a cor da categoria. Compra e venda ganharam variantes próprias no `Badge`, sobre os tokens `--buy` (violeta) e `--sell` (ciano), fora das cores de categoria e de alta e baixa. Os eventos corporativos ficam neutros.
+
+Decisões tomadas durante:
+- **A correlação não usa o combobox:** o campo dela aceita ticker fora da carteira, e ganhou a sugestão da busca do yfinance (F55).
+- Os tokens `--buy` e `--sell` entram no ajuste de tom da F30.
+
+**Aceite verificado** no app de pé, numa cópia do banco: buscar o ticker no combobox filtra a lista, o filtro vai para a URL e sobrevive ao recarregar, e "Limpar filtros" some quando não há filtro.
 
 **F46 — Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro.** O enum `FixedIncomeType` (CDB, RDB, LC, LCI, LCA, CRI, CRA, debênture, debênture incentivada e os três do Tesouro) substituiu a coluna `tax_exempt`: a isenção sai do tipo (`TAX_EXEMPT_TYPES`), e um `CHECK` prende cada Tesouro ao indexador do nome. A taxa da Selic passou a ser o spread anual, com o fator diário `(1 + Selic do dia) × (1 + spread)^(1/252)`; o CDI segue como percentual. O `POST /api/fixed-income` recebe a primeira aplicação junto e grava título e aplicação no mesmo commit; o `PUT` segue só com os termos. No formulário, o tipo vem primeiro, e o Tesouro fixa e trava o indexador. A tela de renda fixa agrupa os títulos por tipo, com o filtro na URL (`?type=`).
 
@@ -900,12 +907,16 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco migrado: um CDB de 110% do CDI, uma LCI de 90% e um Tesouro IPCA+ 6% aparecem lado a lado com o gráfico. Mudar o CDI projetado muda os números e a URL, e "Voltar ao último valor real" limpa a projeção editada.
 
-**F48 — Fiscal: navegação por mês na URL.** O seletor de mês da tela Fiscal não é o do IR-Helper, e o mês escolhido não fica na URL: navegando pelas setas, não dá para saber se a tela mudou de fato. Serve N5.
+**F48 — Fiscal: navegação por mês na URL.** Serve N5.
 
-Plano:
-- o seletor do IR-Helper: ‹ mês/ano ›, com o seletor de mês num popover (grade de meses com o ano navegável). O `monthpicker.tsx` adaptado no IR-Helper é portado para `shared/components`, com os meses em pt-BR;
-- a aba (Mensal, Anual, Todos os meses, IRPF), o ano e o mês ficam na URL (D13). Setas e teclado mudam a URL, e voltar no navegador e link direto funcionam;
-- a aba Anual e o IRPF usam o mesmo seletor, só de ano.
+- **Seletor ‹ mês/ano ›:** o botão do meio abre um popover com a grade de meses em pt-BR e o ano navegável (`features/tax/month-picker.tsx`), portado do seletor do IR-Helper sem `date-fns`. A aba Anual e o IRPF abrem a grade de anos.
+- **URL** (D13): `features/tax/tax-params.ts` lê e grava `tab`, `year` e `month`; o que falta ou é inválido vira a aba Mensal e o mês de hoje. As setas, o teclado (← →), a grade e o "abrir mês" do Anual e de Todos os meses gravam na URL, então voltar no navegador e link direto funcionam.
+
+Decisões tomadas durante:
+- **O seletor mora em `features/tax`**, e não em `shared/components`: só o Fiscal o usa.
+- O mês fica na URL também nas abas por ano, para voltar à Mensal no mesmo mês.
+
+**Aceite verificado** no app de pé, numa cópia do banco: a seta e o teclado mudam a URL, voltar no navegador volta o mês, escolher um mês do ano anterior pela grade funciona, e um link direto com `?tab=irpf&year=` abre o IRPF daquele ano.
 
 **F49 — Simulador: à vista, parcelado ou adiantar a fatura.** Ferramenta para uma compra que dá para pagar à vista: compensa pegar o desconto à vista, parcelar deixando o dinheiro investido, ou adiantar as parcelas que faltam em troca de um desconto? Serve N9. A tela "À vista ou parcelado" tem duas abas, Compra (o preço dividido nas parcelas) e Adiantar a fatura (o valor de cada parcela que falta), o investimento onde o dinheiro fica e a projeção da F47. `POST /api/simulation/installments` faz a conta sem gravar nada.
 
@@ -925,28 +936,30 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco migrado: o exemplo acima reproduzido na tela (sobra de R$ 52,57 e empate em 4,80%), com as taxas de empate, o cronograma e as duas curvas. Adiantar 10 parcelas de R$ 100 dá o mesmo resultado da compra de R$ 1.000 em 10x.
 
-**F50 — Tabelas: linha inteira clicável e dica no cabeçalho.** Dois defeitos das tabelas de hoje. Serve N2 e N3.
+**F50 — Tabelas: linha inteira clicável e dica no cabeçalho.** Serve N2 e N3.
 
-Plano:
-- **linha clicável:** nas tabelas em que a linha é um item com detalhe, só o nome é link, e o clique precisa cair exatamente em cima do texto. São elas: as posições da Carteira (renda variável e renda fixa), a lista de ativos, a lista de renda fixa e as posições do fiscal. A linha inteira passa a levar ao detalhe, com cursor de link e destaque ao passar o mouse:
-  - o link no nome continua, para o teclado e para abrir em outra aba;
-  - clique em botão ou menu dentro da linha não navega;
-  - o comportamento mora num lugar só, como variante do `TableRow`, e as tabelas o usam;
-  - na tabela de operações a linha é a operação, não o ativo, e ela fica como está;
-- **dica que não abre:** o "i" da variação do dia e da variação total, no cabeçalho das tabelas ordenáveis, não mostra a dica. O ícone está dentro do botão de ordenar, e o `Button` do shadcn desliga o ponteiro de todo ícone dentro dele (`[&_svg]:pointer-events-none`), então o mouse nunca chega ao ícone. A dica sai do botão e fica ao lado dele, e clicar nela não ordena a coluna. No card do patrimônio, fora de botão, a mesma dica funciona.
+- **Linha clicável:** o `TableRow` ganhou a prop `to`. Com ela, a linha tem cursor de link, o clique navega, e Ctrl ou Cmd abre em outra aba. O clique em link, botão, campo ou item de menu dentro da linha fica com o controle, e o que chega de um dialog aberto pela linha (pelo portal do React, sem estar dentro dela no DOM) não navega. Usam: as posições da Carteira (renda variável e renda fixa), a lista de ativos, a lista de renda fixa e as posições do fiscal. A tabela de operações ficou como estava.
+- **Dica no cabeçalho:** o `SortableHeader` ganhou a prop `hint`, e o "i" fica ao lado do botão de ordenar, e não dentro dele. Clicar na dica não ordena.
 
-**F51 — Máscaras nos campos.** Os campos de número são texto livre: o valor aceita "1.234,56" ou "1234.56", mas nada formata enquanto se digita, e o CNPJ e o ticker entram como vierem. Serve N3 e N5.
+**Aceite verificado** no app de pé, numa cópia do banco: a dica da variação do dia abre no cabeçalho da tabela, e clicar numa célula de número da posição abre o ativo.
 
-Plano:
-- `shared/lib/mask.ts` com as máscaras num arquivo só, cada uma uma função de texto para texto aplicada no `onChange`, como o `format.ts` do SimuladorFinanceiro;
-- **dinheiro** (aplicação e resgate da renda fixa, DARF pago): digitação da direita para a esquerda, em centavos, com "R$ 1.234,56" na tela;
-- **preço unitário da operação:** separador de milhar e vírgula, com as casas que vierem. Não é em centavos: o leilão de fração chega com três casas;
-- **quantidade:** inteiro com separador de milhar, e casas decimais só no tipo que admite fração (bonificação e o fator do grupamento);
-- **taxa e spread:** percentual com vírgula; o spread da Selic aceita negativo;
-- **CNPJ:** os 14 dígitos com os pontos, a barra e o hífen, e os dígitos verificadores conferidos na validação;
-- **ticker:** maiúsculo e sem espaço;
-- a máscara só formata. Quem lê o valor segue sendo o `parseDecimalInput`, que já aceita o formato pt-BR, e a API continua recebendo Decimal como string;
-- o formulário de edição abre com o valor já formatado.
+**F51 — Máscaras nos campos.** `shared/lib/mask.ts` tem as máscaras, cada uma de texto para texto, e o `withMask` as aplica a um campo do react-hook-form antes de o formulário ler o valor. Serve N3 e N5.
+
+- **Dinheiro** (`maskMoney`, em centavos da direita para a esquerda): o `MoneyInput` deixa o "R$" num addon do `InputGroup`, e o texto fica só o número. Usam: aplicação e resgate da renda fixa, DARF pago, saldo (valor e limite), provento, comparador de RF, simulador e aporte do rebalanceamento.
+- **Preço unitário** (`maskDecimal`): milhar e as casas que vierem.
+- **Quantidade:** inteiro com milhar na compra e no desdobro; com casas decimais na venda, na bonificação e no fator do grupamento.
+- **Taxa e spread** (`maskPercent`): com o menos à frente no spread da Selic e no IPCA projetado. Usam: termos do título, projeção e metas.
+- **CNPJ** (`maskCnpj`) e **ticker** (`maskTicker`).
+- **O formulário de edição abre formatado:** o Decimal da API passa por `toMoneyInput` ou pela máscara antes de preencher o campo.
+- **CNPJ conferido no backend:** `backend/domain/cnpj.py` confere os dois dígitos verificadores e grava com a pontuação. Dígito errado ou menos de 14 dígitos dão 422 com o motivo.
+
+Decisões tomadas durante:
+- **O `parseDecimalInput` passou a ler só pt-BR:** o ponto é sempre milhar. Com a máscara, "1.234" é mil duzentos e trinta e quatro; antes, o mesmo texto era lido como 1,234. O Decimal que vem da URL, escrito com ponto decimal, passou a ser lido pelo `parseDecimalText`.
+- **A venda admite fração:** a fração que sobra de um grupamento é vendida.
+- **A máscara de dinheiro vale para todo campo de valor**, e não só para os três do plano.
+- O CNPJ já gravado sem pontuação continua como está; ele abre formatado e é normalizado na próxima edição.
+
+**Aceite verificado** no app de pé, numa cópia do banco: digitar "123456" no valor aplicado mostra "1.234,56", e a API recebe 1234.56. A edição de uma operação abre com o preço formatado. O CNPJ é formatado ao digitar, e um verificador errado volta com o motivo.
 
 **F52 — Setor e segmento sugeridos pelo yfinance.** Classificar cada ativo à mão é o que enche o painel de saúde de "ativos sem setor". O yfinance traz o setor e a indústria da empresa, e o app pode sugerir a classificação. Serve N2.
 
@@ -1004,21 +1017,33 @@ Decisões tomadas durante:
 
 **Aceite:** numa conferência feita semanas depois da abertura, o saldo derivado bate com o extrato da corretora, com diferença só das taxas da nota. Fica com o usuário.
 
+**F55 — Sugestão de ticker nos campos livres.** Um campo de texto sem nada é enganoso: nem todo texto é um ticker com cotação. Os campos que aceitam ticker fora da carteira passaram a sugerir enquanto se digita, pela busca do yfinance, a mesma da caixa do site do Yahoo. Serve N3 e N9.
+
+- **Backend:** `GET /api/market/tickers?q=` chama o `yf.Search` pelo `YFinanceTickerSearch` e filtra no domínio (`backend/domain/ticker_search.py`). Ficam só a bolsa SAO e o lote padrão (quatro caracteres e o número da classe), sem o `.SA`, sem o fracionário e sem repetição, com o nome em espaços normalizados. Texto com menos de 2 caracteres não consulta a fonte, e a fonte fora do ar dá 503. O provider é injetado (`TickerSearchDep`), e os testes usam um fake.
+- **Frontend:** `TickerSearch` (`shared/components`) é um campo com Popover e Command, com debounce de 300 ms. As setas percorrem as sugestões, e o foco fica no campo. A sugestão ajuda e não restringe: o texto digitado continua valendo.
+- **Onde:** cadastro e edição de ativo, troca de ticker, e a correlação, em que os tickers viraram chips (Enter adiciona, × tira). IBOV e CDI seguem no seletor de referências.
+
+Decisões tomadas durante:
+- **Busca ao vivo, e não uma lista no banco:** o yfinance não tem lista de todos os tickers, e o que a busca sugere é exatamente o que ele tem cotação. A lista de instrumentos da B3 seria uma fonte nova, e estar listado não garante cotação no yfinance.
+- A rota ficou em `/api/market`, com as outras consultas ao mercado.
+
+**Aceite verificado** no app de pé, numa cópia do banco: digitar o começo de um ticker na correlação sugere as classes daquela empresa na B3, Enter adiciona o chip, e a comparação roda com os dois tickers escolhidos.
+
 ---
 ## 2. Nice-to-have
 
 | ID | Resumo | D# | Marco | Depende de | Esforço | Risco | Valor | Custo-benefício | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **F43** | Sidebar | — | M9 | F2 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F43** | Sidebar | — | M9 | F2, F30 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
 
-**F43 — Sidebar.** A sidebar de hoje é uma lista crua de links com texto pequeno, abaixo até do exemplo do shadcn.
+**F43 — Sidebar.** A sidebar de hoje é uma lista crua de links com texto pequeno, abaixo até do exemplo do shadcn. Vai junto com a identidade visual (F30): a sidebar é a parte mais visível dela.
 
 Plano:
 - referência: as sidebars do SimuladorFinanceiro e do IR-Helper, e os blocos de sidebar do shadcn;
 - cabeçalho com o nome e o ícone do app;
 - itens agrupados por assunto, com rótulo de grupo (carteira e ativos; operações e importação; mercado e análises; fiscal), ícone e texto maiores, e o item ativo destacado;
 - recolhível para só os ícones, com o estado guardado (o `SidebarProvider` já faz isso por cookie);
-- rodapé com a troca de tema e o contador do painel de dados (F42), quando ele existir.
+- rodapé com a troca de tema e o contador do painel de dados (F42), que já existe e hoje fica no item "Saúde dos dados".
 
 ---
 ## 3. Descartada
