@@ -586,6 +586,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/risk-return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Risk Return */
+        get: operations["get_risk_return_api_risk_return_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fixed-income": {
         parameters: {
             query?: never;
@@ -3171,6 +3188,56 @@ export interface components {
              */
             cumulative_return: DecimalString;
         };
+        /**
+         * RiskItemDTO
+         * @description Um ativo ou um título, com o valor no fim do período.
+         */
+        RiskItemDTO: {
+            /** Asset Id */
+            asset_id: number | null;
+            /** Investment Id */
+            investment_id: number | null;
+            /** Label */
+            label: string;
+            category: components["schemas"]["PortfolioCategory"];
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            risk: components["schemas"]["RiskPointDTO"];
+        };
+        /**
+         * RiskPointDTO
+         * @description `period_return` em fração (0,1 é 10%), pela variação da cota, com os
+         *     proventos. `volatility` também em fração, anualizada, e nula com menos de 20
+         *     retornos diários; `returns` é quantos entraram na conta.
+         */
+        RiskPointDTO: {
+            /**
+             * Period Return
+             * Format: decimal
+             */
+            period_return: DecimalString;
+            /** Volatility */
+            volatility: number | null;
+            /** Returns */
+            returns: number;
+        };
+        /**
+         * RiskReturnDTO
+         * @description `start` é o dia cujo fechamento é a base do período, nulo quando ele começa
+         *     com a carteira. Cada item conta desde o próprio começo, se for depois.
+         */
+        RiskReturnDTO: {
+            /** Start */
+            start: string | null;
+            /** End */
+            end: string | null;
+            portfolio: components["schemas"]["RiskPointDTO"] | null;
+            /** Items */
+            items: components["schemas"]["RiskItemDTO"][];
+        };
         /** RollingPointDTO */
         RollingPointDTO: {
             /**
@@ -5286,6 +5353,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EvolutionDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_risk_return_api_risk_return_get: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["PortfolioCategory"] | null;
+                subportfolio_id?: number | null;
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskReturnDTO"];
                 };
             };
             /** @description Unprocessable Content */

@@ -9,11 +9,7 @@ import {
   writePair,
   writeSymbols,
 } from "@/features/correlation/correlation-params";
-import {
-  describeCorrelation,
-  portfolioMatrixHint,
-  strongestPairsHint,
-} from "@/features/correlation/hints";
+import { describeCorrelation, strongestPairsHint } from "@/features/correlation/hints";
 import { usePortfolioCorrelation } from "@/features/correlation/use-correlation";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -82,9 +78,6 @@ export function PortfolioCorrelation({ category, subportfolioId }: PortfolioCorr
         <>
           {/* Matriz da carteira */}
           <div className="flex flex-col gap-2">
-            <h3 className="font-medium">
-              <MetricHint hint={portfolioMatrixHint}>Matriz</MetricHint>
-            </h3>
             <CorrelationMatrix
               matrix={data.matrix}
               selected={null}

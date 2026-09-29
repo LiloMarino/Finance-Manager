@@ -51,7 +51,7 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
         <div
           className={cn("grid", compact ? "gap-0.5 text-[0.625rem]" : "gap-1 text-xs")}
           style={{
-            gridTemplateColumns: `auto repeat(${symbols.length}, minmax(${compact ? "2.5rem" : "3.25rem"}, 1fr))`,
+            gridTemplateColumns: `auto repeat(${symbols.length}, minmax(${compact ? "2.5rem" : "3.25rem"}, 6rem))`,
           }}
           onMouseLeave={() => setHovered(null)}
         >

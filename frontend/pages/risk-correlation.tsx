@@ -1,6 +1,10 @@
 import { useState } from "react";
 
 import { PortfolioCorrelation } from "@/features/correlation/portfolio-correlation";
+import { portfolioMatrixHint } from "@/features/correlation/hints";
+import { chartHint } from "@/features/risk-return/hints";
+import { RiskReturnPanel } from "@/features/risk-return/risk-return-panel";
+import { MetricHint } from "@/shared/components/metric-hint";
 import { CategorySelect } from "@/shared/components/category-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
@@ -16,16 +20,30 @@ export function RiskCorrelationPage() {
         <div>
           <h1 className="text-2xl font-semibold">Risco e correlação</h1>
           <p className="text-muted-foreground">
-            O quanto os ativos da carteira andam juntos.
+            O quanto cada ativo oscila, o quanto rendeu, e o quanto eles andam juntos.
           </p>
         </div>
         <CategorySelect value={category} onChange={setCategory} />
       </div>
 
+      {/* Risco × retorno */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <MetricHint hint={chartHint}>Risco × retorno</MetricHint>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RiskReturnPanel category={category} subportfolioId={subportfolioId} />
+        </CardContent>
+      </Card>
+
       {/* Correlação da carteira */}
       <Card>
         <CardHeader>
-          <CardTitle>Correlação da carteira</CardTitle>
+          <CardTitle>
+            <MetricHint hint={portfolioMatrixHint}>Correlação da carteira</MetricHint>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <PortfolioCorrelation category={category} subportfolioId={subportfolioId} />
