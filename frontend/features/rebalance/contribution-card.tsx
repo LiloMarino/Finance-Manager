@@ -5,11 +5,11 @@ import { useSearchParams } from "react-router-dom";
 import { imbalanceHint } from "@/features/rebalance/hints";
 import { usePlan } from "@/features/rebalance/use-rebalance";
 import { MetricHint } from "@/shared/components/metric-hint";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
-import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Switch } from "@/shared/components/ui/switch";
 import {
@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { maskMoney } from "@/shared/lib/mask";
 import {
   type DecimalString,
   formatBRL,
@@ -30,7 +31,8 @@ import {
   formatSignedBRL,
   isZero,
   parseDecimalInput,
-  toDecimalInput,
+  parseDecimalText,
+  toMoneyInput,
 } from "@/types/decimal";
 
 interface ContributionCardProps {
@@ -43,7 +45,7 @@ interface ContributionCardProps {
 mantém a sugestão. */
 export function ContributionCard({ subportfolioId, cash }: ContributionCardProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const amount = parseDecimalInput(searchParams.get("amount") ?? "");
+  const amount = parseDecimalText(searchParams.get("amount") ?? "");
   const allowSales = searchParams.get("sales") === "1";
 
   const update = (next: { amount?: DecimalString | null; sales?: boolean }) =>
@@ -100,7 +102,7 @@ interface AmountFormProps {
 
 // O texto digitado é passageiro; só o valor calculado vai para a URL
 function AmountForm({ amount, onSubmit }: AmountFormProps) {
-  const [text, setText] = useState(amount ? toDecimalInput(amount) : "");
+  const [text, setText] = useState(amount ? toMoneyInput(amount) : "");
   const parsed = parseDecimalInput(text);
 
   const submit = (event: FormEvent) => {
@@ -111,12 +113,11 @@ function AmountForm({ amount, onSubmit }: AmountFormProps) {
   return (
     <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
       <Field className="w-48">
-        <FieldLabel htmlFor="contribution">Valor do aporte (R$)</FieldLabel>
-        <Input
+        <FieldLabel htmlFor="contribution">Valor do aporte</FieldLabel>
+        <MoneyInput
           id="contribution"
-          inputMode="decimal"
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => setText(maskMoney(event.target.value))}
         />
       </Field>
       <Button type="submit" disabled={text.trim() !== "" && !parsed}>

@@ -23,6 +23,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/u
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { maskPercent, withMask } from "@/shared/lib/mask";
 import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
 
 const percent = z.string().transform((value, context) => {
@@ -124,7 +125,7 @@ function TargetsForm({ subportfolioId, targets, onSaved }: FormProps) {
             <Input
               id={`target-${asset.asset_id}`}
               inputMode="decimal"
-              {...form.register(`assets.${index}.target`)}
+              {...withMask(form.register(`assets.${index}.target`), maskPercent)}
             />
             <FieldError errors={[errors.assets?.[index]?.target]} />
           </Field>
@@ -134,7 +135,7 @@ function TargetsForm({ subportfolioId, targets, onSaved }: FormProps) {
           <Input
             id="target-fixed-income"
             inputMode="decimal"
-            {...form.register("fixed_income_target")}
+            {...withMask(form.register("fixed_income_target"), maskPercent)}
           />
           <FieldError errors={[errors.fixed_income_target]} />
         </Field>
@@ -142,7 +143,11 @@ function TargetsForm({ subportfolioId, targets, onSaved }: FormProps) {
         {/* Limites do alerta */}
         <Field data-invalid={Boolean(errors.max_item_deviation)}>
           <FieldLabel htmlFor="max-item">Desvio máximo por item (p.p.)</FieldLabel>
-          <Input id="max-item" inputMode="decimal" {...form.register("max_item_deviation")} />
+          <Input
+            id="max-item"
+            inputMode="decimal"
+            {...withMask(form.register("max_item_deviation"), maskPercent)}
+          />
           <FieldError errors={[errors.max_item_deviation]} />
         </Field>
         <Field data-invalid={Boolean(errors.max_total_deviation)}>
@@ -150,7 +155,7 @@ function TargetsForm({ subportfolioId, targets, onSaved }: FormProps) {
           <Input
             id="max-total"
             inputMode="decimal"
-            {...form.register("max_total_deviation")}
+            {...withMask(form.register("max_total_deviation"), maskPercent)}
           />
           <FieldError errors={[errors.max_total_deviation]} />
         </Field>

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import type { InvestmentTermsInput } from "@/shared/lib/investment-terms";
+import { maskPercent, maskSignedPercent } from "@/shared/lib/mask";
 import {
   type Indexer,
   fixedIncomeTypeLabels,
@@ -105,7 +106,10 @@ export function InvestmentTermsFields({
           id={`${id}-rate`}
           inputMode="decimal"
           value={value.rate}
-          onChange={(event) => onChange({ ...value, rate: event.target.value })}
+          onChange={(event) => {
+            const mask = value.indexer === "selic" ? maskSignedPercent : maskPercent;
+            onChange({ ...value, rate: mask(event.target.value) });
+          }}
         />
         {value.indexer === "selic" && (
           <FieldDescription>

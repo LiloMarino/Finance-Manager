@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { isFixedIncomeType, isIndexer } from "@/shared/lib/labels";
 import type { FixedIncomeType, Indexer } from "@/shared/lib/labels";
-import { parseDecimalInput, parseSignedDecimalInput } from "@/types/decimal";
+import { parseDecimalText, parseSignedDecimalText } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
 export type ComparisonOption = components["schemas"]["ComparisonOptionInDTO"];
@@ -26,8 +26,8 @@ const optionSchema = z
     redemption_date: isoDate,
   })
   .transform((values, context) => {
-    const rate = parseSignedDecimalInput(values.rate);
-    const amount = parseDecimalInput(values.amount);
+    const rate = parseSignedDecimalText(values.rate);
+    const amount = parseDecimalText(values.amount);
     if (!rate || !amount) {
       context.addIssue({ code: "custom", message: "Opção inválida." });
       return z.NEVER;

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import type { ComparisonOption } from "@/features/fixed-income-comparison/options";
 import { InvestmentTermsFields } from "@/shared/components/investment-terms-fields";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -17,7 +18,8 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { investmentTermsSchema } from "@/shared/lib/investment-terms";
-import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
+import { maskMoney, withMask } from "@/shared/lib/mask";
+import { parseDecimalInput, toDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const schema = z
   .object({
@@ -93,7 +95,7 @@ function OptionForm({
         indexer: option.indexer,
         rate: toDecimalInput(option.rate),
       },
-      amount: toDecimalInput(option.amount),
+      amount: toMoneyInput(option.amount),
       application_date: option.application_date,
       redemption_date: option.redemption_date,
     },
@@ -121,8 +123,8 @@ function OptionForm({
           )}
         />
         <Field data-invalid={Boolean(errors.amount)}>
-          <FieldLabel htmlFor="option-amount">Valor aplicado (R$)</FieldLabel>
-          <Input id="option-amount" inputMode="decimal" {...form.register("amount")} />
+          <FieldLabel htmlFor="option-amount">Valor aplicado</FieldLabel>
+          <MoneyInput id="option-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldError errors={[errors.amount]} />
         </Field>
         <div className="grid grid-cols-2 gap-4">

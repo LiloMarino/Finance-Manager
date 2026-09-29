@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -158,6 +159,41 @@ def test_asset_with_operations_cannot_be_deleted(api: TestClient) -> None:
     assert refused.status_code == 409
     assert "ABCD11 tem operações" in refused.json()["detail"]
     assert api.delete(f"/api/assets/{unused}").status_code == 204
+
+
+def test_asset_cnpj_is_saved_with_punctuation(api: TestClient) -> None:
+    """O CNPJ com os verificadores certos é gravado com a pontuação, venha como vier;
+    em branco é ativo sem CNPJ."""
+    digits = api.post(
+        "/api/assets",
+        json={"ticker": "ABCD11", "asset_class": "fii", "cnpj": "11222333000181"},
+    )
+    blank = api.post(
+        "/api/assets", json={"ticker": "EFGH11", "asset_class": "fii", "cnpj": "  "}
+    )
+
+    saved = digits.json()["cnpj"]
+    assert re.fullmatch(r"\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}", saved)
+    assert re.sub(r"\D", "", saved) == "11222333000181"
+    assert blank.json()["cnpj"] is None
+
+
+def test_asset_cnpj_with_wrong_check_digits_is_rejected(api: TestClient) -> None:
+    """CNPJ com dígito verificador errado, ou sem os 14 dígitos, dá 422 com o
+    motivo."""
+    wrong = api.post(
+        "/api/assets",
+        json={"ticker": "ABCD11", "asset_class": "fii", "cnpj": "11222333000180"},
+    )
+    short = api.post(
+        "/api/assets",
+        json={"ticker": "ABCD11", "asset_class": "fii", "cnpj": "11.222.333/0001"},
+    )
+
+    assert wrong.status_code == 422
+    assert "dígitos verificadores" in wrong.json()["detail"]
+    assert short.status_code == 422
+    assert "14 dígitos" in short.json()["detail"]
 
 
 def test_asset_ticker_is_normalized_and_unique(api: TestClient) -> None:

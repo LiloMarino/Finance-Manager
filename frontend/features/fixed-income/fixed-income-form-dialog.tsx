@@ -9,6 +9,7 @@ import {
 } from "@/features/fixed-income/use-fixed-income";
 import { InvestmentTermsFields } from "@/shared/components/investment-terms-fields";
 import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -23,7 +24,8 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/u
 import { Input } from "@/shared/components/ui/input";
 import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 import { investmentTermsSchema } from "@/shared/lib/investment-terms";
-import { parseDecimalInput } from "@/types/decimal";
+import { maskMoney, withMask } from "@/shared/lib/mask";
+import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
 
 // Na criação, a primeira aplicação é obrigatória; na edição, os campos dela ficam
 // fora do formulário e do corpo enviado
@@ -107,7 +109,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
       investment: {
         product_type: investment?.product_type ?? "cdb",
         indexer: investment?.indexer ?? "cdi",
-        rate: investment?.rate ?? "",
+        rate: investment ? toDecimalInput(investment.rate) : "",
       },
       maturity_date: investment?.maturity_date ?? "",
       daily_liquidity: investment?.daily_liquidity ?? false,
@@ -203,12 +205,11 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
             </Field>
             <Field data-invalid={Boolean(errors.application_amount)}>
               <FieldLabel htmlFor="fixed-income-application-amount">
-                Valor aplicado (R$)
+                Valor aplicado
               </FieldLabel>
-              <Input
+              <MoneyInput
                 id="fixed-income-application-amount"
-                inputMode="decimal"
-                {...form.register("application_amount")}
+                {...withMask(form.register("application_amount"), maskMoney)}
               />
               <FieldError errors={[errors.application_amount]} />
             </Field>

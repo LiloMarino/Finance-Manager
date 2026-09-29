@@ -6,6 +6,7 @@ from pydantic import field_validator
 
 from backend.core.dto import BaseDTO
 from backend.core.enum import AssetClass
+from backend.domain.cnpj import normalize_cnpj
 
 
 def normalize_ticker(value: str) -> str:
@@ -51,8 +52,10 @@ class AssetInDTO(BaseDTO):
 
     @field_validator("cnpj")
     @classmethod
-    def _blank_is_none(cls, value: str | None) -> str | None:
-        return (value or "").strip() or None
+    def _normalize_cnpj(cls, value: str | None) -> str | None:
+        """Em branco é ativo sem CNPJ; preenchido, grava com a pontuação."""
+        text = (value or "").strip()
+        return normalize_cnpj(text) if text else None
 
 
 class TickerChangeInDTO(BaseDTO):

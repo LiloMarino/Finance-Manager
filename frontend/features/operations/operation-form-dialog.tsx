@@ -28,10 +28,14 @@ import {
   isOperationType,
   operationTypeLabels,
 } from "@/shared/lib/labels";
-import { parseDecimalInput, toDecimalString } from "@/types/decimal";
+import { maskDecimal, maskInteger, withMask } from "@/shared/lib/mask";
+import { parseDecimalInput, toDecimalInput, toDecimalString } from "@/types/decimal";
 
 const operationTypes: OperationType[] = ["buy", "sell", "bonus", "split", "reverse_split"];
 const pricedTypes: OperationType[] = ["buy", "sell"];
+// Compra e desdobro são em unidades inteiras; a venda leva a fração que sobra de um
+// grupamento, a bonificação gera fração e o grupamento é um fator
+const fractionalTypes: OperationType[] = ["sell", "bonus", "reverse_split"];
 
 const quantityLabels: Partial<Record<OperationType, string>> = {
   bonus: "Ações recebidas",
@@ -116,8 +120,8 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
       asset_id: operation ? String(operation.asset_id) : "",
       operation_date: operation?.operation_date ?? "",
       operation_type: operation?.operation_type ?? "buy",
-      quantity: operation?.quantity ?? "",
-      unit_price: operation?.unit_price ?? "",
+      quantity: operation ? maskDecimal(toDecimalInput(operation.quantity)) : "",
+      unit_price: operation ? maskDecimal(toDecimalInput(operation.unit_price)) : "",
     },
   });
   const { errors } = form.formState;
@@ -181,7 +185,10 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
           <Input
             id="operation-quantity"
             inputMode="decimal"
-            {...form.register("quantity")}
+            {...withMask(
+              form.register("quantity"),
+              fractionalTypes.includes(operationType) ? maskDecimal : maskInteger,
+            )}
           />
           <FieldError errors={[errors.quantity]} />
         </Field>
@@ -191,7 +198,7 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
             <Input
               id="operation-price"
               inputMode="decimal"
-              {...form.register("unit_price")}
+              {...withMask(form.register("unit_price"), maskDecimal)}
             />
             <FieldError errors={[errors.unit_price]} />
           </Field>

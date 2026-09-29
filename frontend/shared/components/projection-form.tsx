@@ -13,6 +13,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import type { CurrentRates } from "@/shared/hooks/use-current-rates";
 import { formatDate } from "@/shared/lib/format";
+import { maskPercent, maskSignedPercent, withMask } from "@/shared/lib/mask";
 import { type Projection, type ProjectionDraft, projectionKeys } from "@/shared/lib/projection";
 import {
   type DecimalString,
@@ -113,7 +114,11 @@ export function ProjectionForm({
               <FieldLabel htmlFor={`projection-${key}`}>
                 <MetricHint hint={labels[key].hint}>{labels[key].label}</MetricHint>
               </FieldLabel>
-              <Input id={`projection-${key}`} inputMode="decimal" {...form.register(key)} />
+              <Input
+                id={`projection-${key}`}
+                inputMode="decimal"
+                {...withMask(form.register(key), key === "ipca" ? maskSignedPercent : maskPercent)}
+              />
               <FieldDescription>
                 {realValue && realDate
                   ? `Último real: ${formatQuantity(realValue)}% (${formatDate(realDate)})`

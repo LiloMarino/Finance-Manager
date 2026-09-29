@@ -22,7 +22,9 @@ import { Input } from "@/shared/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { investmentTermsSchema } from "@/shared/lib/investment-terms";
 import { isoDate } from "@/shared/lib/period";
-import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
+import { MoneyInput } from "@/shared/components/money-input";
+import { maskInteger, maskMoney, maskPercent, withMask } from "@/shared/lib/mask";
+import { parseDecimalInput, toDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const MAX_INSTALLMENTS = 60;
 
@@ -32,13 +34,13 @@ const fieldLabels: Record<
   { amount: string; installments: string; firstDue: string; discount: string }
 > = {
   purchase: {
-    amount: "Preço (R$)",
+    amount: "Preço",
     installments: "Parcelas",
     firstDue: "Primeira parcela",
     discount: "Desconto à vista (%)",
   },
   prepayment: {
-    amount: "Valor de cada parcela (R$)",
+    amount: "Valor de cada parcela",
     installments: "Parcelas que faltam",
     firstDue: "Próxima parcela",
     discount: "Desconto para adiantar (%)",
@@ -109,7 +111,7 @@ export function SimulationForm({ simulation, onSubmit }: SimulationFormProps) {
     resolver: zodResolver(schema),
     values: {
       mode: simulation?.mode ?? "purchase",
-      amount: simulation ? toDecimalInput(simulation.amount) : "",
+      amount: simulation ? toMoneyInput(simulation.amount) : "",
       installments: String(simulation?.installments ?? 10),
       first_due_date: simulation?.first_due_date ?? nextMonth(),
       cash_discount: simulation?.cash_discount ? toDecimalInput(simulation.cash_discount) : "",
@@ -150,7 +152,10 @@ export function SimulationForm({ simulation, onSubmit }: SimulationFormProps) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field data-invalid={Boolean(errors.amount)}>
             <FieldLabel htmlFor="simulation-amount">{labels.amount}</FieldLabel>
-            <Input id="simulation-amount" inputMode="decimal" {...form.register("amount")} />
+            <MoneyInput
+              id="simulation-amount"
+              {...withMask(form.register("amount"), maskMoney)}
+            />
             <FieldError errors={[errors.amount]} />
           </Field>
           <Field data-invalid={Boolean(errors.installments)}>
@@ -158,7 +163,7 @@ export function SimulationForm({ simulation, onSubmit }: SimulationFormProps) {
             <Input
               id="simulation-installments"
               inputMode="numeric"
-              {...form.register("installments")}
+              {...withMask(form.register("installments"), maskInteger)}
             />
             <FieldError errors={[errors.installments]} />
           </Field>
@@ -173,7 +178,7 @@ export function SimulationForm({ simulation, onSubmit }: SimulationFormProps) {
               id="simulation-discount"
               inputMode="decimal"
               placeholder="Opcional"
-              {...form.register("cash_discount")}
+              {...withMask(form.register("cash_discount"), maskPercent)}
             />
             <FieldDescription>Sem desconto, sai só o desconto que empata.</FieldDescription>
             <FieldError errors={[errors.cash_discount]} />

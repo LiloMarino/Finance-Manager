@@ -8,6 +8,7 @@ import {
   useAddWithdrawal,
   useUpdateCashSettings,
 } from "@/features/cash/use-cash";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -20,7 +21,8 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import { type DecimalString, parseDecimalInput, toDecimalInput } from "@/types/decimal";
+import { maskMoney, withMask } from "@/shared/lib/mask";
+import { type DecimalString, parseDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const amountField = z.string().transform((value, context) => {
   const parsed = parseDecimalInput(value);
@@ -82,7 +84,7 @@ function DatedForm({ amountLabel, pending, onSubmit }: DatedFormProps) {
         </Field>
         <Field data-invalid={Boolean(errors.amount)}>
           <FieldLabel htmlFor="cash-amount">{amountLabel}</FieldLabel>
-          <Input id="cash-amount" inputMode="decimal" {...form.register("amount")} />
+          <MoneyInput id="cash-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldError errors={[errors.amount]} />
         </Field>
       </FieldGroup>
@@ -170,7 +172,7 @@ function ThresholdForm({
   onSaved: () => void;
 }) {
   const update = useUpdateCashSettings();
-  const values: z.input<typeof thresholdSchema> = { threshold: toDecimalInput(threshold) };
+  const values: z.input<typeof thresholdSchema> = { threshold: toMoneyInput(threshold) };
   const form = useForm({ resolver: zodResolver(thresholdSchema), values });
   const { errors } = form.formState;
   const submit = form.handleSubmit(({ threshold: next }) =>
@@ -181,7 +183,7 @@ function ThresholdForm({
     <form onSubmit={(event) => void submit(event)}>
       <Field data-invalid={Boolean(errors.threshold)}>
         <FieldLabel htmlFor="cash-threshold">Limite</FieldLabel>
-        <Input id="cash-threshold" inputMode="decimal" {...form.register("threshold")} />
+        <MoneyInput id="cash-threshold" {...withMask(form.register("threshold"), maskMoney)} />
         <FieldError errors={[errors.threshold]} />
       </Field>
       <DialogFooter className="mt-6">

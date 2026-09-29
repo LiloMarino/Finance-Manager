@@ -11,6 +11,7 @@ import {
   movementTypes,
 } from "@/features/fixed-income/labels";
 import { useAddMovement } from "@/features/fixed-income/use-fixed-income";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -29,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { maskMoney, withMask } from "@/shared/lib/mask";
 import { parseDecimalInput } from "@/types/decimal";
 
 const schema = z
@@ -124,7 +126,7 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
         </Field>
         <Field data-invalid={Boolean(errors.amount)}>
           <FieldLabel htmlFor="movement-amount">Valor bruto</FieldLabel>
-          <Input id="movement-amount" inputMode="decimal" {...form.register("amount")} />
+          <MoneyInput id="movement-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldError errors={[errors.amount]} />
         </Field>
       </FieldGroup>

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { type IncomeEvent, useSaveIncome } from "@/features/income/use-income";
 import { AssetCombobox } from "@/shared/components/asset-combobox";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -35,7 +36,8 @@ import {
   incomeTypes,
   isIncomeType,
 } from "@/shared/lib/labels";
-import { parseDecimalInput } from "@/types/decimal";
+import { maskDecimal, maskMoney, withMask } from "@/shared/lib/mask";
+import { parseDecimalInput, toDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const schema = z
   .object({
@@ -102,9 +104,9 @@ function IncomeForm({ event, onSaved }: { event?: IncomeEvent; onSaved: () => vo
       asset_id: event ? String(event.asset_id) : "",
       payment_date: event?.payment_date ?? "",
       income_type: event?.income_type ?? "dividend",
-      quantity: event?.quantity ?? "",
-      unit_price: event?.unit_price ?? "",
-      amount: event?.amount ?? "",
+      quantity: event ? maskDecimal(toDecimalInput(event.quantity)) : "",
+      unit_price: event ? maskDecimal(toDecimalInput(event.unit_price)) : "",
+      amount: event ? toMoneyInput(event.amount) : "",
     },
   });
   const { errors } = form.formState;
@@ -158,7 +160,11 @@ function IncomeForm({ event, onSaved }: { event?: IncomeEvent; onSaved: () => vo
         </Field>
         <Field data-invalid={Boolean(errors.quantity)}>
           <FieldLabel htmlFor="income-quantity">Quantidade</FieldLabel>
-          <Input id="income-quantity" inputMode="decimal" {...form.register("quantity")} />
+          <Input
+            id="income-quantity"
+            inputMode="decimal"
+            {...withMask(form.register("quantity"), maskDecimal)}
+          />
           <FieldError errors={[errors.quantity]} />
         </Field>
         <Field data-invalid={Boolean(errors.unit_price)}>
@@ -166,13 +172,13 @@ function IncomeForm({ event, onSaved }: { event?: IncomeEvent; onSaved: () => vo
           <Input
             id="income-unit-price"
             inputMode="decimal"
-            {...form.register("unit_price")}
+            {...withMask(form.register("unit_price"), maskDecimal)}
           />
           <FieldError errors={[errors.unit_price]} />
         </Field>
         <Field data-invalid={Boolean(errors.amount)}>
           <FieldLabel htmlFor="income-amount">Valor líquido recebido</FieldLabel>
-          <Input id="income-amount" inputMode="decimal" {...form.register("amount")} />
+          <MoneyInput id="income-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldDescription>
             O que caiu na conta, já sem o IR retido no JCP e no rendimento de ETF.
           </FieldDescription>

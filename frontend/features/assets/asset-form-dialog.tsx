@@ -21,6 +21,7 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { type AssetClass, isAssetClass } from "@/shared/lib/labels";
+import { maskCnpj, withMask } from "@/shared/lib/mask";
 
 const schema = z.object({
   ticker: z.string().trim().min(1, "Informe o ticker."),
@@ -28,7 +29,12 @@ const schema = z.object({
     (value) => typeof value === "string" && isAssetClass(value),
     "Escolha a classe.",
   ),
-  cnpj: z.string(),
+  cnpj: z
+    .string()
+    .refine(
+      (value) => value === "" || value.replace(/\D/g, "").length === 14,
+      "O CNPJ tem 14 dígitos.",
+    ),
   segment_id: z.number().nullable(),
   subportfolio_id: z.number().nullable(),
 });
@@ -69,7 +75,7 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
     values: {
       ticker: asset?.ticker ?? "",
       asset_class: asset?.asset_class ?? "stock",
-      cnpj: asset?.cnpj ?? "",
+      cnpj: asset?.cnpj ? maskCnpj(asset.cnpj) : "",
       segment_id: asset?.segment_id ?? null,
       subportfolio_id: asset?.subportfolio_id ?? null,
     },
@@ -107,9 +113,15 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
             )}
           />
         </Field>
-        <Field>
+        <Field data-invalid={Boolean(errors.cnpj)}>
           <FieldLabel htmlFor="asset-cnpj">CNPJ</FieldLabel>
-          <Input id="asset-cnpj" {...form.register("cnpj")} />
+          <Input
+            id="asset-cnpj"
+            inputMode="numeric"
+            placeholder="XX.XXX.XXX/XXXX-XX"
+            {...withMask(form.register("cnpj"), maskCnpj)}
+          />
+          <FieldError errors={[errors.cnpj]} />
         </Field>
         <Field>
           <FieldLabel htmlFor="asset-segment">Segmento</FieldLabel>

@@ -104,10 +104,33 @@ export function toDecimalString(value: string): DecimalString {
   return value as DecimalString;
 }
 
-const DECIMAL_INPUT = /^\d{1,3}(\.\d{3})*(,\d+)?$|^\d+([.,]\d+)?$/;
+// Como as máscaras escrevem: o ponto é sempre separador de milhar, e a vírgula, a
+// decimal
+const DECIMAL_INPUT = /^\d{1,3}(\.\d{3})*(,\d+)?$|^\d+(,\d+)?$/;
+// Como a API e a URL escrevem: ponto decimal, sem milhar
+const DECIMAL_TEXT = /^\d+(\.\d+)?$/;
+
+const moneyInputFormatter = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+// O sinal de menos à frente, com a mesma leitura para o resto
+function allowingSign(
+  parse: (value: string) => DecimalString | null,
+): (value: string) => DecimalString | null {
+  return (value) => {
+    const text = value.trim();
+    if (!text.startsWith("-")) {
+      return parse(text);
+    }
+    const magnitude = parse(text.slice(1));
+    return magnitude && toDecimalString(`-${magnitude}`);
+  };
+}
 
 /**
- * Texto digitado em pt-BR ("1.234,56") ou com ponto ("1234.56") para Decimal; `null`
+ * Texto digitado em pt-BR ("1.234,56", "1234,56", "1.234") para Decimal; `null`
  * quando não é número positivo bem formado.
  */
 export function parseDecimalInput(value: string): DecimalString | null {
@@ -115,11 +138,21 @@ export function parseDecimalInput(value: string): DecimalString | null {
   if (!DECIMAL_INPUT.test(text)) {
     return null;
   }
-  const normalized = text.includes(",")
-    ? text.replaceAll(".", "").replace(",", ".")
-    : text;
-  return toDecimalString(normalized);
+  return toDecimalString(text.replaceAll(".", "").replace(",", "."));
 }
+
+/** Como o `parseDecimalInput`, aceitando também o sinal de menos. */
+export const parseSignedDecimalInput = allowingSign(parseDecimalInput);
+
+/** O Decimal escrito como a API e a URL escrevem ("1234.56"); `null` quando não é
+número positivo bem formado. */
+export function parseDecimalText(value: string): DecimalString | null {
+  const text = value.trim();
+  return DECIMAL_TEXT.test(text) ? toDecimalString(text) : null;
+}
+
+/** Como o `parseDecimalText`, aceitando também o sinal de menos. */
+export const parseSignedDecimalText = allowingSign(parseDecimalText);
 
 /** O texto que preenche um campo: vírgula decimal, sem separador de milhar, que o
 `parseDecimalInput` lê de volta como o mesmo valor. */
@@ -127,12 +160,8 @@ export function toDecimalInput(value: DecimalString): string {
   return value.replace(".", ",");
 }
 
-/** Como o `parseDecimalInput`, aceitando também o sinal de menos. */
-export function parseSignedDecimalInput(value: string): DecimalString | null {
-  const text = value.trim();
-  if (!text.startsWith("-")) {
-    return parseDecimalInput(text);
-  }
-  const magnitude = parseDecimalInput(text.slice(1));
-  return magnitude && toDecimalString(`-${magnitude}`);
+/** O valor em reais que preenche um campo de dinheiro: duas casas e o milhar
+("1.234,50"), como a máscara de dinheiro escreve. */
+export function toMoneyInput(value: DecimalString): string {
+  return moneyInputFormatter.format(value);
 }

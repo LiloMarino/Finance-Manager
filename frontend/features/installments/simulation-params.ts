@@ -1,6 +1,6 @@
 import type { InvestmentTermsInput } from "@/shared/lib/investment-terms";
 import { isFixedIncomeType, isIndexer } from "@/shared/lib/labels";
-import { type DecimalString, parseDecimalInput, parseSignedDecimalInput } from "@/types/decimal";
+import { type DecimalString, parseDecimalText, parseSignedDecimalText } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
 export type InstallmentMode = components["schemas"]["InstallmentMode"];
@@ -35,14 +35,14 @@ export const defaultInvestment: InvestmentTermsInput = {
 /** Nula enquanto a URL não descreve uma simulação completa. */
 export function readSimulation(params: URLSearchParams): SimulationParams | null {
   const mode = params.get("mode") ?? "purchase";
-  const amount = parseDecimalInput(params.get("amount") ?? "");
+  const amount = parseDecimalText(params.get("amount") ?? "");
   const installments = Number(params.get("n"));
   const firstDue = params.get("first_due");
   const discountText = params.get("discount");
-  const discount = discountText === null ? null : parseDecimalInput(discountText);
+  const discount = discountText === null ? null : parseDecimalText(discountText);
   const type = params.get("type") ?? defaultInvestment.product_type;
   const indexer = params.get("indexer") ?? defaultInvestment.indexer;
-  const rate = parseSignedDecimalInput(params.get("rate") ?? defaultInvestment.rate);
+  const rate = parseSignedDecimalText(params.get("rate") ?? defaultInvestment.rate);
   if (
     !isInstallmentMode(mode) ||
     !amount ||

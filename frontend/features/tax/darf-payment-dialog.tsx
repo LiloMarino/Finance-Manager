@@ -9,6 +9,7 @@ import {
   useDeleteDarfPayment,
   useSaveDarfPayment,
 } from "@/features/tax/use-tax";
+import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -21,7 +22,8 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import { parseDecimalInput } from "@/types/decimal";
+import { maskMoney, withMask } from "@/shared/lib/mask";
+import { type DecimalString, parseDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const schema = z
   .object({
@@ -36,6 +38,10 @@ const schema = z
     }
     return { ...values, amount };
   });
+
+function amountInput(value: DecimalString | null | undefined): string {
+  return value ? toMoneyInput(value) : "";
+}
 
 export function DarfPaymentDialog({ month }: { month: MonthlyTax }) {
   const [open, setOpen] = useState(false);
@@ -70,7 +76,7 @@ function DarfPaymentForm({ month, onDone }: DarfPaymentFormProps) {
   const remove = useDeleteDarfPayment(month);
   const values: z.input<typeof schema> = {
     paid_on: month.payment?.paid_on ?? "",
-    amount: month.payment?.amount ?? month.darf_amount ?? "",
+    amount: amountInput(month.payment?.amount ?? month.darf_amount),
   };
   const form = useForm({ resolver: zodResolver(schema), values });
   const { errors } = form.formState;
@@ -87,7 +93,7 @@ function DarfPaymentForm({ month, onDone }: DarfPaymentFormProps) {
         </Field>
         <Field data-invalid={Boolean(errors.amount)}>
           <FieldLabel htmlFor="darf-amount">Valor pago</FieldLabel>
-          <Input id="darf-amount" inputMode="decimal" {...form.register("amount")} />
+          <MoneyInput id="darf-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldError errors={[errors.amount]} />
         </Field>
       </FieldGroup>

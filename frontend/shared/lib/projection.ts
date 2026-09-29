@@ -1,5 +1,5 @@
 import type { CurrentRates } from "@/shared/hooks/use-current-rates";
-import { type DecimalString, parseSignedDecimalInput } from "@/types/decimal";
+import { type DecimalString, parseSignedDecimalText } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
 export type Projection = components["schemas"]["ProjectionInDTO"];
@@ -8,7 +8,7 @@ export const projectionKeys = ["cdi", "selic", "ipca"] as const;
 
 function readRate(params: URLSearchParams, key: string): DecimalString | null {
   const value = params.get(key);
-  return value === null ? null : parseSignedDecimalInput(value);
+  return value === null ? null : parseSignedDecimalText(value);
 }
 
 export type ProjectionDraft = Record<(typeof projectionKeys)[number], DecimalString | null>;
