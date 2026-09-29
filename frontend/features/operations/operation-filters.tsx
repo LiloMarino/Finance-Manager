@@ -1,5 +1,6 @@
-import { AssetSelect } from "@/shared/components/asset-select";
+import { hasFilters } from "@/features/operations/filter-params";
 import type { OperationFilters as Filters } from "@/features/operations/use-operations";
+import { AssetCombobox } from "@/shared/components/asset-combobox";
 import { Button } from "@/shared/components/ui/button";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
@@ -22,10 +23,10 @@ interface OperationFiltersProps {
 
 export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end">
       <Field>
         <FieldLabel htmlFor="filter-asset">Ativo</FieldLabel>
-        <AssetSelect
+        <AssetCombobox
           id="filter-asset"
           allLabel="Todos"
           value={filters.asset_id ? String(filters.asset_id) : ""}
@@ -80,9 +81,11 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
           }
         />
       </Field>
-      <Button variant="ghost" onClick={() => onChange({})}>
-        Limpar filtros
-      </Button>
+      {hasFilters(filters) && (
+        <Button variant="link" size="sm" className="justify-self-start" onClick={() => onChange({})}>
+          Limpar filtros
+        </Button>
+      )}
     </div>
   );
 }

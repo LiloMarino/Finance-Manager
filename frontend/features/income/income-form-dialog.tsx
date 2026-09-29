@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { type IncomeEvent, useSaveIncome } from "@/features/income/use-income";
-import { AssetSelect } from "@/shared/components/asset-select";
+import { AssetCombobox } from "@/shared/components/asset-combobox";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -120,7 +120,7 @@ function IncomeForm({ event, onSaved }: { event?: IncomeEvent; onSaved: () => vo
             control={form.control}
             name="asset_id"
             render={({ field }) => (
-              <AssetSelect id="income-asset" value={field.value} onChange={field.onChange} />
+              <AssetCombobox id="income-asset" value={field.value} onChange={field.onChange} />
             )}
           />
           <FieldError errors={[errors.asset_id]} />

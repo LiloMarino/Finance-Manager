@@ -1,20 +1,18 @@
 import { FileUp, Plus } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
+import { readFilters, writeFilters } from "@/features/operations/filter-params";
 import { OperationFilters } from "@/features/operations/operation-filters";
 import { OperationFormDialog } from "@/features/operations/operation-form-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
-import {
-  type OperationFilters as Filters,
-  useOperations,
-} from "@/features/operations/use-operations";
+import { useOperations } from "@/features/operations/use-operations";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
 
 export function OperationsPage() {
-  const [filters, setFilters] = useState<Filters>({});
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = readFilters(searchParams);
   const { data, isPending, error } = useOperations(filters);
 
   return (
@@ -44,7 +42,10 @@ export function OperationsPage() {
         </div>
       </div>
 
-      <OperationFilters filters={filters} onChange={setFilters} />
+      <OperationFilters
+        filters={filters}
+        onChange={(next) => setSearchParams((params) => writeFilters(params, next))}
+      />
 
       {isPending ? (
         <Skeleton className="h-40 w-full" />

@@ -24,6 +24,8 @@ const badgeVariants = cva(
         etf: "border-chart-3/50 bg-chart-3/15 text-foreground",
         bdr: "border-chart-4/50 bg-chart-4/15 text-foreground",
         fixed_income: "border-chart-5/50 bg-chart-5/15 text-foreground",
+        buy: "border-buy/50 bg-buy/15 text-foreground",
+        sell: "border-sell/50 bg-sell/15 text-foreground",
       },
     },
     defaultVariants: {

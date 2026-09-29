@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { AssetSelect } from "@/shared/components/asset-select";
+import { AssetCombobox } from "@/shared/components/asset-combobox";
 import { type Operation, useSaveOperation } from "@/features/operations/use-operations";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -134,7 +134,7 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
             control={form.control}
             name="asset_id"
             render={({ field }) => (
-              <AssetSelect
+              <AssetCombobox
                 id="operation-asset"
                 value={field.value}
                 onChange={field.onChange}

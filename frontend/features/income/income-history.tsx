@@ -11,7 +11,7 @@ import {
   useIncome,
 } from "@/features/income/use-income";
 import { AssetClassBadge } from "@/shared/components/asset-class-badge";
-import { AssetSelect } from "@/shared/components/asset-select";
+import { AssetCombobox } from "@/shared/components/asset-combobox";
 import { CategorySelect } from "@/shared/components/category-select";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Button } from "@/shared/components/ui/button";
@@ -52,7 +52,7 @@ function Filters({
     <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:items-end">
       <Field>
         <FieldLabel htmlFor="income-filter-asset">Ativo</FieldLabel>
-        <AssetSelect
+        <AssetCombobox
           id="income-filter-asset"
           allLabel="Todos"
           value={filters.asset_id ? String(filters.asset_id) : ""}

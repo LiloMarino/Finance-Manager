@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { DeleteOperationDialog } from "@/features/operations/delete-operation-dialog";
 import { OperationFormDialog } from "@/features/operations/operation-form-dialog";
 import type { Operation } from "@/features/operations/use-operations";
+import { AssetClassBadge } from "@/shared/components/asset-class-badge";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,
@@ -14,8 +16,17 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
-import { operationTypeLabels } from "@/shared/lib/labels";
+import { type OperationType, operationTypeLabels } from "@/shared/lib/labels";
 import { formatBRL, formatQuantity } from "@/types/decimal";
+
+// Compra e venda com cor própria; os eventos corporativos ficam neutros
+const operationTypeVariants = {
+  buy: "buy",
+  sell: "sell",
+  bonus: "secondary",
+  split: "secondary",
+  reverse_split: "secondary",
+} as const satisfies Record<OperationType, "buy" | "sell" | "secondary">;
 
 export function OperationsTable({ operations }: { operations: Operation[] }) {
   if (operations.length === 0) {
@@ -28,6 +39,7 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
         <TableRow>
           <TableHead>Data</TableHead>
           <TableHead>Ativo</TableHead>
+          <TableHead>Classe</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead className="text-right">Quantidade</TableHead>
           <TableHead className="text-right">Preço unitário</TableHead>
@@ -45,7 +57,14 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
                 {operation.ticker}
               </Link>
             </TableCell>
-            <TableCell>{operationTypeLabels[operation.operation_type]}</TableCell>
+            <TableCell>
+              <AssetClassBadge assetClass={operation.asset_class} />
+            </TableCell>
+            <TableCell>
+              <Badge variant={operationTypeVariants[operation.operation_type]}>
+                {operationTypeLabels[operation.operation_type]}
+              </Badge>
+            </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatQuantity(operation.quantity)}
             </TableCell>

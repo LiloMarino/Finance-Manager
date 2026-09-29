@@ -27,6 +27,8 @@
     --color-destructive: var(--destructive);
     --color-gain: var(--gain);
     --color-loss: var(--loss);
+    --color-buy: var(--buy);
+    --color-sell: var(--sell);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -69,6 +71,9 @@
     /* Alta e baixa */
     --gain: oklch(0.527 0.137 155);
     --loss: oklch(0.577 0.245 27.325);
+    /* Compra e venda: fora das cores de categoria e de alta e baixa */
+    --buy: oklch(0.55 0.2 295);
+    --sell: oklch(0.6 0.11 215);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
@@ -111,6 +116,8 @@
     --destructive: oklch(0.704 0.191 22.216);
     --gain: oklch(0.765 0.177 158);
     --loss: oklch(0.704 0.191 22.216);
+    --buy: oklch(0.7 0.16 295);
+    --sell: oklch(0.72 0.11 215);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
