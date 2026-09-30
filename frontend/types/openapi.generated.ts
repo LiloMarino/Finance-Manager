@@ -387,6 +387,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classification/suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggestion
+         * @description O setor e o segmento sugeridos para o ticker. Nulo quando a fonte não conhece o
+         *     ticker ou não o classifica; a fonte fora do ar, sem perfil em cache, dá 503.
+         */
+        get: operations["suggestion_api_classification_suggestion_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classification/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pending */
+        get: operations["list_pending_api_classification_pending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classification/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept All */
+        post: operations["accept_all_api_classification_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subportfolios": {
         parameters: {
             query?: never;
@@ -1006,6 +1061,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptInDTO */
+        AcceptInDTO: {
+            /** Items */
+            items: components["schemas"]["AcceptItemDTO"][];
+        };
+        /** AcceptItemDTO */
+        AcceptItemDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Segment Id */
+            segment_id: number;
+        };
         /**
          * ApplicationInDTO
          * @description Uma aplicação, pelo valor bruto.
@@ -2776,6 +2843,25 @@ export interface components {
          */
         PaymentChoice: "cash" | "installments";
         /**
+         * PendingDTO
+         * @description `source_unavailable` diz que a fonte parou de responder no meio: os ativos sem
+         *     perfil em cache ficam sem sugestão até a próxima consulta.
+         */
+        PendingDTO: {
+            /** Items */
+            items: components["schemas"]["PendingItemDTO"][];
+            /** Source Unavailable */
+            source_unavailable: boolean;
+        };
+        /** PendingItemDTO */
+        PendingItemDTO: {
+            /** Asset Id */
+            asset_id: number;
+            /** Ticker */
+            ticker: string;
+            suggestion: components["schemas"]["SuggestionDTO"] | null;
+        };
+        /**
          * PerformanceDTO
          * @description Retornos em fração (0,1 é 10%), pela variação da cota, sem contar aportes e
          *     resgates. `start` é o dia cujo fechamento é a base do período, nulo quando ele
@@ -3364,6 +3450,21 @@ export interface components {
             assets: components["schemas"]["MemberAssetDTO"][];
             /** Fixed Income */
             fixed_income: components["schemas"]["MemberInvestmentDTO"][];
+        };
+        /** SuggestionDTO */
+        SuggestionDTO: {
+            /** Source Sector */
+            source_sector: string | null;
+            /** Source Industry */
+            source_industry: string | null;
+            /** Segment Id */
+            segment_id: number | null;
+            /** Sector Id */
+            sector_id: number | null;
+            /** New Sector Name */
+            new_sector_name: string | null;
+            /** New Segment Name */
+            new_segment_name: string | null;
         };
         /**
          * TargetsDTO
@@ -4737,6 +4838,124 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    suggestion_api_classification_suggestion_get: {
+        parameters: {
+            query: {
+                ticker: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionDTO"] | null;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_pending_api_classification_pending_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    accept_all_api_classification_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInDTO"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {

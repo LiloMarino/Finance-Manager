@@ -289,6 +289,20 @@ class TickerPriceHistory(Base):
     close: Mapped[Decimal] = mapped_column(DecimalText)
 
 
+class TickerProfile(Base):
+    """Cache do setor e da indústria que a fonte de mercado dá a um ticker, em inglês.
+    Uma linha é uma resposta da fonte, inclusive a vazia do ETF; o ticker com linha
+    não é consultado de novo. A chave é o ticker porque o ativo novo ainda não tem
+    id quando a sugestão aparece."""
+
+    __tablename__ = "ticker_profiles"
+
+    ticker: Mapped[str] = mapped_column(String, primary_key=True)
+    sector: Mapped[str | None]
+    industry: Mapped[str | None]
+    fetched_at: Mapped[datetime]
+
+
 class FixedIncomeInvestment(Base):
     """Um título de renda fixa. O valor dele é marcado a partir das movimentações e
     das séries do indexador.

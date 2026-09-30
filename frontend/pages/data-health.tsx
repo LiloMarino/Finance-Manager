@@ -1,5 +1,6 @@
 import { CircleCheck } from "lucide-react";
 
+import { ClassificationSuggestions } from "@/features/data-health/classification-suggestions";
 import { IssuesTable } from "@/features/data-health/issues-table";
 import { type DataIssue, useDataHealth } from "@/features/data-health/use-data-health";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -49,7 +50,7 @@ const sections: {
     kind: "unclassified_asset",
     title: "Ativos sem setor ou segmento",
     description:
-      "A distribuição por setor e segmento da Carteira junta esses ativos em Sem classificação.",
+      "A distribuição por setor e segmento da Carteira junta esses ativos em Sem classificação. A sugestão é o segmento que você já deu aos ativos da mesma indústria no Yahoo.",
     subjectLabel: "Ativo",
     actionLabel: "Editar ativo",
   },
@@ -92,11 +93,15 @@ export function DataHealthPage() {
                 <CardDescription>{section.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <IssuesTable
-                  issues={issues}
-                  subjectLabel={section.subjectLabel}
-                  actionLabel={section.actionLabel}
-                />
+                {section.kind === "unclassified_asset" ? (
+                  <ClassificationSuggestions />
+                ) : (
+                  <IssuesTable
+                    issues={issues}
+                    subjectLabel={section.subjectLabel}
+                    actionLabel={section.actionLabel}
+                  />
+                )}
               </CardContent>
             </Card>
           );

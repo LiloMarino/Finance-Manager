@@ -24,6 +24,8 @@ export const queryKeys = {
   tax: ["tax"] as const,
   dataHealth: ["data-health"] as const,
   sectors: ["sectors"] as const,
+  // A sugestão sai dos ativos já classificados e dos setores pelo nome
+  classification: ["classification"] as const,
   subportfolios: ["subportfolios"] as const,
   alertSchedule: ["alert", "schedule"] as const,
 };
@@ -50,7 +52,8 @@ export function invalidateIncomeData(queryClient: QueryClient): Promise<void> {
 }
 
 /** Toda escrita em ativo ou operação muda a carteira, as listas, os ativos a cotar,
-a apuração fiscal, os problemas de dado e os membros das subcarteiras. */
+a apuração fiscal, os problemas de dado, os membros das subcarteiras e a sugestão de
+classificação. */
 export function invalidatePortfolioData(queryClient: QueryClient): Promise<void> {
   return invalidateKeys(queryClient, [
     queryKeys.assets,
@@ -60,5 +63,6 @@ export function invalidatePortfolioData(queryClient: QueryClient): Promise<void>
     queryKeys.tax,
     queryKeys.dataHealth,
     queryKeys.subportfolios,
+    queryKeys.classification,
   ]);
 }

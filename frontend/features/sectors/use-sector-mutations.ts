@@ -5,7 +5,8 @@ import type { Sector, Segment } from "@/shared/hooks/use-sectors";
 import { del, getApiErrorMessage, post, put } from "@/shared/lib/api";
 import { invalidateKeys, queryKeys } from "@/shared/lib/query-keys";
 
-// O nome do setor e do segmento aparece no ativo, na Carteira e no painel
+// O nome do setor e do segmento aparece no ativo, na Carteira, no painel e na
+// sugestão de classificação
 function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
   const queryClient = useQueryClient();
 
@@ -18,6 +19,7 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
         queryKeys.assets,
         queryKeys.portfolio,
         queryKeys.dataHealth,
+        queryKeys.classification,
       ]);
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

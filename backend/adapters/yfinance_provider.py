@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import yfinance as yf
 
+from backend.domain.classification import CompanyProfile, ProfileUnavailableError
 from backend.domain.market_data import DailyClose, to_cents
 from backend.domain.ticker_search import QuoteHit, TickerSearchUnavailableError
 
@@ -57,6 +58,26 @@ class YFinanceTickerSearch:
             )
             for quote in quotes
         ]
+
+
+class YFinanceProfileProvider:
+    def profile(self, ticker: str) -> CompanyProfile | None:
+        # Ticker que a fonte não conhece volta num dicionário sem `quoteType`
+        try:
+            info = yf.Ticker(f"{ticker}.SA").info
+        except Exception as error:
+            raise ProfileUnavailableError(
+                "O perfil do yfinance não respondeu."
+            ) from error
+        if not info.get("quoteType"):
+            return None
+        return CompanyProfile(
+            sector=_text(info.get("sector")), industry=_text(info.get("industry"))
+        )
+
+
+def _text(value: object) -> str | None:
+    return (value.strip() or None) if isinstance(value, str) else None
 
 
 def to_daily_closes(rows: Iterable[tuple[datetime, float]]) -> list[DailyClose]:

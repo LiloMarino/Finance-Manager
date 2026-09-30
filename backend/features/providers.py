@@ -8,7 +8,12 @@ from fastapi import Depends
 
 from backend.adapters.bcb_sgs_provider import BcbSgsProvider
 from backend.adapters.windows_task_scheduler import WindowsTaskScheduler
-from backend.adapters.yfinance_provider import YFinanceProvider, YFinanceTickerSearch
+from backend.adapters.yfinance_provider import (
+    YFinanceProfileProvider,
+    YFinanceProvider,
+    YFinanceTickerSearch,
+)
+from backend.domain.classification import ProfileProvider
 from backend.domain.index_series import IndexSeriesProvider
 from backend.domain.market_data import MarketDataProvider
 from backend.domain.task_schedule import TaskScheduler
@@ -31,7 +36,12 @@ def get_ticker_search() -> TickerSearchProvider:
     return YFinanceTickerSearch()
 
 
+def get_profile_provider() -> ProfileProvider:
+    return YFinanceProfileProvider()
+
+
 ProviderDep = Annotated[MarketDataProvider, Depends(get_provider)]
 IndexProviderDep = Annotated[IndexSeriesProvider, Depends(get_index_provider)]
 SchedulerDep = Annotated[TaskScheduler, Depends(get_scheduler)]
 TickerSearchDep = Annotated[TickerSearchProvider, Depends(get_ticker_search)]
+ProfileProviderDep = Annotated[ProfileProvider, Depends(get_profile_provider)]

@@ -1,10 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ReactElement, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { SegmentSelect } from "@/features/assets/segment-select";
+import { ClassificationHint } from "@/features/assets/classification-hint";
+import { SegmentCombobox } from "@/features/assets/segment-combobox";
+import { SegmentCreateDialog } from "@/features/assets/segment-create-dialog";
 import { useSaveAsset } from "@/features/assets/use-asset-mutations";
+import { useClassificationSuggestion } from "@/features/assets/use-classification";
 import type { Asset } from "@/shared/hooks/use-assets";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
 import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
@@ -81,6 +84,11 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
     },
   });
   const { errors } = form.formState;
+  const ticker = useWatch({ control: form.control, name: "ticker" });
+  const segmentId = useWatch({ control: form.control, name: "segment_id" });
+  const { data: suggestion } = useClassificationSuggestion(ticker);
+  // O nome do segmento a criar; nulo é o diálogo de criação fechado
+  const [creating, setCreating] = useState<string | null>(null);
 
   const submit = form.handleSubmit((values) =>
     save.mutate(
@@ -88,71 +96,101 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
       { onSuccess: onSaved },
     ),
   );
+  const chooseSegment = (id: number | null) =>
+    form.setValue("segment_id", id, { shouldDirty: true });
 
   return (
-    <form onSubmit={(event) => void submit(event)}>
-      <FieldGroup>
-        <Field data-invalid={Boolean(errors.ticker)}>
-          <FieldLabel htmlFor="asset-ticker">Ticker</FieldLabel>
-          <Controller
-            control={form.control}
-            name="ticker"
-            render={({ field }) => (
-              <TickerSearch id="asset-ticker" value={field.value} onChange={field.onChange} />
-            )}
-          />
-          <FieldError errors={[errors.ticker]} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="asset-class">Classe</FieldLabel>
-          <Controller
-            control={form.control}
-            name="asset_class"
-            render={({ field }) => (
-              <AssetClassSelect id="asset-class" value={field.value} onChange={field.onChange} />
-            )}
-          />
-        </Field>
-        <Field data-invalid={Boolean(errors.cnpj)}>
-          <FieldLabel htmlFor="asset-cnpj">CNPJ</FieldLabel>
-          <Input
-            id="asset-cnpj"
-            inputMode="numeric"
-            placeholder="XX.XXX.XXX/XXXX-XX"
-            {...withMask(form.register("cnpj"), maskCnpj)}
-          />
-          <FieldError errors={[errors.cnpj]} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="asset-segment">Segmento</FieldLabel>
-          <Controller
-            control={form.control}
-            name="segment_id"
-            render={({ field }) => (
-              <SegmentSelect id="asset-segment" value={field.value} onChange={field.onChange} />
-            )}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="asset-subportfolio">Subcarteira</FieldLabel>
-          <Controller
-            control={form.control}
-            name="subportfolio_id"
-            render={({ field }) => (
-              <SubportfolioSelect
-                id="asset-subportfolio"
-                value={field.value}
-                onChange={field.onChange}
+    <>
+      <form onSubmit={(event) => void submit(event)}>
+        <FieldGroup>
+          <Field data-invalid={Boolean(errors.ticker)}>
+            <FieldLabel htmlFor="asset-ticker">Ticker</FieldLabel>
+            <Controller
+              control={form.control}
+              name="ticker"
+              render={({ field }) => (
+                <TickerSearch id="asset-ticker" value={field.value} onChange={field.onChange} />
+              )}
+            />
+            <FieldError errors={[errors.ticker]} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="asset-class">Classe</FieldLabel>
+            <Controller
+              control={form.control}
+              name="asset_class"
+              render={({ field }) => (
+                <AssetClassSelect id="asset-class" value={field.value} onChange={field.onChange} />
+              )}
+            />
+          </Field>
+          <Field data-invalid={Boolean(errors.cnpj)}>
+            <FieldLabel htmlFor="asset-cnpj">CNPJ</FieldLabel>
+            <Input
+              id="asset-cnpj"
+              inputMode="numeric"
+              placeholder="XX.XXX.XXX/XXXX-XX"
+              {...withMask(form.register("cnpj"), maskCnpj)}
+            />
+            <FieldError errors={[errors.cnpj]} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="asset-segment">Segmento</FieldLabel>
+            <Controller
+              control={form.control}
+              name="segment_id"
+              render={({ field }) => (
+                <SegmentCombobox
+                  id="asset-segment"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onCreate={setCreating}
+                />
+              )}
+            />
+            {suggestion && (
+              <ClassificationHint
+                suggestion={suggestion}
+                value={segmentId}
+                onUse={chooseSegment}
+                onCreate={() => setCreating(suggestion.new_segment_name ?? "")}
               />
             )}
-          />
-        </Field>
-      </FieldGroup>
-      <DialogFooter className="mt-6">
-        <Button type="submit" disabled={save.isPending}>
-          Salvar
-        </Button>
-      </DialogFooter>
-    </form>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="asset-subportfolio">Subcarteira</FieldLabel>
+            <Controller
+              control={form.control}
+              name="subportfolio_id"
+              render={({ field }) => (
+                <SubportfolioSelect
+                  id="asset-subportfolio"
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </Field>
+        </FieldGroup>
+        <DialogFooter className="mt-6">
+          <Button type="submit" disabled={save.isPending}>
+            Salvar
+          </Button>
+        </DialogFooter>
+      </form>
+      <SegmentCreateDialog
+        draft={
+          creating === null
+            ? null
+            : {
+                sectorId: suggestion?.sector_id ?? null,
+                sectorName: suggestion?.new_sector_name ?? "",
+                segmentName: creating,
+              }
+        }
+        onClose={() => setCreating(null)}
+        onCreated={chooseSegment}
+      />
+    </>
   );
 }

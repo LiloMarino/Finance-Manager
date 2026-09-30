@@ -28,6 +28,7 @@ from backend.repository.market import (
 )
 from backend.repository.operations import operation_records
 from backend.repository.rebalance import breaches
+from backend.repository.sectors import unclassified_held_assets
 
 SERIES_LABELS = {
     IndexSeries.CDI: "CDI",
@@ -168,7 +169,6 @@ def _cnpj_issues(session: Session, today: date) -> list[DataIssueDTO]:
 
 def _segment_issues(session: Session) -> list[DataIssueDTO]:
     """Ativo em carteira sem segmento: é o que entra na distribuição por setor."""
-    held = [item.asset_id for item in held_assets(session) if item.window.end is None]
     return [
         DataIssueDTO(
             kind=DataIssueKind.UNCLASSIFIED_ASSET,
@@ -180,11 +180,7 @@ def _segment_issues(session: Session) -> list[DataIssueDTO]:
             ),
             path=f"/assets/{asset.id}",
         )
-        for asset in session.scalars(
-            select(Asset)
-            .where(Asset.id.in_(held), Asset.segment_id.is_(None))
-            .order_by(Asset.ticker)
-        )
+        for asset in unclassified_held_assets(session)
     ]
 
 
