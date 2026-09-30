@@ -74,8 +74,8 @@ function Distribution({ slices, heading }: { slices: Slice[]; heading: string })
       {/* Barras horizontais, do maior valor para o menor */}
       <ChartContainer
         config={chartConfig}
-        className="aspect-auto w-full lg:w-1/2"
-        style={{ height: slices.length * 36 + 16 }}
+        className="aspect-auto h-(--chart-height) w-full lg:w-1/2"
+        style={{ "--chart-height": `${slices.length * 36 + 16}px` }}
       >
         <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
           <XAxis type="number" dataKey="value" hide />

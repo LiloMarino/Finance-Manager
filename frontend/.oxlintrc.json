@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc", "import"],
+  "jsPlugins": ["@shadcn/lint"],
   "options": {
     "typeAware": true
   },
@@ -15,7 +16,23 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
     "typescript/await-thenable": "error",
-    "typescript/no-unnecessary-condition": "warn"
+    "typescript/no-unnecessary-condition": "warn",
+    "shadcn/no-restyle": [
+      "error",
+      {
+        "allow": ["layout", "spacing", "typography"]
+      }
+    ],
+    "shadcn/no-raw-colors": "error",
+    "shadcn/no-arbitrary-values": [
+      "error",
+      {
+        "allow": ["grid-cols-[*]", "max-h-[*vh]"]
+      }
+    ],
+    "shadcn/no-inline-styles": "error",
+    "shadcn/no-unknown-classes": "error",
+    "shadcn/require-static-classes": "error"
   },
   "ignorePatterns": [
     "dist",

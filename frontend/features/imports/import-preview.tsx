@@ -301,7 +301,7 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
                   <TableCell className="tabular-nums">{item.movement_date}</TableCell>
                   <TableCell className="font-medium">{item.ticker}</TableCell>
                   <TableCell>{item.movement}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.reason}</TableCell>
+                  <TableCell variant="muted">{item.reason}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

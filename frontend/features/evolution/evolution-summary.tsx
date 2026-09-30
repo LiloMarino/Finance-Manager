@@ -1,5 +1,6 @@
 import { growthHint } from "@/features/evolution/hints";
 import type { Evolution } from "@/features/evolution/use-evolution";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { MetricHint } from "@/shared/components/metric-hint";
 import {
   Table,
@@ -62,10 +63,7 @@ export function EvolutionSummary({ evolution }: { evolution: Evolution }) {
             <TableRow key={item.category}>
               <TableCell>
                 <span className="flex items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: portfolioCategoryConfig[item.category].color }}
-                  />
+                  <ColorSwatch color={portfolioCategoryConfig[item.category].color} />
                   {portfolioCategoryConfig[item.category].label}
                 </span>
               </TableCell>

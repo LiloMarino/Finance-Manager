@@ -4,6 +4,7 @@ import { Cell, Pie, PieChart } from "recharts";
 
 import { dividendYieldHint, netHint, yieldOnCostHint } from "@/features/income/hints";
 import { type IncomeDistribution, useIncomeDistribution } from "@/features/income/use-income";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { MetricHint } from "@/shared/components/metric-hint";
 import {
   Accordion,
@@ -107,10 +108,7 @@ function CategoryDonut({ distribution }: { distribution: IncomeDistribution }) {
             <TableRow key={item.category}>
               <TableCell>
                 <span className="flex items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: categoryConfig[item.category].color }}
-                  />
+                  <ColorSwatch color={categoryConfig[item.category].color} />
                   {categoryConfig[item.category].label}
                 </span>
               </TableCell>

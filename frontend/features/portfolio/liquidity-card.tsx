@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useSearchParams } from "react-router-dom";
 
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
@@ -82,10 +83,7 @@ function TierBar({ liquidity }: { liquidity: Portfolio["liquidity"] }) {
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 shrink-0 rounded-[2px]"
-                        style={{ backgroundColor: tierConfig[item.tier].color }}
-                      />
+                      <ColorSwatch shape="square" color={tierConfig[item.tier].color} />
                       {tierConfig[item.tier].label}
                     </span>
                     <span className="tabular-nums">
@@ -136,10 +134,7 @@ function TierTable({ liquidity }: { liquidity: Portfolio["liquidity"] }) {
           <TableRow key={item.tier}>
             <TableCell>
               <span className="flex items-center gap-2">
-                <span
-                  className="size-2.5 shrink-0 rounded-[2px]"
-                  style={{ backgroundColor: tierConfig[item.tier].color }}
-                />
+                <ColorSwatch shape="square" color={tierConfig[item.tier].color} />
                 <MetricHint hint={tierHints[item.tier]}>
                   <span>{tierConfig[item.tier].label}</span>
                 </MetricHint>

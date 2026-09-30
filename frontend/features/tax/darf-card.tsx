@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { signClass } from "@/shared/lib/sign";
+import { signClass, signTone } from "@/shared/lib/sign";
 import { formatBRL, formatPercent, formatSignedBRL, isZero } from "@/types/decimal";
 
 export function DarfCard({ month }: { month: MonthlyTax }) {
@@ -84,7 +84,10 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
                   <TableCell className="text-right tabular-nums">
                     {formatBRL(category.sales)}
                   </TableCell>
-                  <TableCell className={`text-right tabular-nums ${signClass(category.result)}`}>
+                  <TableCell
+                    variant={signTone(category.result)}
+                    className="text-right tabular-nums"
+                  >
                     {formatSignedBRL(category.result)}
                   </TableCell>
                   <TableCell>{category.exempt ? "Sim" : "Não"}</TableCell>

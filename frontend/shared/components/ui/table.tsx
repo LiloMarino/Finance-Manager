@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
@@ -54,16 +55,32 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 const INTERACTIVE =
   "a, button, input, select, textarea, label, [role=menuitem], [role=checkbox], [role=switch]"
 
+const tableRowVariants = cva(
+  "transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+  {
+    variants: {
+      variant: {
+        default: "border-b",
+        // A linha que fecha um bloco, como a referência acima dos anos
+        divider: "border-b-2",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  }
+)
+
 function TableRow({
   className,
+  variant,
   to,
   onClick,
   ...props
-}: React.ComponentProps<"tr"> & {
-  /** Destino do detalhe: a linha inteira leva a ele. O link do nome continua
-  existindo para o teclado e para abrir em outra aba. */
-  to?: string
-}) {
+}: React.ComponentProps<"tr"> &
+  VariantProps<typeof tableRowVariants> & {
+    /** Destino do detalhe: a linha inteira leva a ele. O link do nome continua
+    existindo para o teclado e para abrir em outra aba. */
+    to?: string
+  }) {
   const navigate = useNavigate()
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -88,7 +105,7 @@ function TableRow({
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        tableRowVariants({ variant }),
         to !== undefined && "cursor-pointer",
         className
       )}
@@ -111,14 +128,34 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   )
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+const tableCellVariants = cva(
+  "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+  {
+    variants: {
+      variant: {
+        default: "",
+        // O texto secundário da linha
+        muted: "text-muted-foreground",
+        // O número pelo sinal: alta ou baixa
+        gain: "text-gain",
+        loss: "text-loss",
+        // O cabeçalho de um grupo de linhas dentro da tabela
+        group: "bg-muted/40 text-xs font-semibold text-muted-foreground uppercase",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  }
+)
+
+function TableCell({
+  className,
+  variant,
+  ...props
+}: React.ComponentProps<"td"> & VariantProps<typeof tableCellVariants>) {
   return (
     <td
       data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-        className
-      )}
+      className={cn(tableCellVariants({ variant }), className)}
       {...props}
     />
   )

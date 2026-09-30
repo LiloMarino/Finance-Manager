@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { netHint, recentHint } from "@/features/income/hints";
 import { type IncomePerformance, useIncomePerformance } from "@/features/income/use-income";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { Metric } from "@/shared/components/metric";
 import { PeriodSelect } from "@/shared/components/period-select";
 import {
@@ -115,10 +116,7 @@ function IncomeChart({ performance }: { performance: IncomePerformance }) {
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 shrink-0 rounded-[2px]"
-                        style={{ backgroundColor: `var(--color-${key})` }}
-                      />
+                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
                       {isPortfolioCategory(key) ? categoryConfig[key].label : key}
                     </span>
                     <span className="tabular-nums">{String(label)}</span>
@@ -161,10 +159,7 @@ function CategoryTotals({ performance }: { performance: IncomePerformance }) {
           <TableRow key={item.category}>
             <TableCell>
               <span className="flex items-center gap-2">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: categoryConfig[item.category].color }}
-                />
+                <ColorSwatch color={categoryConfig[item.category].color} />
                 {categoryConfig[item.category].label}
               </span>
             </TableCell>

@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 
 import { accumulatedHint, yearHint } from "@/features/monthly-returns/hints";
-import { signClass } from "@/shared/lib/sign";
+import { signTone } from "@/shared/lib/sign";
 import { monthLabels } from "@/shared/lib/months";
 import type { MonthlyReturns, YearReturns } from "@/features/monthly-returns/use-monthly-returns";
 import { MetricHint } from "@/shared/components/metric-hint";
@@ -28,11 +28,8 @@ function ReturnCell({
 }) {
   return (
     <TableCell
-      className={cn(
-        "text-right tabular-nums",
-        strong && "font-semibold",
-        value && (reference ? "text-muted-foreground" : signClass(value)),
-      )}
+      variant={!value ? "default" : reference ? "muted" : signTone(value)}
+      className={cn("text-right tabular-nums", strong && "font-semibold")}
     >
       {value ? formatSignedPercent(value) : <span className="text-muted-foreground">—</span>}
     </TableCell>
@@ -49,8 +46,8 @@ function ReturnsRow({
   reference?: boolean;
 }) {
   return (
-    <TableRow className={cn(reference && "border-b-2")}>
-      <TableCell className={cn("font-medium", reference && "text-muted-foreground")}>
+    <TableRow variant={reference ? "divider" : "default"}>
+      <TableCell variant={reference ? "muted" : "default"} className="font-medium">
         {label}
       </TableCell>
       {monthLabels.map((month, index) => (

@@ -7,7 +7,13 @@ import { useCash } from "@/features/cash/use-cash";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
@@ -35,11 +41,11 @@ export function CashPage() {
           {/* Saldo de hoje */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-muted-foreground text-sm font-normal">
+              <CardDescription>
                 <MetricHint hint={cashHint}>
                   <span>Saldo a reinvestir</span>
                 </MetricHint>
-              </CardTitle>
+              </CardDescription>
               {data.balance !== null && data.opened_on !== null ? (
                 <>
                   <p className="flex flex-wrap items-center gap-3 text-4xl font-semibold">

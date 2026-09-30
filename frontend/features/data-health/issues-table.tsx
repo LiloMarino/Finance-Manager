@@ -33,7 +33,7 @@ export function IssuesTable({ issues, subjectLabel, actionLabel }: IssuesTablePr
           <TableRow key={`${issue.kind}-${issue.subject}`}>
             <TableCell className="font-medium">{issue.subject}</TableCell>
             <TableCell className="whitespace-normal">{issue.missing}</TableCell>
-            <TableCell className="text-muted-foreground whitespace-normal">
+            <TableCell variant="muted" className="whitespace-normal">
               {issue.affects}
             </TableCell>
             <TableCell className="text-right">

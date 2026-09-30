@@ -37,10 +37,14 @@ function IndicatorCard({ label, hint, value, tone = "", children }: IndicatorCar
         <CardDescription>
           <MetricHint hint={hint}>{label}</MetricHint>
         </CardDescription>
-        <CardTitle className={`text-2xl font-semibold tabular-nums ${tone}`}>{value}</CardTitle>
+        <CardTitle className="text-2xl font-semibold tabular-nums">
+          <span className={tone}>{value}</span>
+        </CardTitle>
       </CardHeader>
       {children && (
-        <CardContent className="text-muted-foreground tabular-nums">{children}</CardContent>
+        <CardContent>
+          <CardDescription className="tabular-nums">{children}</CardDescription>
+        </CardContent>
       )}
     </Card>
   );

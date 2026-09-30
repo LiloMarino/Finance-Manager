@@ -50,6 +50,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Matriz de correlação: a célula e o texto dela quando a matriz é grande */
+  --text-2xs: 0.625rem;
+  --aspect-cell: 4 / 3;
 }
 
 :root {

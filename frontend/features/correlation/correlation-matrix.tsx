@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { describeCorrelation } from "@/features/correlation/hints";
 import type { CorrelationMatrix as Matrix } from "@/features/correlation/use-correlation";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { cn } from "@/shared/lib/utils";
 
 const correlationFormatter = new Intl.NumberFormat("pt-BR", {
@@ -49,9 +50,12 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
       {/* Grade da matriz */}
       <div className="overflow-x-auto">
         <div
-          className={cn("grid", compact ? "gap-0.5 text-[0.625rem]" : "gap-1 text-xs")}
+          className={cn(
+            "grid grid-cols-(--matrix-columns)",
+            compact ? "text-2xs gap-0.5" : "gap-1 text-xs",
+          )}
           style={{
-            gridTemplateColumns: `auto repeat(${symbols.length}, minmax(${compact ? "2.5rem" : "3.25rem"}, 6rem))`,
+            "--matrix-columns": `auto repeat(${symbols.length}, minmax(${compact ? "2.5rem" : "3.25rem"}, 6rem))`,
           }}
           onMouseLeave={() => setHovered(null)}
         >
@@ -88,16 +92,14 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
                     aria-disabled={empty}
                     aria-label={`${rowSymbol} × ${columnSymbol}`}
                     className={cn(
-                      "flex aspect-[4/3] items-center justify-center rounded-md tabular-nums transition-shadow",
+                      "aspect-cell flex items-center justify-center rounded-md tabular-nums transition-shadow",
                       empty
                         ? "bg-muted text-muted-foreground cursor-default"
-                        : "hover:ring-foreground/40 hover:ring-2",
+                        : "bg-(--cell) hover:ring-foreground/40 hover:ring-2",
                       isSelected(row, column) && "ring-foreground ring-2",
                     )}
                     style={
-                      empty || cell.value === null
-                        ? undefined
-                        : { backgroundColor: cellColor(cell.value) }
+                      empty || cell.value === null ? undefined : { "--cell": cellColor(cell.value) }
                     }
                     onMouseEnter={(event) => {
                       const box = event.currentTarget.getBoundingClientRect();
@@ -119,8 +121,8 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
       {/* Tooltip no visual dos gráficos */}
       {hovered && hoveredCell && hovered.row !== hovered.column && (
         <div
-          className="border-border/50 bg-background pointer-events-none fixed z-50 grid w-64 -translate-x-1/2 -translate-y-full gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl"
-          style={{ left: hovered.x, top: hovered.y - 6 }}
+          className="border-border/50 bg-background pointer-events-none fixed top-(--tooltip-y) left-(--tooltip-x) z-50 grid w-64 -translate-x-1/2 -translate-y-full gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl"
+          style={{ "--tooltip-x": `${hovered.x}px`, "--tooltip-y": `${hovered.y - 6}px` }}
         >
           <span className="font-medium">
             {symbols[hovered.row]} × {symbols[hovered.column]}
@@ -133,10 +135,7 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
             <>
               <span className="flex items-center justify-between gap-4">
                 <span className="flex items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-[2px]"
-                    style={{ backgroundColor: cellColor(hoveredCell.value) }}
-                  />
+                  <ColorSwatch shape="square" color={cellColor(hoveredCell.value)} />
                   Correlação
                 </span>
                 <span className="tabular-nums">
@@ -154,10 +153,8 @@ export function CorrelationMatrix({ matrix, selected, onSelect }: CorrelationMat
       {/* Legenda da escala */}
       <div className="flex flex-col gap-1 text-xs">
         <div
-          className="h-2 w-full rounded-full"
-          style={{
-            background: `linear-gradient(to right, ${cellColor(-1)}, ${cellColor(0)}, ${cellColor(1)})`,
-          }}
+          className="h-2 w-full rounded-full bg-linear-to-r from-(--low) via-(--middle) to-(--high)"
+          style={{ "--low": cellColor(-1), "--middle": cellColor(0), "--high": cellColor(1) }}
         />
         <div className="text-muted-foreground flex justify-between">
           <span>−1 · sentidos opostos</span>

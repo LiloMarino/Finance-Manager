@@ -9,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { formatDate } from "@/shared/lib/format";
 
 const levelFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
@@ -49,10 +50,7 @@ export function NormalizedChart({ correlation }: { correlation: Correlation }) {
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 shrink-0 rounded-[2px]"
-                        style={{ backgroundColor: `var(--color-${key})` }}
-                      />
+                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
                       {key === "first" ? correlation.first : correlation.second}
                     </span>
                     <span className="tabular-nums">

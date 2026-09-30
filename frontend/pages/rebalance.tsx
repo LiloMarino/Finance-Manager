@@ -10,7 +10,13 @@ import { type Rebalance, useRebalance } from "@/features/rebalance/use-rebalance
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
 import { getApiErrorMessage } from "@/shared/lib/api";
@@ -69,11 +75,11 @@ function SubportfolioSummary({ rebalance, subportfolioId }: SummaryProps) {
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <CardTitle className="text-muted-foreground text-sm font-normal">
+          <CardDescription>
             <MetricHint hint={imbalanceHint}>
               <span>Desbalanceamento</span>
             </MetricHint>
-          </CardTitle>
+          </CardDescription>
           {rebalance.complete && rebalance.imbalance ? (
             <p className="flex flex-wrap items-center gap-3 text-4xl font-semibold tabular-nums">
               {formatPoints(rebalance.imbalance)}

@@ -9,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { type Benchmark, benchmarkConfig } from "@/shared/lib/benchmark";
 import { formatDate } from "@/shared/lib/format";
 import { formatSignedPercent, toChartNumber } from "@/types/decimal";
@@ -90,10 +91,7 @@ export function PerformanceChart({ performance, selected }: PerformanceChartProp
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 shrink-0 rounded-[2px]"
-                        style={{ backgroundColor: `var(--color-${key})` }}
-                      />
+                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
                       {isSeriesKey(key) ? chartConfig[key].label : key}
                     </span>
                     <span className="tabular-nums">{String(label)}</span>

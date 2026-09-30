@@ -1,6 +1,7 @@
 import { formatVolatility } from "@/features/risk-return/format";
 import { periodReturnHint, returnsHint, volatilityHint } from "@/features/risk-return/hints";
 import { PORTFOLIO_KEY, type RiskReturn, itemKey } from "@/features/risk-return/use-risk-return";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -12,7 +13,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { portfolioCategoryConfig, portfolioCategoryLabels } from "@/shared/lib/portfolio-category";
-import { signClass } from "@/shared/lib/sign";
+import { signTone } from "@/shared/lib/sign";
 import { formatBRL, formatSignedPercent, toChartNumber } from "@/types/decimal";
 
 interface RiskReturnTableProps {
@@ -59,7 +60,8 @@ export function RiskReturnTable({ riskReturn, hidden, onToggle }: RiskReturnTabl
             <TableCell>Carteira</TableCell>
             <TableCell />
             <TableCell
-              className={`text-right tabular-nums ${signClass(riskReturn.portfolio.period_return)}`}
+              variant={signTone(riskReturn.portfolio.period_return)}
+              className="text-right tabular-nums"
             >
               {formatSignedPercent(riskReturn.portfolio.period_return)}
             </TableCell>
@@ -89,15 +91,16 @@ export function RiskReturnTable({ riskReturn, hidden, onToggle }: RiskReturnTabl
               <TableCell>{item.label}</TableCell>
               <TableCell>
                 <span className="inline-flex items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-[2px]"
-                    style={{ backgroundColor: portfolioCategoryConfig[item.category].color }}
+                  <ColorSwatch
+                    shape="square"
+                    color={portfolioCategoryConfig[item.category].color}
                   />
                   {portfolioCategoryLabels[item.category]}
                 </span>
               </TableCell>
               <TableCell
-                className={`text-right tabular-nums ${signClass(item.risk.period_return)}`}
+                variant={signTone(item.risk.period_return)}
+                className="text-right tabular-nums"
               >
                 {formatSignedPercent(item.risk.period_return)}
               </TableCell>

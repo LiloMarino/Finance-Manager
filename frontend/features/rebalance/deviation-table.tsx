@@ -75,9 +75,7 @@ export function DeviationTable({ lines, general }: DeviationTableProps) {
               )}
             </TableCell>
             {general && (
-              <TableCell className="text-muted-foreground">
-                {line.subportfolio ?? "Fora de subcarteira"}
-              </TableCell>
+              <TableCell variant="muted">{line.subportfolio ?? "Fora de subcarteira"}</TableCell>
             )}
             <TableCell className="text-right tabular-nums">{formatBRL(line.value)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatPercent(line.share)}</TableCell>

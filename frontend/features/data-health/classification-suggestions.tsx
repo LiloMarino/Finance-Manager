@@ -82,7 +82,7 @@ export function ClassificationSuggestions() {
                 )}
               </TableCell>
               <TableCell className="font-medium">{item.ticker}</TableCell>
-              <TableCell className="text-muted-foreground whitespace-normal">
+              <TableCell variant="muted" className="whitespace-normal">
                 {item.suggestion ? sourceLabel(item.suggestion) : "—"}
               </TableCell>
               <TableCell className="whitespace-normal">

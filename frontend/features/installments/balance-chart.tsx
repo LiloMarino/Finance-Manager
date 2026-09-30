@@ -9,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import { formatDate } from "@/shared/lib/format";
 import { formatBRL, toChartNumber } from "@/types/decimal";
 
@@ -70,10 +71,7 @@ export function BalanceChart({ simulation }: { simulation: Installments }) {
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 shrink-0 rounded-[2px]"
-                        style={{ backgroundColor: `var(--color-${key})` }}
-                      />
+                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
                       {isSeriesKey(key) ? chartConfig[key].label : key}
                     </span>
                     <span className="tabular-nums">{String(label)}</span>

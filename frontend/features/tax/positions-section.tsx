@@ -50,10 +50,7 @@ export function PositionsSection({ title, positions }: PositionsSectionProps) {
               {groups.map((group) => (
                 <Fragment key={group.assetClass}>
                   <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="bg-muted/40 text-muted-foreground text-xs font-semibold uppercase"
-                    >
+                    <TableCell colSpan={4} variant="group">
                       <span className="inline-flex items-center gap-2">
                         <CategoryDot category={group.assetClass} />
                         {assetClassLabels[group.assetClass]}
