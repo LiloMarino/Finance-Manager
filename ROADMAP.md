@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-30):** Concluída a F52: o setor e o segmento de cada ativo chegam sugeridos pelo yfinance, a partir dos ativos que o usuário já classificou.
+> **Última mudança (2026-09-30):** Concluída a F57: o front tem formatter, e o lint confere que o design system é estendido, e não sobrescrito.
 
 ## Glossário
 
@@ -34,7 +34,7 @@
 | **F43** | Sidebar | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (60 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (61 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -98,6 +98,7 @@
 | **F54** | Saldo de investimento | — | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | — | ✅ |
 | **F56** | Design system sobre o Base UI | — | ✅ |
+| **F57** | Lint do design system e formatter no front | — | ✅ |
 
 </details>
 
@@ -316,14 +317,14 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 8/10 concluídas
+> **Progresso:** 9/11 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
 | **F43** | Sidebar | F2, F30 | ⏳ |
 
-<details><summary>Concluído (8 itens)</summary>
+<details><summary>Concluído (9 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -335,6 +336,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | F37, F56 | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | F45 | ✅ |
 | **F56** | Design system sobre o Base UI | — | ✅ |
+| **F57** | Lint do design system e formatter no front | — | ✅ |
 
 </details>
 
@@ -1062,6 +1064,7 @@ Decisões tomadas durante:
 | ID | Resumo | D# | Marco | Depende de | Esforço | Risco | Valor | Custo-benefício | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **F43** | Sidebar | — | M9 | F2, F30 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F57** | Lint do design system e formatter no front | — | M9 | — | Médio | Baixo | Médio | Bom | ✅ Concluído |
 
 **F43 — Sidebar.** A sidebar de hoje é uma lista crua de links com texto pequeno, abaixo até do exemplo do shadcn. Vai junto com a identidade visual (F30): a sidebar é a parte mais visível dela.
 
@@ -1071,6 +1074,25 @@ Plano:
 - itens agrupados por assunto, com rótulo de grupo (carteira e ativos; operações e importação; mercado e análises; fiscal), ícone e texto maiores, e o item ativo destacado;
 - recolhível para só os ícones, com o estado guardado (o `SidebarProvider` já faz isso por cookie);
 - rodapé com o alternador de tema claro e escuro e o contador do painel de dados (F42). O contador já existe e hoje fica no item "Saúde dos dados"; o alternador é novo: o app não tem botão de tema nem `ThemeProvider` montado (o `next-themes` está instalado e só o `sonner` o lê), e nada aplica a classe `dark`, então o app abre sempre no claro.
+
+**F57 — Lint do design system e formatter no front.** O front ganhou formatter, e a regra "estenda o design system, não sobrescreva" passou a ser verificada pelo lint. Vem antes da identidade visual (F30), que mexe nos tokens que essas regras protegem.
+
+- **Formatter:** `oxfmt` com largura 100, fora do código vendorizado (`shared/components/ui`) e do gerado. `pnpm format` formata, e o `pnpm check` do front confere. O `frontend/.gitattributes` fixa o fim de linha em LF, que é o que o `oxfmt` escreve. A formatação inteira foi num commit só.
+- **Lint do design system:** o `@shadcn/lint` entra como plugin do oxlint, com as seis regras como erro. O `no-restyle` libera layout, espaçamento e tipografia em componente. O `no-arbitrary-values` libera só o molde de grade (`grid-cols-[…]`) e a altura máxima pela tela (`max-h-[…vh]`).
+- **Correções:**
+  - o `TableCell` ganhou as variantes `muted`, `gain`, `loss` e `group`, e o `TableRow`, a `divider`. A cor pelo sinal vem de `signTone`, que acompanha o `signClass` para o que não é componente;
+  - o rótulo que era um `CardTitle` acinzentado virou `CardDescription`;
+  - a bolinha e o quadrado de legenda viraram o `ColorSwatch` (`shared/components`), e o `CategoryDot` passou a usá-lo;
+  - o valor calculado em render (a cor da célula da correlação, o molde da grade, a posição do tooltip, a altura do gráfico de setores) chega ao CSS por propriedade customizada no `style`. O `types/css.d.ts` tipa `--nome` no `CSSProperties`;
+  - tokens novos no `@theme` do `index.css`: `text-2xs` e `aspect-cell`, da matriz de correlação.
+
+Decisões tomadas durante:
+- **Ficaram de fora as categorias inteiras do oxlint:** medidas, deram 2.636 avisos de `react-in-jsx-scope` (sem uso no React 19) e 431 de `react-perf`.
+- O `@shadcn/lint` está na versão 0.2.0; a configuração mora no `.oxlintrc.json` do front.
+
+**Aceite verificado:**
+- `pnpm check` do front sem nenhum aviso;
+- no app de pé, numa cópia do banco, sem erro no console: matriz de correlação (cores, grade, tooltip e escala), tabela ano a ano (linha de referência acinzentada e com borda), cabeçalho de grupo do Fiscal, cartões de indicador e gráfico de setores com a altura pelo número de barras.
 
 ---
 ## 3. Descartada

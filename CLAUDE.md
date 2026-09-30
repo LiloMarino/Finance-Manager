@@ -70,5 +70,12 @@ não "(D4)"; "apuração mensal do imposto", e não "F21".
 - O front fica no TypeScript 6, que é o que o `openapi-typescript` suporta. O
   lint é `oxlint` com type-aware, que traz os próprios binários.
 - `shared/components/ui` e `shared/hooks/use-mobile.ts` são código vendorizado do
-  shadcn, fora do lint. O estilo é o `base-nova`: os primitivos são do Base UI, e a
-  troca de elemento é pela prop `render`.
+  shadcn, fora do lint e do formatter. O estilo é o `base-nova`: os primitivos são do
+  Base UI, e a troca de elemento é pela prop `render`.
+- O `oxfmt` formata o front (`pnpm format`), e o `pnpm check` do front confere.
+- O `@shadcn/lint` roda dentro do oxlint:
+  - componente do design system recebe por `className` só layout, espaçamento e
+    tipografia; cor, borda e forma vêm de variante do componente;
+  - valor calculado em render chega ao CSS por propriedade customizada no `style`,
+    lida pela classe (`bg-(--swatch)`), e os tokens novos moram no `@theme` do
+    `index.css`.
