@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-30):** Concluída a F56: o design system saiu do Radix para o Base UI, o que destrava o combobox com criar da F52.
+> **Última mudança (2026-09-30):** Concluída a F52: o setor e o segmento de cada ativo chegam sugeridos pelo yfinance, a partir dos ativos que o usuário já classificou.
 
 ## Glossário
 
@@ -32,10 +32,9 @@
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
 | **F43** | Sidebar | — | ⏳ |
-| **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (59 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (60 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -94,6 +93,7 @@
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | — | ✅ |
 | **F51** | Máscaras nos campos | — | ✅ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | — | ✅ |
 | **F53** | Simulador: escada de títulos | — | 🚫 |
 | **F54** | Saldo de investimento | — | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | — | ✅ |
@@ -112,7 +112,6 @@
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 1 | 🔍 |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
-| **F52** | Setor e segmento sugeridos pelo yfinance | M9 | 0 | ⏳ |
 
 ---
 
@@ -317,15 +316,14 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 7/10 concluídas
+> **Progresso:** 8/10 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
 | **F43** | Sidebar | F2, F30 | ⏳ |
-| **F52** | Setor e segmento sugeridos pelo yfinance | F37, F56 | ⏳ |
 
-<details><summary>Concluído (7 itens)</summary>
+<details><summary>Concluído (8 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -334,6 +332,7 @@
 | **F48** | Fiscal: navegação por mês na URL | F23 | ✅ |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | F36 | ✅ |
 | **F51** | Máscaras nos campos | F46 | ✅ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | F37, F56 | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | F45 | ✅ |
 | **F56** | Design system sobre o Base UI | — | ✅ |
 
@@ -399,7 +398,7 @@
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
-| **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37, F56 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37, F56 | Médio | Médio | Médio | Bom | ✅ Concluído |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ✅ Concluído |
 | **F55** | Sugestão de ticker nos campos livres | N3, N9 | — | M9 | F45 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
@@ -964,24 +963,29 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco: digitar "123456" no valor aplicado mostra "1.234,56", e a API recebe 1234.56. A edição de uma operação abre com o preço formatado. O CNPJ é formatado ao digitar, e um verificador errado volta com o motivo.
 
-**F52 — Setor e segmento sugeridos pelo yfinance.** Classificar cada ativo à mão é o que enche o painel de saúde de "ativos sem setor". O yfinance traz o setor e a indústria da empresa, e o app pode sugerir a classificação. Serve N2.
+**F52 — Setor e segmento sugeridos pelo yfinance.** O app sugere o segmento do usuário a partir do setor e da indústria que o yfinance dá ao ticker, e nada é gravado sem ele escolher. Serve N2; condicionada por D6.
 
-O que o yfinance entrega (conferido): ação tem setor e indústria, em inglês ("Financial Services" e "Banks - Regional"); FII traz só o setor "Real Estate"; ETF não traz nada.
+- **Cache:** `ticker_profiles` guarda o setor e a indústria de cada ticker, em inglês, pela chave do ticker, porque o ativo novo ainda não tem id. Cada ticker é consultado uma vez (`Ticker.info`, pelo `YFinanceProfileProvider`). A resposta vazia do ETF fica gravada, e o ticker que a fonte não conhece e a falha de rede não gravam nada. Numa rodada com vários tickers, a primeira falha encerra as consultas.
+- **Sugestão** (`backend/domain/classification.py`): o segmento mais comum entre os ativos já classificados com a mesma indústria na fonte, pelo id. Sem ativo da mesma indústria, o setor vem dos ativos com o mesmo setor na fonte, e o segmento chega como nome para criar. Sem nenhum parecido, o setor chega traduzido: os 11 setores do Yahoo com o nome da B3 onde ele existe, ou o setor do usuário com o mesmo nome.
+- **Rotas** (`/api/classification`): `suggestion?ticker=` para o form, `pending` para os ativos em carteira sem segmento, e `accept`, que grava o segmento de vários ativos numa transação só.
+- **Form de ativo:** o segmento virou um combobox do shadcn, agrupado por setor e com busca. O texto que não é segmento nenhum vira `Criar "<texto>"`, que abre um diálogo com o setor (existente ou novo) e o nome. Abaixo do campo, aparece o que o Yahoo diz do ticker, com **Usar** para o segmento sugerido ou **Criar** para o primeiro da indústria.
+- **Painel de saúde:** "Ativos sem setor ou segmento" lista a sugestão de cada ativo, com as sugestões já marcadas e o botão **Aceitar**.
 
-Plano:
-- a sugestão aparece e o usuário confirma: nada é gravado sem ele escolher;
-- onde ela aparece:
-  - no cadastro de ativo novo, ao digitar o ticker;
-  - no "Editar ativo";
-  - no painel de saúde, com as sugestões de todos os ativos sem classificação numa lista, para aceitar de uma vez;
-- **inglês contra o cadastro próprio** (a decidir na implementação). O setor e o segmento são nomes do usuário (F37), e o yfinance fala inglês. Opções:
-  - **tradução fixa:** uma tabela no código com os setores e as indústrias do Yahoo em português; a sugestão escolhe o segmento com aquele nome ou oferece criá-lo;
-  - **par aprendido:** na primeira vez que uma indústria do Yahoo aparece, o usuário escolhe ou cria o segmento dele, e o app guarda o par. Dali em diante, todo ativo da mesma indústria já chega com a sugestão;
-  - recomendação: o par aprendido, que respeita os nomes que o usuário já deu e dispensa traduzir mais de cem indústrias. A tradução fixa pode entrar só para os 11 setores, como texto inicial;
-- FII: o yfinance não diz o segmento (tijolo, papel, logística...), e a sugestão para no setor. ETF fica sem sugestão;
-- a consulta é uma por ativo e fica em cache (D6), sem repetir a cada abertura.
+Decisões tomadas durante:
+- **Só o yfinance.** A classificação setorial da B3 foi conferida: está em português e é oficial, mas cobre só as empresas listadas, sem nenhum fundo e com poucos BDRs. O arquivo público está parado em 2022, e a versão viva vem de um endpoint não documentado.
+- **O FII vem com indústria** ("REIT - Mortgage", "REIT - Industrial", "REIT - Diversified"), e a sugestão chega ao segmento também nele. O ETF segue sem.
+- **O par é derivado dos ativos classificados, sem tabela própria:** o segmento renomeado continua sugerido com o nome novo, e o que já está classificado vale desde o primeiro uso. O par muda junto quando o único ativo da indústria é reclassificado ou apagado.
+- **O Criar da dica só aparece com o segmento vazio no form.**
 
-Alternativa a conferir: a classificação setorial da B3, em português e oficial para as empresas listadas (setor econômico, subsetor e segmento), num arquivo baixável. Conferir se ela cobre BDR e FII antes de trocar de fonte.
+Limitação residual: o perfil não é consultado de novo, e uma classificação que o Yahoo passe a dar depois não chega sozinha.
+
+**Aceite verificado** no app de pé, numa cópia do banco:
+- os ETFs ficam sem sugestão;
+- o segmento criado pelo Criar do "Editar ativo" de um banco fez o outro ativo da mesma indústria chegar sugerido no painel;
+- renomear esse segmento mudou o nome da sugestão;
+- o Aceitar baixou o contador do painel;
+- no "Novo ativo", o ticker de um banco trouxe a sugestão, e o Usar preencheu o campo;
+- a segunda abertura do painel não consultou o Yahoo.
 
 **F19 — Spike: proventos no relatório de movimentação da B3.** Executado com dois exports do mesmo período de 12 meses: o relatório de movimentação (Extrato) sem filtro e o de proventos recebidos (aba Proventos). Os dois foram cruzados linha a linha.
 
