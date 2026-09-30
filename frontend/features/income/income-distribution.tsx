@@ -134,7 +134,7 @@ function AssetSections({ distribution }: { distribution: IncomeDistribution }) {
   const categories = distribution.categories.map((item) => item.category);
 
   return (
-    <Accordion type="multiple" defaultValue={categories}>
+    <Accordion multiple defaultValue={categories}>
       {distribution.categories.map((category) => (
         <AccordionItem key={category.category} value={category.category}>
           <AccordionTrigger className="items-center hover:no-underline">
@@ -229,12 +229,11 @@ export function IncomeDistributionPanel({ subportfolioId }: { subportfolioId?: n
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <ToggleGroup
-          type="single"
           variant="outline"
           spacing={0}
-          value={months}
-          onValueChange={(value) => {
-            if (isWindow(value)) setMonths(value);
+          value={[months]}
+          onValueChange={([value]) => {
+            if (value && isWindow(value)) setMonths(value);
           }}
         >
           {windows.map((window) => (

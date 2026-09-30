@@ -23,11 +23,9 @@ export function IncomePage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/import">
-              <FileUp />
-              Importar
-            </Link>
+          <Button variant="outline" nativeButton={false} render={<Link to="/import" />}>
+            <FileUp />
+            Importar
           </Button>
           <IncomeFormDialog
             trigger={

@@ -90,6 +90,7 @@ export function isFixedIncomeType(value: string): value is FixedIncomeType {
 }
 
 export const assetClasses = Object.keys(assetClassLabels).filter(isAssetClass);
+export const operationTypes = Object.keys(operationTypeLabels).filter(isOperationType);
 export const incomeTypes = Object.keys(incomeTypeLabels).filter(isIncomeType);
 export const indexers = Object.keys(indexerLabels).filter(isIndexer);
 export const fixedIncomeTypes = Object.keys(fixedIncomeTypeLabels).filter(isFixedIncomeType);

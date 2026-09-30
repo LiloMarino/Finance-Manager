@@ -33,11 +33,9 @@ export function TickerChangeDialog({ asset }: { asset: Asset }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Replace />
-          Trocar ticker
-        </Button>
+      <DialogTrigger render={<Button variant="outline" />}>
+        <Replace />
+        Trocar ticker
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -12,6 +12,11 @@ import {
   isAssetClass,
 } from "@/shared/lib/labels";
 
+const items = assetClasses.map((assetClass) => ({
+  value: assetClass,
+  label: assetClassLabels[assetClass],
+}));
+
 interface AssetClassSelectProps {
   value: AssetClass;
   onChange: (value: AssetClass) => void;
@@ -21,18 +26,19 @@ interface AssetClassSelectProps {
 export function AssetClassSelect({ value, onChange, id }: AssetClassSelectProps) {
   return (
     <Select
+      items={items}
       value={value}
       onValueChange={(next) => {
-        if (isAssetClass(next)) onChange(next);
+        if (next !== null && isAssetClass(next)) onChange(next);
       }}
     >
       <SelectTrigger id={id} className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {assetClasses.map((assetClass) => (
-          <SelectItem key={assetClass} value={assetClass}>
-            {assetClassLabels[assetClass]}
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

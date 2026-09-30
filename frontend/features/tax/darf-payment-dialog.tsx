@@ -48,10 +48,8 @@ export function DarfPaymentDialog({ month }: { month: MonthlyTax }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant={month.payment ? "ghost" : "outline"} size="sm">
-          {month.payment ? "Editar pagamento" : "Marcar pago"}
-        </Button>
+      <DialogTrigger render={<Button variant={month.payment ? "ghost" : "outline"} size="sm" />}>
+        {month.payment ? "Editar pagamento" : "Marcar pago"}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

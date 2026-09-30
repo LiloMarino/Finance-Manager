@@ -15,12 +15,17 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useFixedIncomeList } from "@/shared/hooks/use-fixed-income-list";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import {
+  type FixedIncomeType,
   fixedIncomeTypeLabels,
   fixedIncomeTypes,
   isFixedIncomeType,
 } from "@/shared/lib/labels";
 
-const ALL_TYPES = "all";
+// Nulo é todos os tipos
+const typeItems = [
+  { value: null, label: "Todos os tipos" },
+  ...fixedIncomeTypes.map((type) => ({ value: type, label: fixedIncomeTypeLabels[type] })),
+];
 
 export function FixedIncomePage() {
   const { data, isPending, error } = useFixedIncomeList();
@@ -28,9 +33,9 @@ export function FixedIncomePage() {
   const typeParam = searchParams.get("type");
   const selectedType = typeParam && isFixedIncomeType(typeParam) ? typeParam : null;
 
-  const selectType = (value: string) =>
+  const selectType = (value: FixedIncomeType | null) =>
     setSearchParams((params) => {
-      if (isFixedIncomeType(value)) params.set("type", value);
+      if (value) params.set("type", value);
       else params.delete("type");
       return params;
     });
@@ -45,15 +50,14 @@ export function FixedIncomePage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Select value={selectedType ?? ALL_TYPES} onValueChange={selectType}>
+          <Select items={typeItems} value={selectedType} onValueChange={selectType}>
             <SelectTrigger className="w-48" aria-label="Filtrar por tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL_TYPES}>Todos os tipos</SelectItem>
-              {fixedIncomeTypes.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {fixedIncomeTypeLabels[item]}
+              {typeItems.map((item) => (
+                <SelectItem key={item.label} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>

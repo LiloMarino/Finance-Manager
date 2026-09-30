@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -27,11 +27,11 @@ import {
   type OperationType,
   isOperationType,
   operationTypeLabels,
+  operationTypes,
 } from "@/shared/lib/labels";
 import { maskDecimal, maskInteger, withMask } from "@/shared/lib/mask";
 import { parseDecimalInput, toDecimalInput, toDecimalString } from "@/types/decimal";
 
-const operationTypes: OperationType[] = ["buy", "sell", "bonus", "split", "reverse_split"];
 const pricedTypes: OperationType[] = ["buy", "sell"];
 // Compra e desdobro são em unidades inteiras; a venda leva a fração que sobra de um
 // grupamento, a bonificação gera fração e o grupamento é um fator
@@ -88,7 +88,7 @@ const schema = z
 interface OperationFormDialogProps {
   /** Operação a editar; sem ela, o formulário cria uma nova. */
   operation?: Operation;
-  trigger: ReactNode;
+  trigger: ReactElement;
 }
 
 export function OperationFormDialog({ operation, trigger }: OperationFormDialogProps) {
@@ -96,7 +96,7 @@ export function OperationFormDialog({ operation, trigger }: OperationFormDialogP
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{operation ? "Editar operação" : "Nova operação"}</DialogTitle>
@@ -154,9 +154,10 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
             name="operation_type"
             render={({ field }) => (
               <Select
+                items={operationTypeLabels}
                 value={field.value}
                 onValueChange={(next) => {
-                  if (isOperationType(next)) field.onChange(next);
+                  if (next !== null && isOperationType(next)) field.onChange(next);
                 }}
               >
                 <SelectTrigger id="operation-type" className="w-full">

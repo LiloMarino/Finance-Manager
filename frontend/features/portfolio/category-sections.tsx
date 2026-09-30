@@ -373,7 +373,7 @@ export function CategorySections({ portfolio }: { portfolio: Portfolio }) {
         <CardTitle>Posições</CardTitle>
       </CardHeader>
       <CardContent>
-        <Accordion type="multiple">
+        <Accordion multiple>
           {allocations.map((allocation) => (
             <AccordionItem key={allocation.category} value={allocation.category}>
               <AccordionTrigger className="items-center hover:no-underline">

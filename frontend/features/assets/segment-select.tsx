@@ -9,8 +9,6 @@ import {
 } from "@/shared/components/ui/select";
 import { useSectors } from "@/shared/hooks/use-sectors";
 
-const UNCLASSIFIED = "none";
-
 interface SegmentSelectProps {
   id: string;
   value: number | null;
@@ -20,24 +18,27 @@ interface SegmentSelectProps {
 /** Os segmentos agrupados pelo setor; nulo é "sem classificação". */
 export function SegmentSelect({ id, value, onChange }: SegmentSelectProps) {
   const { data: sectors = [] } = useSectors();
+  const items = [
+    { value: null, label: "Sem classificação" },
+    ...sectors.flatMap((sector) =>
+      sector.segments.map((segment) => ({ value: segment.id, label: segment.name })),
+    ),
+  ];
 
   return (
-    <Select
-      value={value === null ? UNCLASSIFIED : String(value)}
-      onValueChange={(next) => onChange(next === UNCLASSIFIED ? null : Number(next))}
-    >
+    <Select items={items} value={value} onValueChange={onChange}>
       <SelectTrigger id={id} className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={UNCLASSIFIED}>Sem classificação</SelectItem>
+        <SelectItem value={null}>Sem classificação</SelectItem>
         {sectors
           .filter((sector) => sector.segments.length > 0)
           .map((sector) => (
             <SelectGroup key={sector.id}>
               <SelectLabel>{sector.name}</SelectLabel>
               {sector.segments.map((segment) => (
-                <SelectItem key={segment.id} value={String(segment.id)}>
+                <SelectItem key={segment.id} value={segment.id}>
                   {segment.name}
                 </SelectItem>
               ))}

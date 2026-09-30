@@ -9,9 +9,9 @@ export function MetricHint({ children, hint }: { children: ReactNode; hint: stri
     <span className="inline-flex items-center gap-1">
       {children}
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Info className="text-muted-foreground size-3.5" aria-label={hint} />
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={<Info className="text-muted-foreground size-3.5" aria-label={hint} />}
+        />
         <TooltipContent className="max-w-72">{hint}</TooltipContent>
       </Tooltip>
     </span>

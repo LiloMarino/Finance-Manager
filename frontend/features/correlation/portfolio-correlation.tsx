@@ -46,13 +46,12 @@ export function PortfolioCorrelation({ category, subportfolioId }: PortfolioCorr
     <div className="flex flex-col gap-6">
       {/* Janela */}
       <ToggleGroup
-        type="single"
         variant="outline"
         spacing={0}
         className="self-start"
-        value={window}
-        onValueChange={(next) => {
-          if (isCorrelationWindow(next)) setWindow(next);
+        value={[window]}
+        onValueChange={([next]) => {
+          if (next && isCorrelationWindow(next)) setWindow(next);
         }}
       >
         {Object.entries(windowLabels).map(([value, label]) => (

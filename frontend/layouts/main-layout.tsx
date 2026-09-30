@@ -112,17 +112,20 @@ export function MainLayout() {
                 <SidebarMenu>
                   {navItems.map(({ to, label, icon: Icon }) => (
                     <SidebarMenuItem key={to}>
-                      <SidebarMenuButton asChild isActive={pathname === to}>
-                        <NavLink
-                          to={{
-                            pathname: to,
-                            search: PORTFOLIO_VIEWS.includes(to) ? portfolioSearch : "",
-                          }}
-                          end
-                        >
-                          <Icon />
-                          {label}
-                        </NavLink>
+                      <SidebarMenuButton
+                        isActive={pathname === to}
+                        render={
+                          <NavLink
+                            to={{
+                              pathname: to,
+                              search: PORTFOLIO_VIEWS.includes(to) ? portfolioSearch : "",
+                            }}
+                            end
+                          />
+                        }
+                      >
+                        <Icon />
+                        {label}
                       </SidebarMenuButton>
                       {to === "/data-health" && Boolean(issues.data?.length) && (
                         <SidebarMenuBadge>{issues.data?.length}</SidebarMenuBadge>

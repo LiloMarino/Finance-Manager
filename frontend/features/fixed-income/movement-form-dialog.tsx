@@ -55,11 +55,9 @@ export function MovementFormDialog({ investmentId }: { investmentId: number }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          Nova movimentação
-        </Button>
+      <DialogTrigger render={<Button />}>
+        <Plus />
+        Nova movimentação
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -100,9 +98,10 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
             name="movement_type"
             render={({ field }) => (
               <Select
+                items={movementTypeLabels}
                 value={field.value}
                 onValueChange={(next) => {
-                  if (isMovementType(next)) field.onChange(next);
+                  if (next !== null && isMovementType(next)) field.onChange(next);
                 }}
               >
                 <SelectTrigger id="movement-type" className="w-full">

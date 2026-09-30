@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -52,7 +52,7 @@ interface OptionFormDialogProps {
   /** A opção de partida: a que se edita, ou a sugerida para uma nova. */
   option: ComparisonOption;
   onSave: (option: ComparisonOption) => void;
-  trigger: ReactNode;
+  trigger: ReactElement;
 }
 
 export function OptionFormDialog({ title, option, onSave, trigger }: OptionFormDialogProps) {
@@ -60,7 +60,7 @@ export function OptionFormDialog({ title, option, onSave, trigger }: OptionFormD
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

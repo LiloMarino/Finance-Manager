@@ -129,7 +129,7 @@ export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
           name="benchmarks"
           render={({ field }) => (
             <ToggleGroup
-              type="multiple"
+              multiple
               variant="outline"
               spacing={0}
               value={field.value}
@@ -151,9 +151,10 @@ export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
           name="window"
           render={({ field }) => (
             <Select
+              items={windowLabels}
               value={field.value}
               onValueChange={(next) => {
-                if (isCorrelationWindow(next)) field.onChange(next);
+                if (next !== null && isCorrelationWindow(next)) field.onChange(next);
               }}
             >
               <SelectTrigger id="correlation-window" className="w-full">

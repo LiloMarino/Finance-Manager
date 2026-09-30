@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -70,7 +70,7 @@ function schemaFor(creating: boolean) {
 interface FixedIncomeFormDialogProps {
   /** Título a editar; sem ele, o formulário cria um novo. */
   investment?: FixedIncome;
-  trigger: ReactNode;
+  trigger: ReactElement;
 }
 
 export function FixedIncomeFormDialog({ investment, trigger }: FixedIncomeFormDialogProps) {
@@ -78,7 +78,7 @@ export function FixedIncomeFormDialog({ investment, trigger }: FixedIncomeFormDi
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>

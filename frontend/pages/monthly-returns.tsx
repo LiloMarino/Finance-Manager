@@ -83,12 +83,11 @@ export function MonthlyReturnsPage() {
             <CardContent className="flex flex-col gap-4">
               <div className="flex flex-wrap items-end gap-3">
                 <ToggleGroup
-                  type="single"
                   variant="outline"
                   spacing={0}
-                  value={granularity}
-                  onValueChange={(value) => {
-                    if (isGranularity(value)) setGranularity(value);
+                  value={[granularity]}
+                  onValueChange={([value]) => {
+                    if (value && isGranularity(value)) setGranularity(value);
                   }}
                 >
                   {Object.entries(granularityLabels).map(([value, label]) => (

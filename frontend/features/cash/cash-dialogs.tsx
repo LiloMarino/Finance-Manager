@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -39,7 +39,7 @@ const datedSchema = z.object({
 });
 
 interface CashDialogProps {
-  trigger: ReactNode;
+  trigger: ReactElement;
   title: string;
   description: string;
   children: (close: () => void) => ReactNode;
@@ -50,7 +50,7 @@ function CashDialog({ trigger, title, description, children }: CashDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -97,7 +97,7 @@ function DatedForm({ amountLabel, pending, onSubmit }: DatedFormProps) {
   );
 }
 
-export function CheckDialog({ trigger, opened }: { trigger: ReactNode; opened: boolean }) {
+export function CheckDialog({ trigger, opened }: { trigger: ReactElement; opened: boolean }) {
   const add = useAddCheck();
 
   return (
@@ -123,7 +123,7 @@ export function CheckDialog({ trigger, opened }: { trigger: ReactNode; opened: b
   );
 }
 
-export function WithdrawalDialog({ trigger }: { trigger: ReactNode }) {
+export function WithdrawalDialog({ trigger }: { trigger: ReactElement }) {
   const add = useAddWithdrawal();
 
   return (
@@ -148,7 +148,7 @@ export function WithdrawalDialog({ trigger }: { trigger: ReactNode }) {
 const thresholdSchema = z.object({ threshold: amountField });
 
 interface ThresholdDialogProps {
-  trigger: ReactNode;
+  trigger: ReactElement;
   threshold: DecimalString;
 }
 

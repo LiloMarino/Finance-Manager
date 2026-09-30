@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -44,7 +44,7 @@ type AssetFormValues = z.infer<typeof schema>;
 interface AssetFormDialogProps {
   /** Ativo a editar; sem ele, o formulário cria um novo. */
   asset?: Asset;
-  trigger: ReactNode;
+  trigger: ReactElement;
 }
 
 export function AssetFormDialog({ asset, trigger }: AssetFormDialogProps) {
@@ -52,7 +52,7 @@ export function AssetFormDialog({ asset, trigger }: AssetFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{asset ? `Editar ${asset.ticker}` : "Novo ativo"}</DialogTitle>

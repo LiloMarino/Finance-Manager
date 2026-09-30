@@ -7,13 +7,18 @@ import {
 } from "@/shared/components/ui/select";
 import {
   type PortfolioCategory,
-  isPortfolioCategory,
   portfolioCategories,
   portfolioCategoryLabels,
 } from "@/shared/lib/portfolio-category";
 
-// O Select do Radix reserva o valor vazio para "nada escolhido"
-const ALL = "all";
+// Nulo é a carteira toda
+const items = [
+  { value: null, label: "Carteira toda" },
+  ...portfolioCategories.map((category) => ({
+    value: category,
+    label: portfolioCategoryLabels[category],
+  })),
+];
 
 interface CategorySelectProps {
   value: PortfolioCategory | undefined;
@@ -23,17 +28,17 @@ interface CategorySelectProps {
 export function CategorySelect({ value, onChange }: CategorySelectProps) {
   return (
     <Select
-      value={value ?? ALL}
-      onValueChange={(selected) => onChange(isPortfolioCategory(selected) ? selected : undefined)}
+      items={items}
+      value={value ?? null}
+      onValueChange={(selected) => onChange(selected ?? undefined)}
     >
       <SelectTrigger className="w-44" aria-label="Categoria">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Carteira toda</SelectItem>
-        {portfolioCategories.map((category) => (
-          <SelectItem key={category} value={category}>
-            {portfolioCategoryLabels[category]}
+        {items.map((item) => (
+          <SelectItem key={item.label} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

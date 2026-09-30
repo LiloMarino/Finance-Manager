@@ -24,10 +24,10 @@ interface DeleteDialogProps {
 export function DeleteDialog({ name, description, remove }: DeleteDialogProps) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={`Apagar ${name}`}>
-          <Trash2 />
-        </Button>
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="icon-sm" aria-label={`Apagar ${name}`} />}
+      >
+        <Trash2 />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

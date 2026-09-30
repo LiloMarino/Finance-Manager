@@ -12,12 +12,11 @@ export function PeriodSelect({ value, onChange }: PeriodSelectProps) {
   return (
     <div className="flex flex-wrap items-end gap-3">
       <ToggleGroup
-        type="single"
         variant="outline"
         spacing={0}
-        value={value.preset}
-        onValueChange={(preset) => {
-          if (isPreset(preset)) onChange({ ...value, preset });
+        value={[value.preset]}
+        onValueChange={([preset]) => {
+          if (preset && isPreset(preset)) onChange({ ...value, preset });
         }}
       >
         {Object.entries(presetLabels).map(([preset, label]) => (

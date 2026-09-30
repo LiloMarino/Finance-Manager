@@ -51,7 +51,8 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 }
 
 // O clique que nasce num controle da linha é dele, não da navegação da linha
-const INTERACTIVE = "a, button, input, select, textarea, label, [role=menuitem]"
+const INTERACTIVE =
+  "a, button, input, select, textarea, label, [role=menuitem], [role=checkbox], [role=switch]"
 
 function TableRow({
   className,

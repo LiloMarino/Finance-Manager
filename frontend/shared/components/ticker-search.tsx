@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { type KeyboardEvent, useState } from "react";
+import { type KeyboardEvent, useRef, useState } from "react";
 
 import { Command, CommandGroup, CommandItem, CommandList } from "@/shared/components/ui/command";
 import { Input } from "@/shared/components/ui/input";
-import { Popover, PopoverAnchor, PopoverContent } from "@/shared/components/ui/popover";
+import { Popover, PopoverContent } from "@/shared/components/ui/popover";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { get } from "@/shared/lib/api";
 import { maskTicker } from "@/shared/lib/mask";
@@ -27,6 +27,7 @@ A sugestão ajuda e não restringe: o texto digitado continua valendo. */
 export function TickerSearch({ id, value, onChange, onPick, placeholder }: TickerSearchProps) {
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState("");
+  const anchor = useRef<HTMLInputElement>(null);
   const query = useDebouncedValue(value, 300);
   const { data: matches = [] } = useQuery({
     queryKey: ["ticker-search", query],
@@ -67,25 +68,26 @@ export function TickerSearch({ id, value, onChange, onPick, placeholder }: Ticke
 
   return (
     <Popover open={visible} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>
-        <Input
-          id={id}
-          value={value}
-          placeholder={placeholder}
-          autoComplete="off"
-          onChange={(event) => {
-            onChange(maskTicker(event.target.value));
-            setHighlight("");
-            setOpen(true);
-          }}
-          onKeyDown={onKeyDown}
-          onBlur={() => setOpen(false)}
-        />
-      </PopoverAnchor>
+      <Input
+        ref={anchor}
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        autoComplete="off"
+        onChange={(event) => {
+          onChange(maskTicker(event.target.value));
+          setHighlight("");
+          setOpen(true);
+        }}
+        onKeyDown={onKeyDown}
+        onBlur={() => setOpen(false)}
+      />
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) min-w-64 p-0"
+        anchor={anchor}
+        className="w-(--anchor-width) min-w-64 p-0"
         align="start"
-        onOpenAutoFocus={(event) => event.preventDefault()}
+        initialFocus={false}
+        finalFocus={false}
         // O mousedown na lista não tira o foco do campo: o clique escolhe a sugestão
         // antes de o blur fechar a lista
         onMouseDown={(event) => event.preventDefault()}

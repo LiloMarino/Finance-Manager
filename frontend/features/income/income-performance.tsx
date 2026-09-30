@@ -202,11 +202,10 @@ export function IncomePerformancePanel({ subportfolioId }: { subportfolioId?: nu
       <div className="flex flex-wrap items-end gap-3">
         <PeriodSelect value={period} onChange={setPeriod} />
         <ToggleGroup
-          type="single"
           variant="outline"
           spacing={0}
-          value={group}
-          onValueChange={(value) => {
+          value={[group]}
+          onValueChange={([value]) => {
             if (value === "month" || value === "year") setGroup(value);
           }}
         >

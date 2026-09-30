@@ -68,10 +68,10 @@ export function PeriodNavigator({ years, year, month, onChange }: PeriodNavigato
         <ChevronLeft />
       </Button>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="min-w-48" aria-label="Escolher o período">
-            {byMonth ? formatMonth(year, current.month) : year}
-          </Button>
+        <PopoverTrigger
+          render={<Button variant="outline" className="min-w-48" aria-label="Escolher o período" />}
+        >
+          {byMonth ? formatMonth(year, current.month) : year}
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2">
           {byMonth ? (

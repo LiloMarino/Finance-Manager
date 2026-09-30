@@ -36,25 +36,27 @@ export function AssetCombobox({ value, onChange, id, allLabel }: AssetComboboxPr
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between font-normal"
-        >
-          {selected ? (
-            selected.ticker
-          ) : (
-            <span className={allLabel ? "" : "text-muted-foreground"}>
-              {allLabel ?? "Escolha o ativo"}
-            </span>
-          )}
-          <ChevronsUpDown className="text-muted-foreground" />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            id={id}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal"
+          />
+        }
+      >
+        {selected ? (
+          selected.ticker
+        ) : (
+          <span className={allLabel ? "" : "text-muted-foreground"}>
+            {allLabel ?? "Escolha o ativo"}
+          </span>
+        )}
+        <ChevronsUpDown className="text-muted-foreground" />
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-56 p-0" align="start">
+      <PopoverContent className="w-(--anchor-width) min-w-56 p-0" align="start">
         <Command>
           <CommandInput placeholder="Buscar ticker" />
           <CommandList>

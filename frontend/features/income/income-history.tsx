@@ -35,11 +35,14 @@ import {
 } from "@/shared/components/ui/table";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
-import { incomeTypeLabels, isIncomeType } from "@/shared/lib/labels";
+import { incomeTypeLabels, incomeTypes } from "@/shared/lib/labels";
 import { formatBRL, formatQuantity } from "@/types/decimal";
 
-// O Select do Radix reserva o valor vazio para "nada escolhido"
-const ALL = "all";
+// Nulo é todos os tipos
+const typeItems = [
+  { value: null, label: "Todos" },
+  ...incomeTypes.map((type) => ({ value: type, label: incomeTypeLabels[type] })),
+];
 
 function Filters({
   filters,
@@ -71,19 +74,17 @@ function Filters({
       <Field>
         <FieldLabel htmlFor="income-filter-type">Tipo</FieldLabel>
         <Select
-          value={filters.income_type ?? ALL}
-          onValueChange={(value) =>
-            onChange({ ...filters, income_type: isIncomeType(value) ? value : undefined })
-          }
+          items={typeItems}
+          value={filters.income_type ?? null}
+          onValueChange={(value) => onChange({ ...filters, income_type: value ?? undefined })}
         >
           <SelectTrigger id="income-filter-type" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>Todos</SelectItem>
-            {Object.entries(incomeTypeLabels).map(([type, label]) => (
-              <SelectItem key={type} value={type}>
-                {label}
+            {typeItems.map((item) => (
+              <SelectItem key={item.label} value={item.value}>
+                {item.label}
               </SelectItem>
             ))}
           </SelectContent>

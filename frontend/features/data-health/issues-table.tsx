@@ -37,8 +37,13 @@ export function IssuesTable({ issues, subjectLabel, actionLabel }: IssuesTablePr
               {issue.affects}
             </TableCell>
             <TableCell className="text-right">
-              <Button asChild variant="outline" size="sm">
-                <Link to={issue.path}>{actionLabel}</Link>
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={<Link to={issue.path} />}
+              >
+                {actionLabel}
               </Button>
             </TableCell>
           </TableRow>

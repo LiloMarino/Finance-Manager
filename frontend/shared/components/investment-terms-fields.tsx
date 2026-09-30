@@ -53,9 +53,10 @@ export function InvestmentTermsFields({
       <Field>
         <FieldLabel htmlFor={`${id}-type`}>Tipo</FieldLabel>
         <Select
+          items={fixedIncomeTypeLabels}
           value={value.product_type}
           onValueChange={(next) => {
-            if (!isFixedIncomeType(next)) return;
+            if (next === null || !isFixedIncomeType(next)) return;
             onChange({
               ...value,
               product_type: next,
@@ -82,10 +83,11 @@ export function InvestmentTermsFields({
       <Field>
         <FieldLabel htmlFor={`${id}-indexer`}>Indexador</FieldLabel>
         <Select
+          items={indexerLabels}
           value={value.indexer}
           disabled={treasuryIndexer !== undefined}
           onValueChange={(next) => {
-            if (isIndexer(next)) onChange({ ...value, indexer: next });
+            if (next !== null && isIndexer(next)) onChange({ ...value, indexer: next });
           }}
         >
           <SelectTrigger id={`${id}-indexer`} className="w-full">

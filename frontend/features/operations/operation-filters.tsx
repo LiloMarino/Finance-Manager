@@ -11,10 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { isOperationType, operationTypeLabels } from "@/shared/lib/labels";
+import { operationTypeLabels, operationTypes } from "@/shared/lib/labels";
 
-// O Select do Radix reserva o valor vazio para "nada escolhido"
-const ALL = "all";
+// Nulo é todos os tipos
+const typeItems = [
+  { value: null, label: "Todos" },
+  ...operationTypes.map((type) => ({ value: type, label: operationTypeLabels[type] })),
+];
 
 interface OperationFiltersProps {
   filters: Filters;
@@ -38,22 +41,19 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
       <Field>
         <FieldLabel htmlFor="filter-type">Tipo</FieldLabel>
         <Select
-          value={filters.operation_type ?? ALL}
+          items={typeItems}
+          value={filters.operation_type ?? null}
           onValueChange={(value) =>
-            onChange({
-              ...filters,
-              operation_type: isOperationType(value) ? value : undefined,
-            })
+            onChange({ ...filters, operation_type: value ?? undefined })
           }
         >
           <SelectTrigger id="filter-type" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>Todos</SelectItem>
-            {Object.entries(operationTypeLabels).map(([type, label]) => (
-              <SelectItem key={type} value={type}>
-                {label}
+            {typeItems.map((item) => (
+              <SelectItem key={item.label} value={item.value}>
+                {item.label}
               </SelectItem>
             ))}
           </SelectContent>

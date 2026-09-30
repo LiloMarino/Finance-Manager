@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { UseMutationResult } from "@tanstack/react-query";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -20,7 +20,7 @@ const schema = z.object({ name: z.string().trim().min(1, "Informe o nome.") });
 
 interface NameDialogProps {
   title: string;
-  trigger: ReactNode;
+  trigger: ReactElement;
   /** Nome atual, na renomeação; vazio, na criação. */
   initialName?: string;
   save: UseMutationResult<unknown, Error, string>;
@@ -32,7 +32,7 @@ export function NameDialog({ title, trigger, initialName = "", save }: NameDialo
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

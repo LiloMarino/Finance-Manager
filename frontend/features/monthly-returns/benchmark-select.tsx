@@ -5,15 +5,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  type Benchmark,
-  benchmarkConfig,
-  benchmarks,
-  isBenchmark,
-} from "@/shared/lib/benchmark";
+import { type Benchmark, benchmarkConfig, benchmarks } from "@/shared/lib/benchmark";
 
-// O Select do Radix reserva o valor vazio para "nada escolhido"
-const NONE = "none";
+const items = [
+  { value: null, label: "Sem referência" },
+  ...benchmarks.map((benchmark) => ({
+    value: benchmark,
+    label: `Comparar com ${benchmarkConfig[benchmark].label}`,
+  })),
+];
 
 interface BenchmarkSelectProps {
   value: Benchmark | undefined;
@@ -23,17 +23,17 @@ interface BenchmarkSelectProps {
 export function BenchmarkSelect({ value, onChange }: BenchmarkSelectProps) {
   return (
     <Select
-      value={value ?? NONE}
-      onValueChange={(selected) => onChange(isBenchmark(selected) ? selected : undefined)}
+      items={items}
+      value={value ?? null}
+      onValueChange={(selected) => onChange(selected ?? undefined)}
     >
       <SelectTrigger className="w-44" aria-label="Referência">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE}>Sem referência</SelectItem>
-        {benchmarks.map((benchmark) => (
-          <SelectItem key={benchmark} value={benchmark}>
-            Comparar com {benchmarkConfig[benchmark].label}
+        {items.map((item) => (
+          <SelectItem key={item.label} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

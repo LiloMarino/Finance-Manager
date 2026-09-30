@@ -20,10 +20,10 @@ export function DeleteAssetDialog({ asset }: { asset: Asset }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={`Apagar ${asset.ticker}`}>
-          <Trash2 />
-        </Button>
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="icon-sm" aria-label={`Apagar ${asset.ticker}`} />}
+      >
+        <Trash2 />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

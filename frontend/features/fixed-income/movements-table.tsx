@@ -65,10 +65,10 @@ function DeleteMovementDialog({ movement }: { movement: Movement }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Apagar movimentação">
-          <Trash2 />
-        </Button>
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="icon-sm" aria-label="Apagar movimentação" />}
+      >
+        <Trash2 />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

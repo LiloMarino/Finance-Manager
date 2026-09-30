@@ -7,9 +7,6 @@ import {
 } from "@/shared/components/ui/select";
 import type { Subportfolio } from "@/shared/hooks/use-subportfolios";
 
-// O Select do Radix reserva o valor vazio para "nada escolhido"
-const GENERAL = "general";
-
 interface PortfolioSelectProps {
   subportfolios: Subportfolio[];
   value: number | undefined;
@@ -18,19 +15,28 @@ interface PortfolioSelectProps {
 
 /** A carteira que as visões de carteira mostram: a geral ou uma subcarteira. */
 export function PortfolioSelect({ subportfolios, value, onChange }: PortfolioSelectProps) {
+  // Nulo é a carteira geral
+  const items = [
+    { value: null, label: "Carteira geral" },
+    ...subportfolios.map((subportfolio) => ({
+      value: subportfolio.id,
+      label: subportfolio.name,
+    })),
+  ];
+
   return (
     <Select
-      value={value === undefined ? GENERAL : String(value)}
-      onValueChange={(next) => onChange(next === GENERAL ? undefined : Number(next))}
+      items={items}
+      value={value ?? null}
+      onValueChange={(next) => onChange(next ?? undefined)}
     >
       <SelectTrigger className="w-52" aria-label="Carteira">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={GENERAL}>Carteira geral</SelectItem>
-        {subportfolios.map((subportfolio) => (
-          <SelectItem key={subportfolio.id} value={String(subportfolio.id)}>
-            {subportfolio.name}
+        {items.map((item) => (
+          <SelectItem key={item.label} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

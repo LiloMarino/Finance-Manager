@@ -22,10 +22,10 @@ export function DeleteIncomeDialog({ event }: { event: IncomeEvent }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Apagar provento">
-          <Trash2 />
-        </Button>
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="icon-sm" aria-label="Apagar provento" />}
+      >
+        <Trash2 />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

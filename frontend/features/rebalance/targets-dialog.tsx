@@ -47,11 +47,9 @@ export function TargetsDialog({ subportfolioId }: { subportfolioId: number }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Target />
-          Editar metas
-        </Button>
+      <DialogTrigger render={<Button variant="outline" />}>
+        <Target />
+        Editar metas
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>

@@ -9,8 +9,8 @@ export function ErrorPage() {
         <h1 className="text-2xl font-semibold">Página não encontrada</h1>
         <p className="text-muted-foreground">Esse endereço não existe no app.</p>
       </div>
-      <Button asChild>
-        <Link to="/">Voltar para a carteira</Link>
+      <Button nativeButton={false} render={<Link to="/" />}>
+        Voltar para a carteira
       </Button>
     </div>
   );

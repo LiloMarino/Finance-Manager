@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -77,7 +77,7 @@ const schema = z
 interface IncomeFormDialogProps {
   /** Provento a editar; sem ele, o formulário cadastra um novo. */
   event?: IncomeEvent;
-  trigger: ReactNode;
+  trigger: ReactElement;
 }
 
 export function IncomeFormDialog({ event, trigger }: IncomeFormDialogProps) {
@@ -85,7 +85,7 @@ export function IncomeFormDialog({ event, trigger }: IncomeFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{event ? "Editar provento" : "Novo provento"}</DialogTitle>
@@ -134,9 +134,10 @@ function IncomeForm({ event, onSaved }: { event?: IncomeEvent; onSaved: () => vo
             name="income_type"
             render={({ field }) => (
               <Select
+                items={incomeTypeLabels}
                 value={field.value}
                 onValueChange={(next) => {
-                  if (isIncomeType(next)) field.onChange(next);
+                  if (next !== null && isIncomeType(next)) field.onChange(next);
                 }}
               >
                 <SelectTrigger id="income-type" className="w-full">

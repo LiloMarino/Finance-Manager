@@ -182,11 +182,10 @@ function MaturityLadder({ portfolio }: { portfolio: Portfolio }) {
           <span className="text-sm font-medium">Escada de vencimentos</span>
         </MetricHint>
         <ToggleGroup
-          type="single"
           variant="outline"
           size="sm"
-          value={byYear ? "year" : "month"}
-          onValueChange={(next) => next && choose(next)}
+          value={[byYear ? "year" : "month"]}
+          onValueChange={([next]) => next && choose(next)}
         >
           <ToggleGroupItem value="month">Mês</ToggleGroupItem>
           <ToggleGroupItem value="year">Ano</ToggleGroupItem>

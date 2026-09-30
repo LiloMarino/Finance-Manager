@@ -79,7 +79,7 @@ export function PerformancePanel({
           <span className="text-muted-foreground text-sm">Comparar com</span>
         </MetricHint>
         <ToggleGroup
-          type="multiple"
+          multiple
           variant="outline"
           spacing={0}
           value={selected}
