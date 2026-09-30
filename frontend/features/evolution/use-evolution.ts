@@ -5,9 +5,7 @@ import { queryKeys } from "@/shared/lib/query-keys";
 import type { components, paths } from "@/types/openapi.generated";
 
 export type Evolution = components["schemas"]["EvolutionDTO"];
-export type EvolutionFilters = NonNullable<
-  paths["/api/evolution"]["get"]["parameters"]["query"]
->;
+export type EvolutionFilters = NonNullable<paths["/api/evolution"]["get"]["parameters"]["query"]>;
 
 export function useEvolution(filters: EvolutionFilters) {
   return useQuery({

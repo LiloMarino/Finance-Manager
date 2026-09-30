@@ -43,9 +43,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
               <AssetClassBadge assetClass={asset.asset_class} />
             </TableCell>
             <TableCell>{asset.cnpj ?? "—"}</TableCell>
-            <TableCell>
-              {asset.sector ? `${asset.sector} / ${asset.segment}` : "—"}
-            </TableCell>
+            <TableCell>{asset.sector ? `${asset.sector} / ${asset.segment}` : "—"}</TableCell>
             <TableCell className="text-right">
               <AssetFormDialog
                 asset={asset}

@@ -17,10 +17,7 @@ export function readFilters(params: URLSearchParams): OperationFilters {
   };
 }
 
-export function writeFilters(
-  params: URLSearchParams,
-  filters: OperationFilters,
-): URLSearchParams {
+export function writeFilters(params: URLSearchParams, filters: OperationFilters): URLSearchParams {
   const entries: [string, string | number | null | undefined][] = [
     ["asset", filters.asset_id],
     ["type", filters.operation_type],

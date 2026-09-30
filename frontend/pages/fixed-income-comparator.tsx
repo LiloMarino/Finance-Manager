@@ -11,8 +11,7 @@ export function FixedIncomeComparatorPage() {
       <div>
         <h1 className="text-2xl font-semibold">Comparador de renda fixa</h1>
         <p className="text-muted-foreground">
-          Opções de renda fixa lado a lado, pelo que entregam líquido de IR e IOF. Nada
-          é gravado.
+          Opções de renda fixa lado a lado, pelo que entregam líquido de IR e IOF. Nada é gravado.
         </p>
       </div>
       {error ? (

@@ -1,5 +1,4 @@
-export const netValueHint =
-  "O que cai na conta no resgate: o valor bruto menos o IR e o IOF.";
+export const netValueHint = "O que cai na conta no resgate: o valor bruto menos o IR e o IOF.";
 
 export const netAnnualHint =
   "A taxa ao ano que, composta dia útil a dia útil (252 por ano), leva do valor aplicado ao líquido. Ex.: R$ 1.000 que viram R$ 1.120 líquidos em exatamente 1 ano dão 12% a.a. Serve para comparar opções de prazos diferentes: maior é melhor.";

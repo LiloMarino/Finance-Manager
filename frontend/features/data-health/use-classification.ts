@@ -20,8 +20,7 @@ export function useAcceptClassifications() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (items: AcceptItem[]) =>
-      post("/api/classification/accept", { body: { items } }),
+    mutationFn: (items: AcceptItem[]) => post("/api/classification/accept", { body: { items } }),
     onSuccess: async (_, items) => {
       toast.success(
         items.length === 1 ? "1 ativo classificado." : `${items.length} ativos classificados.`,

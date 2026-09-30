@@ -49,9 +49,7 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
       <TableBody>
         {operations.map((operation) => (
           <TableRow key={operation.id}>
-            <TableCell className="tabular-nums">
-              {formatDate(operation.operation_date)}
-            </TableCell>
+            <TableCell className="tabular-nums">{formatDate(operation.operation_date)}</TableCell>
             <TableCell className="font-medium">
               <Link to={`/assets/${operation.asset_id}`} className="hover:underline">
                 {operation.ticker}

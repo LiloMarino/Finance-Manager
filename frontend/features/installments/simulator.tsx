@@ -48,9 +48,7 @@ export function Simulator({ current }: { current: CurrentRates }) {
             current={current}
             draft={draft}
             edited={isProjectionEdited(searchParams)}
-            onApply={(next) =>
-              setSearchParams((params) => writeProjection(params, next, current))
-            }
+            onApply={(next) => setSearchParams((params) => writeProjection(params, next, current))}
             onReset={() => setSearchParams((params) => writeProjection(params, null, current))}
           />
         </CardContent>

@@ -169,9 +169,7 @@ function CategoryTotals({ performance }: { performance: IncomePerformance }) {
               </span>
             </TableCell>
             <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatPercent(item.share)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
           </TableRow>
         ))}
         <TableRow>

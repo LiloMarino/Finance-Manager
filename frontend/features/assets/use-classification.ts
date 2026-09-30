@@ -35,8 +35,7 @@ export function useCreateClassification() {
 
   return useMutation({
     mutationFn: async ({ sectorId, sectorName, segmentName }: SegmentDraft) => {
-      const sector =
-        sectorId ?? (await post("/api/sectors", { body: { name: sectorName } })).id;
+      const sector = sectorId ?? (await post("/api/sectors", { body: { name: sectorName } })).id;
       return post("/api/sectors/{sector_id}/segments", {
         path: { sector_id: sector },
         body: { name: segmentName },
@@ -45,7 +44,6 @@ export function useCreateClassification() {
     onSuccess: (segment) => toast.success(`Segmento ${segment.name} criado.`),
     onError: (error) => toast.error(getApiErrorMessage(error)),
     // O setor novo fica mesmo quando o segmento falha
-    onSettled: () =>
-      invalidateKeys(queryClient, [queryKeys.sectors, queryKeys.classification]),
+    onSettled: () => invalidateKeys(queryClient, [queryKeys.sectors, queryKeys.classification]),
   });
 }

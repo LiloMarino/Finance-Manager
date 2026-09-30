@@ -11,11 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/shared/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/ui/chart";
 import { Progress } from "@/shared/components/ui/progress";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
@@ -119,9 +115,7 @@ function CategoryDonut({ distribution }: { distribution: IncomeDistribution }) {
                 </span>
               </TableCell>
               <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatPercent(item.share)}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

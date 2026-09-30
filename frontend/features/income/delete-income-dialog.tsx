@@ -31,8 +31,8 @@ export function DeleteIncomeDialog({ event }: { event: IncomeEvent }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Apagar provento?</AlertDialogTitle>
           <AlertDialogDescription>
-            {incomeTypeLabels[event.income_type]} de {event.ticker} de{" "}
-            {formatBRL(event.amount)}, pago em {formatDate(event.payment_date)}.
+            {incomeTypeLabels[event.income_type]} de {event.ticker} de {formatBRL(event.amount)},
+            pago em {formatDate(event.payment_date)}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

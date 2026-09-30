@@ -38,9 +38,7 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <CardTitle>DARF</CardTitle>
-          <Badge variant={darfStatusVariants[month.status]}>
-            {darfStatusLabels[month.status]}
-          </Badge>
+          <Badge variant={darfStatusVariants[month.status]}>{darfStatusLabels[month.status]}</Badge>
         </div>
         {(month.darf_amount || month.payment) && <DarfPaymentDialog month={month} />}
       </CardHeader>
@@ -118,9 +116,7 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
                 <TableCell className="text-right tabular-nums">
                   {formatBRL(pool.compensated)}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {formatBRL(pool.taxable)}
-                </TableCell>
+                <TableCell className="text-right tabular-nums">{formatBRL(pool.taxable)}</TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatPercent(pool.rate)}
                 </TableCell>

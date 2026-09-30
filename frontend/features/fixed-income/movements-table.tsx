@@ -43,13 +43,9 @@ export function MovementsTable({ movements }: { movements: Movement[] }) {
       <TableBody>
         {movements.map((movement) => (
           <TableRow key={movement.id}>
-            <TableCell className="tabular-nums">
-              {formatDate(movement.movement_date)}
-            </TableCell>
+            <TableCell className="tabular-nums">{formatDate(movement.movement_date)}</TableCell>
             <TableCell>{movementTypeLabels[movement.movement_type]}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatBRL(movement.amount)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatBRL(movement.amount)}</TableCell>
             <TableCell className="text-right">
               <DeleteMovementDialog movement={movement} />
             </TableCell>
@@ -74,9 +70,8 @@ function DeleteMovementDialog({ movement }: { movement: Movement }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Apagar movimentação?</AlertDialogTitle>
           <AlertDialogDescription>
-            {movementTypeLabels[movement.movement_type]} de {formatBRL(movement.amount)}{" "}
-            em {formatDate(movement.movement_date)}. O valor do título é recalculado sem
-            ela.
+            {movementTypeLabels[movement.movement_type]} de {formatBRL(movement.amount)} em{" "}
+            {formatDate(movement.movement_date)}. O valor do título é recalculado sem ela.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

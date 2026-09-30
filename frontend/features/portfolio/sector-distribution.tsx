@@ -79,13 +79,7 @@ function Distribution({ slices, heading }: { slices: Slice[]; heading: string })
       >
         <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
           <XAxis type="number" dataKey="value" hide />
-          <YAxis
-            type="category"
-            dataKey="label"
-            width={160}
-            tickLine={false}
-            axisLine={false}
-          />
+          <YAxis type="category" dataKey="label" width={160} tickLine={false} axisLine={false} />
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -123,9 +117,7 @@ function Distribution({ slices, heading }: { slices: Slice[]; heading: string })
             <TableRow key={item.label}>
               <TableCell>{item.label}</TableCell>
               <TableCell className="text-right tabular-nums">{formatBRL(item.value)}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatPercent(item.share)}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

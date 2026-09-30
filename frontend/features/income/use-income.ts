@@ -63,8 +63,7 @@ export function useSaveIncome(incomeId?: number) {
 
 export function useDeleteIncome() {
   return useWrite(
-    (event: IncomeEvent) =>
-      del("/api/income/{income_id}", { path: { income_id: event.id } }),
+    (event: IncomeEvent) => del("/api/income/{income_id}", { path: { income_id: event.id } }),
     "Provento apagado.",
   );
 }

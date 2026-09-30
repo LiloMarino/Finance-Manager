@@ -5,7 +5,7 @@ export const cashLeftoverHint =
   "À vista, o desconto é o ganho: ele fica no mesmo investimento até a última parcela, e a sobra é o líquido dele nesse dia. Ex.: 5% de R$ 1.000 são R$ 50 aplicados, que viram cerca de R$ 55 em 10 meses.";
 
 export const breakEvenDiscountHint =
-  "O desconto à vista que deixa os dois caminhos iguais: com desconto maior, pague à vista; menor, parcele. É a resposta para \"quanto de desconto eu devo pedir\". Ex.: empate em 4,8% quer dizer que 5% de desconto já compensa pagar à vista, e 4% não.";
+  'O desconto à vista que deixa os dois caminhos iguais: com desconto maior, pague à vista; menor, parcele. É a resposta para "quanto de desconto eu devo pedir". Ex.: empate em 4,8% quer dizer que 5% de desconto já compensa pagar à vista, e 4% não.';
 
 export const breakEvenRatesHint =
   "Quanto um investimento precisaria render para o parcelado empatar com o desconto informado. Achando um investimento acima dessa taxa, parcelar vence; abaixo, o à vista vence. A LCA é isenta de IR, por isso empata com uma taxa menor que a do CDB.";

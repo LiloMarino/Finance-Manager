@@ -79,9 +79,9 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         <TriangleAlert />
         <AlertTitle>Confira antes de declarar</AlertTitle>
         <AlertDescription>
-          Este relatório é um cálculo do app a partir do que está cadastrado, e pode ter
-          erros. Para a declaração, a fonte é o informe de rendimentos da corretora: use
-          este relatório para cruzar os valores e achar o que falta ou diverge.
+          Este relatório é um cálculo do app a partir do que está cadastrado, e pode ter erros. Para
+          a declaração, a fonte é o informe de rendimentos da corretora: use este relatório para
+          cruzar os valores e achar o que falta ou diverge.
         </AlertDescription>
       </Alert>
 
@@ -92,8 +92,8 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-muted-foreground text-sm">
-            Um item por ativo, pelo custo de aquisição (quantidade × preço médio), nunca pelo
-            valor de mercado. Ativo comprado e vendido dentro do ano não entra.
+            Um item por ativo, pelo custo de aquisição (quantidade × preço médio), nunca pelo valor
+            de mercado. Ativo comprado e vendido dentro do ano não entra.
           </p>
           {report.assets.length === 0 ? (
             <p className="text-muted-foreground">Nenhum bem em 31/12.</p>
@@ -171,9 +171,9 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-muted-foreground text-sm">
-            Resultado líquido de cada mês, sem o lucro isento. Operações comuns reúnem ações,
-            ETF e BDR; o FII vai na ficha própria de fundos imobiliários. O imposto pago é o
-            DARF {report.darf_code} registrado como pago.
+            Resultado líquido de cada mês, sem o lucro isento. Operações comuns reúnem ações, ETF e
+            BDR; o FII vai na ficha própria de fundos imobiliários. O imposto pago é o DARF{" "}
+            {report.darf_code} registrado como pago.
           </p>
           <Table>
             <TableHeader>
@@ -206,9 +206,7 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
                         {formatBRL(item.paid_amount)}
                       </span>
                     ) : item.darf_amount ? (
-                      <Badge variant="destructive">
-                        {formatBRL(item.darf_amount)} não pago
-                      </Badge>
+                      <Badge variant="destructive">{formatBRL(item.darf_amount)} não pago</Badge>
                     ) : (
                       "—"
                     )}
@@ -273,8 +271,8 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <p className="text-muted-foreground text-sm">
-              O app não sabe em que ficha eles entram, como o dividendo de BDR, que é
-              tributado pelo carnê-leão. Confira no informe da corretora.
+              O app não sabe em que ficha eles entram, como o dividendo de BDR, que é tributado pelo
+              carnê-leão. Confira no informe da corretora.
             </p>
             <IncomeTable
               items={report.income.filter((item) => item.form === null)}

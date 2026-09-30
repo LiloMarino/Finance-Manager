@@ -14,7 +14,12 @@ interface ClassificationHintProps {
 
 /** O que o Yahoo diz do ticker e o segmento que ele sugere. Nada é gravado aqui: o
 botão só preenche o campo. */
-export function ClassificationHint({ suggestion, value, onUse, onCreate }: ClassificationHintProps) {
+export function ClassificationHint({
+  suggestion,
+  value,
+  onUse,
+  onCreate,
+}: ClassificationHintProps) {
   const { data: sectors = [] } = useSectors();
   const segmentId = suggestion.segment_id;
   const suggested = segmentId === null ? undefined : segmentLabel(sectors, segmentId);

@@ -60,7 +60,8 @@ export const treasuryIndexers: Partial<Record<FixedIncomeType, Indexer>> = {
 // A taxa do título significa uma coisa por indexador
 const rateDescriptions: Record<Indexer, (rate: string) => string> = {
   cdi: (rate) => `${rate}% do CDI`,
-  selic: (rate) => (rate.startsWith("-") ? `Selic − ${rate.slice(1)}% a.a.` : `Selic + ${rate}% a.a.`),
+  selic: (rate) =>
+    rate.startsWith("-") ? `Selic − ${rate.slice(1)}% a.a.` : `Selic + ${rate}% a.a.`,
   ipca: (rate) => `IPCA + ${rate}% a.a.`,
   prefixed: (rate) => `${rate}% a.a.`,
 };

@@ -3,10 +3,7 @@ import { Fragment } from "react";
 import { accumulatedHint, yearHint } from "@/features/monthly-returns/hints";
 import { signClass } from "@/shared/lib/sign";
 import { monthLabels } from "@/shared/lib/months";
-import type {
-  MonthlyReturns,
-  YearReturns,
-} from "@/features/monthly-returns/use-monthly-returns";
+import type { MonthlyReturns, YearReturns } from "@/features/monthly-returns/use-monthly-returns";
 import { MetricHint } from "@/shared/components/metric-hint";
 import {
   Table,

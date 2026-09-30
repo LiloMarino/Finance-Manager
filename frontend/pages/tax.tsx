@@ -9,18 +9,8 @@ import { LossesSection } from "@/features/tax/losses-section";
 import { MonthsTable } from "@/features/tax/months-table";
 import { PeriodNavigator } from "@/features/tax/period-navigator";
 import { PositionsSection } from "@/features/tax/positions-section";
-import {
-  type TaxParams,
-  isTaxTab,
-  readTaxParams,
-  writeTaxParams,
-} from "@/features/tax/tax-params";
-import {
-  type MonthlyTax,
-  useIrpfReport,
-  useTaxMonths,
-  useTaxPeriod,
-} from "@/features/tax/use-tax";
+import { type TaxParams, isTaxTab, readTaxParams, writeTaxParams } from "@/features/tax/tax-params";
+import { type MonthlyTax, useIrpfReport, useTaxMonths, useTaxPeriod } from "@/features/tax/use-tax";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
@@ -34,12 +24,12 @@ export function TaxPage() {
       <div>
         <h1 className="text-2xl font-semibold">Fiscal</h1>
         <p className="text-muted-foreground">
-          Apuração mensal do IR sobre renda variável, pelas regras da Receita, com o DARF
-          de cada mês.
+          Apuração mensal do IR sobre renda variável, pelas regras da Receita, com o DARF de cada
+          mês.
         </p>
         <p className="text-muted-foreground mt-1 text-sm">
-          A apuração ainda não considera o custo atribuído à bonificação, as taxas da nota
-          de corretagem nem o IRRF retido na fonte.
+          A apuração ainda não considera o custo atribuído à bonificação, as taxas da nota de
+          corretagem nem o IRRF retido na fonte.
         </p>
       </div>
 
@@ -170,8 +160,7 @@ function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
           <DarfCard month={assessed} />
         ) : (
           <p className="text-muted-foreground">
-            Sem apuração em {formatMonth(year, month)}: o mês está fora do histórico de
-            operações.
+            Sem apuração em {formatMonth(year, month)}: o mês está fora do histórico de operações.
           </p>
         )
       ) : (
@@ -187,7 +176,9 @@ function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
 
       {lastMonth && (
         <LossesSection
-          title={byMonth ? "Prejuízo a compensar no fim do mês" : "Prejuízo a compensar no fim do ano"}
+          title={
+            byMonth ? "Prejuízo a compensar no fim do mês" : "Prejuízo a compensar no fim do ano"
+          }
           pools={lastMonth.pools}
         />
       )}

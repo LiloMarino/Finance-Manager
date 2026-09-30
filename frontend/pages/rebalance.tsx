@@ -26,8 +26,7 @@ export function RebalancePage() {
       <div>
         <h1 className="text-2xl font-semibold">Rebalanceamento</h1>
         <p className="text-muted-foreground">
-          A meta de cada item da subcarteira, o quanto ela está longe e onde pôr o
-          próximo aporte.
+          A meta de cada item da subcarteira, o quanto ela está longe e onde pôr o próximo aporte.
         </p>
       </div>
 
@@ -49,10 +48,7 @@ export function RebalancePage() {
             </CardContent>
           </Card>
           {data.complete && (
-            <ContributionCard
-              subportfolioId={subportfolioId}
-              cash={cash.data?.balance ?? null}
-            />
+            <ContributionCard subportfolioId={subportfolioId} cash={cash.data?.balance ?? null} />
           )}
         </>
       )}
@@ -99,12 +95,10 @@ function SubportfolioSummary({ rebalance, subportfolioId }: SummaryProps) {
       {!rebalance.complete && rebalance.targets_total && (
         <CardContent>
           <Alert>
-            <AlertTitle>
-              As metas somam {formatPercent(rebalance.targets_total)}
-            </AlertTitle>
+            <AlertTitle>As metas somam {formatPercent(rebalance.targets_total)}</AlertTitle>
             <AlertDescription>
-              Com as metas somando 100%, a subcarteira passa a ter desvio, limite e a
-              divisão do aporte. Ajuste em Editar metas.
+              Com as metas somando 100%, a subcarteira passa a ter desvio, limite e a divisão do
+              aporte. Ajuste em Editar metas.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -120,9 +114,12 @@ function GeneralView({ rebalance }: { rebalance: Rebalance }) {
         <AlertTitle>A carteira geral não tem meta própria</AlertTitle>
         <AlertDescription>
           <span>
-            A meta de cada item é a da subcarteira dele, pesada pela fração da
-            subcarteira. Escolha uma subcarteira no topo para editar as metas e dividir
-            o aporte, ou crie uma em <Link to="/subportfolios" className="underline">Subcarteiras</Link>.
+            A meta de cada item é a da subcarteira dele, pesada pela fração da subcarteira. Escolha
+            uma subcarteira no topo para editar as metas e dividir o aporte, ou crie uma em{" "}
+            <Link to="/subportfolios" className="underline">
+              Subcarteiras
+            </Link>
+            .
           </span>
         </AlertDescription>
       </Alert>

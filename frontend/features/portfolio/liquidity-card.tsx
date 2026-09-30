@@ -64,9 +64,7 @@ function TierBar({ liquidity }: { liquidity: Portfolio["liquidity"] }) {
   const byTier = new Map<string, Portfolio["liquidity"][number]>(
     liquidity.map((item) => [item.tier, item]),
   );
-  const row = Object.fromEntries(
-    liquidity.map((item) => [item.tier, toChartNumber(item.value)]),
-  );
+  const row = Object.fromEntries(liquidity.map((item) => [item.tier, toChartNumber(item.value)]));
 
   return (
     <ChartContainer config={tierConfig} className="aspect-auto h-10 w-full">
@@ -148,9 +146,7 @@ function TierTable({ liquidity }: { liquidity: Portfolio["liquidity"] }) {
               </span>
             </TableCell>
             <TableCell className="text-right tabular-nums">{formatBRL(item.value)}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatPercent(item.share)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -37,9 +37,7 @@ export function NameDialog({ title, trigger, initialName = "", save }: NameDialo
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        {open && (
-          <NameForm initialName={initialName} save={save} onSaved={() => setOpen(false)} />
-        )}
+        {open && <NameForm initialName={initialName} save={save} onSaved={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
   );

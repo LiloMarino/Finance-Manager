@@ -11,12 +11,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { portfolioCategoryLabels } from "@/shared/lib/portfolio-category";
-import {
-  formatBRL,
-  formatPercent,
-  formatSignedBRL,
-  formatSignedPoints,
-} from "@/types/decimal";
+import { formatBRL, formatPercent, formatSignedBRL, formatSignedPoints } from "@/types/decimal";
 
 interface DeviationTableProps {
   lines: RebalanceLine[];
@@ -85,9 +80,7 @@ export function DeviationTable({ lines, general }: DeviationTableProps) {
               </TableCell>
             )}
             <TableCell className="text-right tabular-nums">{formatBRL(line.value)}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatPercent(line.share)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatPercent(line.share)}</TableCell>
             <TableCell className="text-right tabular-nums">
               {line.target === null ? "—" : formatPercent(line.target)}
             </TableCell>

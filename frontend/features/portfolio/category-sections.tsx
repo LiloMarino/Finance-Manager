@@ -17,10 +17,7 @@ import { dayChangeHint, totalChangeHint } from "@/features/portfolio/hints";
 import { SortableHeader } from "@/features/portfolio/sortable-header";
 import type { Portfolio } from "@/features/portfolio/use-portfolio";
 import { CategoryDot } from "@/shared/components/category-dot";
-import {
-  portfolioCategoryConfig,
-  portfolioCategoryLabels,
-} from "@/shared/lib/portfolio-category";
+import { portfolioCategoryConfig, portfolioCategoryLabels } from "@/shared/lib/portfolio-category";
 import { signClass } from "@/shared/lib/sign";
 import {
   Accordion,
@@ -303,9 +300,7 @@ function HoldingsSection({ data, sorting, onSortingChange }: SortedSectionProps<
     onSortingChange: (updater) =>
       onSortingChange(typeof updater === "function" ? updater(sorting) : updater),
   });
-  return (
-    <SortedTable table={table} rowLink={(item) => `/fixed-income/${item.investment_id}`} />
-  );
+  return <SortedTable table={table} rowLink={(item) => `/fixed-income/${item.investment_id}`} />;
 }
 
 function CategoryHeader({ allocation }: { allocation: CategoryAllocation }) {

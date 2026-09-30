@@ -3,11 +3,7 @@ import { type ReactElement, type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  useAddCheck,
-  useAddWithdrawal,
-  useUpdateCashSettings,
-} from "@/features/cash/use-cash";
+import { useAddCheck, useAddWithdrawal, useUpdateCashSettings } from "@/features/cash/use-cash";
 import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -164,13 +160,7 @@ export function ThresholdDialog({ trigger, threshold }: ThresholdDialogProps) {
   );
 }
 
-function ThresholdForm({
-  threshold,
-  onSaved,
-}: {
-  threshold: DecimalString;
-  onSaved: () => void;
-}) {
+function ThresholdForm({ threshold, onSaved }: { threshold: DecimalString; onSaved: () => void }) {
   const update = useUpdateCashSettings();
   const values: z.input<typeof thresholdSchema> = { threshold: toMoneyInput(threshold) };
   const form = useForm({ resolver: zodResolver(thresholdSchema), values });

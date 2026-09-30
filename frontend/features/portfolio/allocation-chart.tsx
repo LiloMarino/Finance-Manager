@@ -28,9 +28,7 @@ function AllocationTooltip({ item }: { item: Allocation }) {
 linha da legenda destaca a mesma categoria nos dois. */
 export function AllocationChart({ categories }: { categories: Allocation[] }) {
   const [active, setActive] = useState<number | null>(null);
-  const byCategory = new Map<string, Allocation>(
-    categories.map((item) => [item.category, item]),
-  );
+  const byCategory = new Map<string, Allocation>(categories.map((item) => [item.category, item]));
   const data = categories.map((item) => ({
     category: item.category,
     value: toChartNumber(item.value),

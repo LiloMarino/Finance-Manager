@@ -18,7 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 
 const schema = z.object({
@@ -41,9 +47,8 @@ export function TickerChangeDialog({ asset }: { asset: Asset }) {
         <DialogHeader>
           <DialogTitle>Trocar o ticker de {asset.ticker}</DialogTitle>
           <DialogDescription>
-            O ativo passa a se chamar pelo ticker novo a partir da data. Posição, preço
-            médio e apuração não mudam; operações, fiscal e IRPF mostram o ticker vigente
-            em cada data.
+            O ativo passa a se chamar pelo ticker novo a partir da data. Posição, preço médio e
+            apuração não mudam; operações, fiscal e IRPF mostram o ticker vigente em cada data.
           </DialogDescription>
         </DialogHeader>
         {open && <TickerChangeForm asset={asset} onSaved={() => setOpen(false)} />}
@@ -91,7 +96,11 @@ function TickerChangeForm({ asset, onSaved }: TickerChangeFormProps) {
             control={form.control}
             name="ticker"
             render={({ field }) => (
-              <TickerSearch id="ticker-change-ticker" value={field.value} onChange={field.onChange} />
+              <TickerSearch
+                id="ticker-change-ticker"
+                value={field.value}
+                onChange={field.onChange}
+              />
             )}
           />
           {existing && (

@@ -61,8 +61,5 @@ export function useDeleteWithdrawal(withdrawalId: number) {
 }
 
 export function useUpdateCashSettings() {
-  return useWrite(
-    (body: SettingsInput) => put("/api/cash/settings", { body }),
-    "Limite salvo.",
-  );
+  return useWrite((body: SettingsInput) => put("/api/cash/settings", { body }), "Limite salvo.");
 }

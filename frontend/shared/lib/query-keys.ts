@@ -31,10 +31,7 @@ export const queryKeys = {
 };
 
 /** Invalida toda query cuja chave começa por uma das `keys`. */
-export function invalidateKeys(
-  queryClient: QueryClient,
-  keys: readonly QueryKey[],
-): Promise<void> {
+export function invalidateKeys(queryClient: QueryClient, keys: readonly QueryKey[]): Promise<void> {
   return queryClient.invalidateQueries({
     predicate: ({ queryKey }) =>
       keys.some((key) => key.every((part, index) => queryKey[index] === part)),
@@ -44,11 +41,7 @@ export function invalidateKeys(
 /** Todo provento muda a rentabilidade e o saldo da carteira, o relatório do IRPF e
 o saldo parado dos problemas de dado. */
 export function invalidateIncomeData(queryClient: QueryClient): Promise<void> {
-  return invalidateKeys(queryClient, [
-    queryKeys.portfolio,
-    queryKeys.tax,
-    queryKeys.dataHealth,
-  ]);
+  return invalidateKeys(queryClient, [queryKeys.portfolio, queryKeys.tax, queryKeys.dataHealth]);
 }
 
 /** Toda escrita em ativo ou operação muda a carteira, as listas, os ativos a cotar,

@@ -15,12 +15,7 @@ import {
   ChartTooltip,
 } from "@/shared/components/ui/chart";
 import { portfolioCategories, portfolioCategoryConfig } from "@/shared/lib/portfolio-category";
-import {
-  type DecimalString,
-  formatBRL,
-  formatSignedPercent,
-  toChartNumber,
-} from "@/types/decimal";
+import { type DecimalString, formatBRL, formatSignedPercent, toChartNumber } from "@/types/decimal";
 
 const chartConfig = {
   ...portfolioCategoryConfig,

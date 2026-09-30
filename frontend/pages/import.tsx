@@ -26,8 +26,8 @@ export function ImportPage() {
       <div>
         <h1 className="text-2xl font-semibold">Importar</h1>
         <p className="text-muted-foreground">
-          Nada é gravado antes de você conferir o preview e confirmar. Reimportar um
-          arquivo não duplica o que já está no banco.
+          Nada é gravado antes de você conferir o preview e confirmar. Reimportar um arquivo não
+          duplica o que já está no banco.
         </p>
       </div>
 
@@ -53,10 +53,7 @@ export function ImportPage() {
                 ))}
               </ul>
               <div className="flex gap-2">
-                <Button
-                  onClick={() => preview.mutate(files)}
-                  disabled={preview.isPending}
-                >
+                <Button onClick={() => preview.mutate(files)} disabled={preview.isPending}>
                   Pré-visualizar {files.length} arquivos
                 </Button>
                 <Button variant="outline" onClick={clear}>

@@ -11,10 +11,7 @@ import { CorrelationSummary } from "@/features/correlation/correlation-summary";
 import { matrixHint, normalizedHint, rollingHint } from "@/features/correlation/hints";
 import { NormalizedChart } from "@/features/correlation/normalized-chart";
 import { RollingChart } from "@/features/correlation/rolling-chart";
-import {
-  useCorrelationMatrix,
-  useCorrelationPair,
-} from "@/features/correlation/use-correlation";
+import { useCorrelationMatrix, useCorrelationPair } from "@/features/correlation/use-correlation";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -31,8 +28,7 @@ export function CorrelationPage() {
       <div>
         <h1 className="text-2xl font-semibold">Correlação</h1>
         <p className="text-muted-foreground">
-          O quanto os ativos andam juntos, na carteira ou fora dela, e contra o IBOV ou
-          o CDI.
+          O quanto os ativos andam juntos, na carteira ou fora dela, e contra o IBOV ou o CDI.
         </p>
       </div>
       <Card>
@@ -48,8 +44,8 @@ export function CorrelationPage() {
 
       {state.symbols.length < 2 ? (
         <p className="text-muted-foreground">
-          Escolha pelo menos dois itens. O histórico de um ticker fora da carteira é
-          buscado na primeira vez e fica em cache.
+          Escolha pelo menos dois itens. O histórico de um ticker fora da carteira é buscado na
+          primeira vez e fica em cache.
         </p>
       ) : (
         <>
@@ -62,9 +58,7 @@ export function CorrelationPage() {
             </CardHeader>
             <CardContent>
               {matrix.error ? (
-                <span className="text-destructive">
-                  {getApiErrorMessage(matrix.error)}
-                </span>
+                <span className="text-destructive">{getApiErrorMessage(matrix.error)}</span>
               ) : matrix.data ? (
                 <CorrelationMatrix
                   matrix={matrix.data}
@@ -114,8 +108,8 @@ export function CorrelationPage() {
                         <RollingChart correlation={pair.data} />
                       ) : (
                         <p className="text-muted-foreground text-sm">
-                          O período tem menos de {pair.data.rolling_window} pregões em
-                          comum: escolha uma janela maior.
+                          O período tem menos de {pair.data.rolling_window} pregões em comum:
+                          escolha uma janela maior.
                         </p>
                       )}
                     </CardContent>

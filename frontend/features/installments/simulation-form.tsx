@@ -61,9 +61,7 @@ const schema = z
   .transform((values, context): SimulationParams => {
     const amount = parseDecimalInput(values.amount);
     const installments = Number(values.installments);
-    const discount = values.cash_discount.trim()
-      ? parseDecimalInput(values.cash_discount)
-      : null;
+    const discount = values.cash_discount.trim() ? parseDecimalInput(values.cash_discount) : null;
     if (!amount) {
       context.addIssue({ code: "custom", path: ["amount"], message: "Valor inválido." });
     }
@@ -152,10 +150,7 @@ export function SimulationForm({ simulation, onSubmit }: SimulationFormProps) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field data-invalid={Boolean(errors.amount)}>
             <FieldLabel htmlFor="simulation-amount">{labels.amount}</FieldLabel>
-            <MoneyInput
-              id="simulation-amount"
-              {...withMask(form.register("amount"), maskMoney)}
-            />
+            <MoneyInput id="simulation-amount" {...withMask(form.register("amount"), maskMoney)} />
             <FieldError errors={[errors.amount]} />
           </Field>
           <Field data-invalid={Boolean(errors.installments)}>

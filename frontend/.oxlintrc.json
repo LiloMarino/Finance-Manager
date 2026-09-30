@@ -1,11 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "react",
-    "typescript",
-    "oxc",
-    "import"
-  ],
+  "plugins": ["react", "typescript", "oxc", "import"],
   "options": {
     "typeAware": true
   },

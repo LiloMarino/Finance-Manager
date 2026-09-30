@@ -64,9 +64,7 @@ export function Comparator({ current }: { current: CurrentRates }) {
             current={current}
             draft={draft}
             edited={isProjectionEdited(searchParams)}
-            onApply={(next) =>
-              setSearchParams((params) => writeProjection(params, next, current))
-            }
+            onApply={(next) => setSearchParams((params) => writeProjection(params, next, current))}
             onReset={() => setSearchParams((params) => writeProjection(params, null, current))}
           />
         </CardContent>
@@ -95,8 +93,8 @@ export function Comparator({ current }: { current: CurrentRates }) {
       )}
       {options.length === 0 ? (
         <p className="text-muted-foreground">
-          Adicione as opções que quer comparar: cada uma com o tipo, a taxa, o valor e
-          as datas de aplicação e resgate.
+          Adicione as opções que quer comparar: cada uma com o tipo, a taxa, o valor e as datas de
+          aplicação e resgate.
         </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -109,9 +107,7 @@ export function Comparator({ current }: { current: CurrentRates }) {
               onSave={(saved) =>
                 saveOptions(options.map((item, position) => (position === index ? saved : item)))
               }
-              onRemove={() =>
-                saveOptions(options.filter((_, position) => position !== index))
-              }
+              onRemove={() => saveOptions(options.filter((_, position) => position !== index))}
             />
           ))}
         </div>

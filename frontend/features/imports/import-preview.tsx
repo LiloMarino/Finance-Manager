@@ -31,10 +31,7 @@ const statusLabels: Record<ImportStatus, string> = {
   repeated_in_batch: "Repetida no lote",
 };
 
-const statusVariants: Record<
-  ImportStatus,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
+const statusVariants: Record<ImportStatus, "default" | "secondary" | "destructive" | "outline"> = {
   new: "default",
   existing: "secondary",
   possible_duplicate: "destructive",
@@ -234,9 +231,7 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
               }
               cells={(row) => (
                 <>
-                  <TableCell className="tabular-nums">
-                    {formatDate(row.operation_date)}
-                  </TableCell>
+                  <TableCell className="tabular-nums">{formatDate(row.operation_date)}</TableCell>
                   <TableCell className="font-medium">{row.ticker}</TableCell>
                   <TableCell>{operationTypeLabels[row.operation_type]}</TableCell>
                   <TableCell className="text-right tabular-nums">
@@ -285,9 +280,7 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
                   <TableCell className="text-right tabular-nums">
                     {formatBRL(row.unit_price)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatBRL(row.amount)}
-                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{formatBRL(row.amount)}</TableCell>
                 </>
               )}
             />

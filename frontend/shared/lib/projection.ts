@@ -15,10 +15,7 @@ export type ProjectionDraft = Record<(typeof projectionKeys)[number], DecimalStr
 
 /** A projeção editada fica na URL; o que não foi editado parte do último valor real.
 Cada taxa é nula quando a série não tem dado no cache nem valor digitado. */
-export function projectionDraft(
-  params: URLSearchParams,
-  current: CurrentRates,
-): ProjectionDraft {
+export function projectionDraft(params: URLSearchParams, current: CurrentRates): ProjectionDraft {
   return {
     cdi: readRate(params, "cdi") ?? current.cdi,
     selic: readRate(params, "selic") ?? current.selic,

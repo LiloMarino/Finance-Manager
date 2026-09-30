@@ -42,10 +42,7 @@ import {
 } from "@/shared/components/ui/sidebar";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
-import {
-  subportfolioSearch,
-  useSubportfolioParam,
-} from "@/shared/hooks/use-subportfolio-param";
+import { subportfolioSearch, useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
 import { useSubportfolios } from "@/shared/hooks/use-subportfolios";
 
 // As visões que mostram a carteira geral ou uma subcarteira: nelas o seletor aparece,
@@ -137,7 +134,7 @@ export function MainLayout() {
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
-  
+
         <SidebarInset className="min-w-0">
           <header className="flex h-14 items-center gap-2 border-b px-4">
             <SidebarTrigger />

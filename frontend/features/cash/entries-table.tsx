@@ -1,9 +1,5 @@
 import { cashEntryKindLabels } from "@/features/cash/labels";
-import {
-  type CashEntry,
-  useDeleteCheck,
-  useDeleteWithdrawal,
-} from "@/features/cash/use-cash";
+import { type CashEntry, useDeleteCheck, useDeleteWithdrawal } from "@/features/cash/use-cash";
 import { DeleteDialog } from "@/shared/components/delete-dialog";
 import {
   Table,
@@ -41,9 +37,7 @@ export function EntriesTable({ entries }: { entries: CashEntry[] }) {
             </TableCell>
             <TableCell className="text-right tabular-nums">{formatBRL(entry.balance)}</TableCell>
             <TableCell className="text-right">
-              {entry.record_id !== null && (
-                <DeleteEntry entry={entry} recordId={entry.record_id} />
-              )}
+              {entry.record_id !== null && <DeleteEntry entry={entry} recordId={entry.record_id} />}
             </TableCell>
           </TableRow>
         ))}
@@ -64,11 +58,7 @@ function DeleteEntry({ entry, recordId }: { entry: CashEntry; recordId: number }
 function DeleteWithdrawal({ recordId }: { recordId: number }) {
   const remove = useDeleteWithdrawal(recordId);
   return (
-    <DeleteDialog
-      name="o saque"
-      description="O saldo é recalculado sem ele."
-      remove={remove}
-    />
+    <DeleteDialog name="o saque" description="O saldo é recalculado sem ele." remove={remove} />
   );
 }
 

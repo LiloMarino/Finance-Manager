@@ -31,8 +31,8 @@ export function DeleteOperationDialog({ operation }: { operation: Operation }) {
           <AlertDialogTitle>Apagar operação?</AlertDialogTitle>
           <AlertDialogDescription>
             {operationTypeLabels[operation.operation_type]} de {operation.ticker} em{" "}
-            {formatDate(operation.operation_date)}. A posição e o preço médio são
-            recalculados sem ela.
+            {formatDate(operation.operation_date)}. A posição e o preço médio são recalculados sem
+            ela.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

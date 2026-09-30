@@ -1,8 +1,4 @@
-import {
-  correlationHint,
-  describeCorrelation,
-  returnsHint,
-} from "@/features/correlation/hints";
+import { correlationHint, describeCorrelation, returnsHint } from "@/features/correlation/hints";
 import type { Correlation } from "@/features/correlation/use-correlation";
 import { Metric } from "@/shared/components/metric";
 import { formatDate } from "@/shared/lib/format";
@@ -22,11 +18,7 @@ export function CorrelationSummary({ correlation }: { correlation: Correlation }
           hint={correlationHint}
           value={correlationFormatter.format(correlation.correlation)}
         />
-        <Metric
-          label="Dias na conta"
-          hint={returnsHint}
-          value={`${correlation.returns} pregões`}
-        />
+        <Metric label="Dias na conta" hint={returnsHint} value={`${correlation.returns} pregões`} />
         <Metric
           label="Período"
           hint="Do primeiro ao último pregão em que os dois têm fechamento, dentro da janela escolhida."

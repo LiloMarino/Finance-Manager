@@ -30,12 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  type IncomeType,
-  incomeTypeLabels,
-  incomeTypes,
-  isIncomeType,
-} from "@/shared/lib/labels";
+import { type IncomeType, incomeTypeLabels, incomeTypes, isIncomeType } from "@/shared/lib/labels";
 import { maskDecimal, maskMoney, withMask } from "@/shared/lib/mask";
 import { parseDecimalInput, toDecimalInput, toMoneyInput } from "@/types/decimal";
 
@@ -43,9 +38,7 @@ const schema = z
   .object({
     asset_id: z.string().min(1, "Escolha o ativo."),
     payment_date: z.string().min(1, "Informe a data do pagamento."),
-    income_type: z.custom<IncomeType>(
-      (value) => typeof value === "string" && isIncomeType(value),
-    ),
+    income_type: z.custom<IncomeType>((value) => typeof value === "string" && isIncomeType(value)),
     quantity: z.string(),
     unit_price: z.string(),
     amount: z.string(),

@@ -96,9 +96,7 @@ export function MonthlyReturnsPage() {
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>
-                {granularity === "month" && (
-                  <PeriodSelect value={period} onChange={setPeriod} />
-                )}
+                {granularity === "month" && <PeriodSelect value={period} onChange={setPeriod} />}
               </div>
               <MonthlyReturnsChart
                 monthly={data}

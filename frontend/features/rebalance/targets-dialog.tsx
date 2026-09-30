@@ -4,11 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  type Targets,
-  useSaveTargets,
-  useTargets,
-} from "@/features/rebalance/use-rebalance";
+import { type Targets, useSaveTargets, useTargets } from "@/features/rebalance/use-rebalance";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -55,13 +51,11 @@ export function TargetsDialog({ subportfolioId }: { subportfolioId: number }) {
         <DialogHeader>
           <DialogTitle>Metas da subcarteira</DialogTitle>
           <DialogDescription>
-            Em percentual da subcarteira; as metas somam 100%. Os limites dizem quando
-            a subcarteira aparece em Saúde dos dados e no alerta diário.
+            Em percentual da subcarteira; as metas somam 100%. Os limites dizem quando a subcarteira
+            aparece em Saúde dos dados e no alerta diário.
           </DialogDescription>
         </DialogHeader>
-        {open && (
-          <TargetsLoader subportfolioId={subportfolioId} onSaved={() => setOpen(false)} />
-        )}
+        {open && <TargetsLoader subportfolioId={subportfolioId} onSaved={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
   );

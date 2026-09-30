@@ -63,9 +63,7 @@ export function MovementFormDialog({ investmentId }: { investmentId: number }) {
         <DialogHeader>
           <DialogTitle>Nova movimentação</DialogTitle>
         </DialogHeader>
-        {open && (
-          <MovementForm investmentId={investmentId} onSaved={() => setOpen(false)} />
-        )}
+        {open && <MovementForm investmentId={investmentId} onSaved={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
   );

@@ -6,9 +6,7 @@ import { invalidatePortfolioData, queryKeys } from "@/shared/lib/query-keys";
 import type { components, paths } from "@/types/openapi.generated";
 
 export type Operation = components["schemas"]["OperationDTO"];
-export type OperationFilters = NonNullable<
-  paths["/api/operations"]["get"]["parameters"]["query"]
->;
+export type OperationFilters = NonNullable<paths["/api/operations"]["get"]["parameters"]["query"]>;
 type OperationInput = components["schemas"]["OperationInDTO"];
 
 export function useOperations(filters: OperationFilters = {}) {

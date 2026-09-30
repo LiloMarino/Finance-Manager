@@ -40,8 +40,7 @@ function Verdict({ simulation, mode }: { simulation: Installments; mode: Install
   if (simulation.winner === null || simulation.difference === null) {
     return simulation.cash_leftover === null ? (
       <p className="text-lg">
-        Peça pelo menos <strong>{discount}</strong> de desconto para{" "}
-        {cashLabels[mode].action}.
+        Peça pelo menos <strong>{discount}</strong> de desconto para {cashLabels[mode].action}.
       </p>
     ) : (
       <p className="text-lg">Os dois caminhos empatam.</p>
@@ -50,8 +49,8 @@ function Verdict({ simulation, mode }: { simulation: Installments; mode: Install
   const winner = simulation.winner === "cash" ? cashLabels[mode].verb : "Parcelar";
   return (
     <p className="text-lg">
-      <strong>{winner}</strong> termina com {formatBRL(simulation.difference)} a mais. O
-      desconto que empata é {discount}.
+      <strong>{winner}</strong> termina com {formatBRL(simulation.difference)} a mais. O desconto
+      que empata é {discount}.
     </p>
   );
 }
@@ -112,8 +111,7 @@ export function SimulationSummary({ simulation, mode }: SimulationSummaryProps) 
               {simulation.break_even_rates.map((rate) => (
                 <TableRow key={`${rate.product_type}-${rate.indexer}`}>
                   <TableCell>
-                    {fixedIncomeTypeLabels[rate.product_type]} ·{" "}
-                    {indexerLabels[rate.indexer]}
+                    {fixedIncomeTypeLabels[rate.product_type]} · {indexerLabels[rate.indexer]}
                     {rate.product_type === "lca" && " (isenta de IR)"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">

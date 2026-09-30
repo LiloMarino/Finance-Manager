@@ -2,10 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  type SegmentDraft,
-  useCreateClassification,
-} from "@/features/assets/use-classification";
+import { type SegmentDraft, useCreateClassification } from "@/features/assets/use-classification";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,

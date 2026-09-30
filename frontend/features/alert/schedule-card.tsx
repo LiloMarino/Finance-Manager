@@ -27,11 +27,10 @@ export function ScheduleCard() {
       <CardHeader>
         <CardTitle>Alerta diário</CardTitle>
         <p className="text-muted-foreground text-sm">
-          Uma vez por dia, mesmo com o app fechado, o Windows confere as subcarteiras e
-          o saldo, e abre uma janela se alguma subcarteira passou do limite ou se há
-          saldo parado. Com o PC desligado no horário, roda assim que ele ligar. A
-          janela vem só dessa tarefa: usar o app não abre janela nenhuma, e o aviso fica
-          em Saúde dos dados.
+          Uma vez por dia, mesmo com o app fechado, o Windows confere as subcarteiras e o saldo, e
+          abre uma janela se alguma subcarteira passou do limite ou se há saldo parado. Com o PC
+          desligado no horário, roda assim que ele ligar. A janela vem só dessa tarefa: usar o app
+          não abre janela nenhuma, e o aviso fica em Saúde dos dados.
         </p>
       </CardHeader>
       <CardContent>

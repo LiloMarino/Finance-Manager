@@ -5,12 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  type AssetClass,
-  assetClasses,
-  assetClassLabels,
-  isAssetClass,
-} from "@/shared/lib/labels";
+import { type AssetClass, assetClasses, assetClassLabels, isAssetClass } from "@/shared/lib/labels";
 
 const items = assetClasses.map((assetClass) => ({
   value: assetClass,

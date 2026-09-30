@@ -53,10 +53,7 @@ export default function App() {
             <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
             <Route path="installments" element={<InstallmentsPage />} />
             <Route path="correlation" element={<CorrelationPage />} />
-            <Route
-              path="income"
-              element={<IncomePage />}
-            />
+            <Route path="income" element={<IncomePage />} />
             <Route path="tax" element={<TaxPage />} />
             <Route path="data-health" element={<DataHealthPage />} />
             <Route path="*" element={<ErrorPage />} />

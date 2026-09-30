@@ -17,12 +17,7 @@ import {
 import { TickerSearch } from "@/shared/components/ticker-search";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/shared/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -105,7 +100,9 @@ export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
                       <button
                         type="button"
                         aria-label={`Tirar ${ticker}`}
-                        onClick={() => field.onChange(field.value.filter((item) => item !== ticker))}
+                        onClick={() =>
+                          field.onChange(field.value.filter((item) => item !== ticker))
+                        }
                       >
                         <X />
                       </button>
@@ -117,8 +114,7 @@ export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
           )}
         />
         <FieldDescription>
-          Enter adiciona o ticker, na carteira ou não. As sugestões vêm da busca do
-          yfinance.
+          Enter adiciona o ticker, na carteira ou não. As sugestões vêm da busca do yfinance.
         </FieldDescription>
         <FieldError errors={[errors.tickers]} />
       </Field>

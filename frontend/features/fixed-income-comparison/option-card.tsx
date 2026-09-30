@@ -24,13 +24,7 @@ import {
 import { formatDate } from "@/shared/lib/format";
 import { describeRate, fixedIncomeTypeLabels } from "@/shared/lib/labels";
 import { signClass } from "@/shared/lib/sign";
-import {
-  formatBRL,
-  formatPercent,
-  formatRate,
-  formatSignedBRL,
-  isZero,
-} from "@/types/decimal";
+import { formatBRL, formatPercent, formatRate, formatSignedBRL, isZero } from "@/types/decimal";
 
 type OptionResult = Comparison["results"][number];
 
@@ -52,8 +46,7 @@ export function OptionCard({ option, result, best, onSave, onRemove }: OptionCar
           {best && <Badge>Maior líquido</Badge>}
         </CardTitle>
         <CardDescription>
-          {fixedIncomeTypeLabels[option.product_type]} ·{" "}
-          {describeRate(option.indexer, option.rate)}
+          {fixedIncomeTypeLabels[option.product_type]} · {describeRate(option.indexer, option.rate)}
           <br />
           {formatBRL(option.amount)} de {formatDate(option.application_date)} a{" "}
           {formatDate(option.redemption_date)}
@@ -70,12 +63,7 @@ export function OptionCard({ option, result, best, onSave, onRemove }: OptionCar
               </Button>
             }
           />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Remover opção"
-            onClick={onRemove}
-          >
+          <Button variant="ghost" size="icon-sm" aria-label="Remover opção" onClick={onRemove}>
             <Trash2 />
           </Button>
         </CardAction>
@@ -85,7 +73,11 @@ export function OptionCard({ option, result, best, onSave, onRemove }: OptionCar
       <CardContent className="grid grid-cols-2 gap-4">
         {result ? (
           <>
-            <Metric label="Líquido no resgate" hint={netValueHint} value={formatBRL(result.net_value)} />
+            <Metric
+              label="Líquido no resgate"
+              hint={netValueHint}
+              value={formatBRL(result.net_value)}
+            />
             <Metric
               label="Ganho líquido"
               hint={netValueHint}
@@ -96,9 +88,7 @@ export function OptionCard({ option, result, best, onSave, onRemove }: OptionCar
               label="Líquido ao ano"
               hint={netAnnualHint}
               value={
-                result.net_annual_return === null
-                  ? null
-                  : formatPercent(result.net_annual_return)
+                result.net_annual_return === null ? null : formatPercent(result.net_annual_return)
               }
             />
             <Metric

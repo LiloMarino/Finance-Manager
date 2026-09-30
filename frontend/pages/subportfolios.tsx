@@ -18,10 +18,9 @@ export function SubportfoliosPage() {
         <div>
           <h1 className="text-2xl font-semibold">Subcarteiras</h1>
           <p className="text-muted-foreground">
-            Grupos de ativos e títulos dentro da carteira, cada item em uma só. O seletor
-            no topo da Carteira, da Evolução, da Rentabilidade, do Ano a ano e dos
-            Proventos mostra uma subcarteira no lugar da carteira geral, com o histórico
-            dos membros de hoje.
+            Grupos de ativos e títulos dentro da carteira, cada item em uma só. O seletor no topo da
+            Carteira, da Evolução, da Rentabilidade, do Ano a ano e dos Proventos mostra uma
+            subcarteira no lugar da carteira geral, com o histórico dos membros de hoje.
           </p>
         </div>
         <NameDialog
@@ -42,8 +41,8 @@ export function SubportfoliosPage() {
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : data.length === 0 ? (
         <p className="text-muted-foreground">
-          Nenhuma subcarteira. Crie uma e escolha os ativos e os títulos dela, ou
-          escolha a subcarteira no Editar de cada ativo e de cada título.
+          Nenhuma subcarteira. Crie uma e escolha os ativos e os títulos dela, ou escolha a
+          subcarteira no Editar de cada ativo e de cada título.
         </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

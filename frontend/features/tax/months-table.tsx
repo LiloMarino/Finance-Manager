@@ -44,11 +44,7 @@ export function MonthsTable({ months, onSelect }: MonthsTableProps) {
           <TableRow key={`${month.year}-${month.month}`}>
             <TableCell className="font-medium">
               {onSelect ? (
-                <button
-                  type="button"
-                  className="hover:underline"
-                  onClick={() => onSelect(month)}
-                >
+                <button type="button" className="hover:underline" onClick={() => onSelect(month)}>
                   {formatMonth(month.year, month.month)}
                 </button>
               ) : (
@@ -61,9 +57,7 @@ export function MonthsTable({ months, onSelect }: MonthsTableProps) {
             <TableCell className="text-right tabular-nums">
               {formatBRL(month.compensated)}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatBRL(month.taxable)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatBRL(month.taxable)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatBRL(month.tax)}</TableCell>
             <TableCell className="text-right tabular-nums">
               {month.darf_amount ? formatBRL(month.darf_amount) : "—"}

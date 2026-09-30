@@ -145,8 +145,8 @@ function PlanTable({ subportfolioId, amount, allowSales }: PlanTableProps) {
           <TriangleAlert />
           <AlertTitle>A venda de renda variável pode gerar DARF</AlertTitle>
           <AlertDescription>
-            Lucro em FII e ETF é tributado em qualquer valor; em ações, quando as vendas
-            do mês passam de R$ 20 mil. A tela Fiscal mostra a apuração do mês.
+            Lucro em FII e ETF é tributado em qualquer valor; em ações, quando as vendas do mês
+            passam de R$ 20 mil. A tela Fiscal mostra a apuração do mês.
           </AlertDescription>
         </Alert>
       )}

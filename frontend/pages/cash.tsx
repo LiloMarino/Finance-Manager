@@ -21,8 +21,8 @@ export function CashPage() {
       <div>
         <h1 className="text-2xl font-semibold">Saldo</h1>
         <p className="text-muted-foreground">
-          O dinheiro de investimento parado na corretora, calculado das operações, dos
-          proventos e da renda fixa desde a abertura.
+          O dinheiro de investimento parado na corretora, calculado das operações, dos proventos e
+          da renda fixa desde a abertura.
         </p>
       </div>
 
@@ -44,9 +44,7 @@ export function CashPage() {
                 <>
                   <p className="flex flex-wrap items-center gap-3 text-4xl font-semibold">
                     {formatBRL(data.balance)}
-                    {data.above_threshold && (
-                      <Badge variant="destructive">Acima do limite</Badge>
-                    )}
+                    {data.above_threshold && <Badge variant="destructive">Acima do limite</Badge>}
                   </p>
                   <p className="text-muted-foreground text-sm">
                     Aberto em {formatDate(data.opened_on)}. Limite de saldo parado:{" "}
@@ -55,8 +53,8 @@ export function CashPage() {
                 </>
               ) : (
                 <p className="text-muted-foreground">
-                  O saldo ainda não foi aberto. Informe o saldo do extrato da corretora
-                  num dia, e ele passa a ser calculado dali em diante.
+                  O saldo ainda não foi aberto. Informe o saldo do extrato da corretora num dia, e
+                  ele passa a ser calculado dali em diante.
                 </p>
               )}
             </CardHeader>

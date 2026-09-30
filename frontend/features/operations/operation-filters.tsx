@@ -43,9 +43,7 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
         <Select
           items={typeItems}
           value={filters.operation_type ?? null}
-          onValueChange={(value) =>
-            onChange({ ...filters, operation_type: value ?? undefined })
-          }
+          onValueChange={(value) => onChange({ ...filters, operation_type: value ?? undefined })}
         >
           <SelectTrigger id="filter-type" className="w-full">
             <SelectValue />
@@ -65,9 +63,7 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
           id="filter-start"
           type="date"
           value={filters.start ?? ""}
-          onChange={(event) =>
-            onChange({ ...filters, start: event.target.value || undefined })
-          }
+          onChange={(event) => onChange({ ...filters, start: event.target.value || undefined })}
         />
       </Field>
       <Field>
@@ -76,13 +72,16 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
           id="filter-end"
           type="date"
           value={filters.end ?? ""}
-          onChange={(event) =>
-            onChange({ ...filters, end: event.target.value || undefined })
-          }
+          onChange={(event) => onChange({ ...filters, end: event.target.value || undefined })}
         />
       </Field>
       {hasFilters(filters) && (
-        <Button variant="link" size="sm" className="justify-self-start" onClick={() => onChange({})}>
+        <Button
+          variant="link"
+          size="sm"
+          className="justify-self-start"
+          onClick={() => onChange({})}
+        >
           Limpar filtros
         </Button>
       )}

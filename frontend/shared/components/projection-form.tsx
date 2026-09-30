@@ -4,12 +4,7 @@ import { z } from "zod";
 
 import { MetricHint } from "@/shared/components/metric-hint";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/shared/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import type { CurrentRates } from "@/shared/hooks/use-current-rates";
 import { formatDate } from "@/shared/lib/format";
@@ -80,13 +75,7 @@ interface ProjectionFormProps {
 }
 
 /** As taxas que valem depois do último dado real, editáveis. */
-export function ProjectionForm({
-  current,
-  draft,
-  edited,
-  onApply,
-  onReset,
-}: ProjectionFormProps) {
+export function ProjectionForm({ current, draft, edited, onApply, onReset }: ProjectionFormProps) {
   const form = useForm({
     resolver: zodResolver(schema),
     values: {

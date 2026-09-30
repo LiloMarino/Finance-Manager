@@ -35,9 +35,7 @@ export function PeriodSelect({ value, onChange }: PeriodSelectProps) {
               id="period-start"
               type="date"
               value={value.start ?? ""}
-              onChange={(event) =>
-                onChange({ ...value, start: event.target.value || undefined })
-              }
+              onChange={(event) => onChange({ ...value, start: event.target.value || undefined })}
             />
           </Field>
           <Field className="w-40">
@@ -46,9 +44,7 @@ export function PeriodSelect({ value, onChange }: PeriodSelectProps) {
               id="period-end"
               type="date"
               value={value.end ?? ""}
-              onChange={(event) =>
-                onChange({ ...value, end: event.target.value || undefined })
-              }
+              onChange={(event) => onChange({ ...value, end: event.target.value || undefined })}
             />
           </Field>
         </>

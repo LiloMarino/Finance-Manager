@@ -11,8 +11,8 @@ export function InstallmentsPage() {
       <div>
         <h1 className="text-2xl font-semibold">À vista ou parcelado</h1>
         <p className="text-muted-foreground">
-          Compensa o desconto à vista, parcelar deixando o dinheiro aplicado, ou adiantar
-          as parcelas que faltam? Nada é gravado.
+          Compensa o desconto à vista, parcelar deixando o dinheiro aplicado, ou adiantar as
+          parcelas que faltam? Nada é gravado.
         </p>
       </div>
       {error ? (

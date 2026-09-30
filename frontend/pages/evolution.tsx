@@ -32,8 +32,8 @@ export function EvolutionPage() {
       <div>
         <h1 className="text-2xl font-semibold">Evolução do patrimônio</h1>
         <p className="text-muted-foreground">
-          O patrimônio no tempo, com os aportes dentro: para o quanto a carteira rendeu,
-          veja a Rentabilidade.
+          O patrimônio no tempo, com os aportes dentro: para o quanto a carteira rendeu, veja a
+          Rentabilidade.
         </p>
       </div>
 
@@ -51,11 +51,7 @@ export function EvolutionPage() {
               <CategorySelect value={category} onChange={setCategory} />
               <PeriodSelect value={period} onChange={setPeriod} />
               <div className="flex items-center gap-2">
-                <Switch
-                  id="composition"
-                  checked={composition}
-                  onCheckedChange={setComposition}
-                />
+                <Switch id="composition" checked={composition} onCheckedChange={setComposition} />
                 <Label htmlFor="composition">
                   <MetricHint hint={compositionHint}>Composição</MetricHint>
                 </Label>

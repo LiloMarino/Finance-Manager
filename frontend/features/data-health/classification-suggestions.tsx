@@ -55,8 +55,8 @@ export function ClassificationSuggestions() {
     <div className="flex flex-col gap-3">
       {data.source_unavailable && (
         <p className="text-muted-foreground text-sm">
-          O Yahoo não respondeu, e parte dos ativos ficou sem sugestão. Abrir a página de
-          novo tenta outra vez.
+          O Yahoo não respondeu, e parte dos ativos ficou sem sugestão. Abrir a página de novo tenta
+          outra vez.
         </p>
       )}
       <Table>

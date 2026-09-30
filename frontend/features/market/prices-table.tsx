@@ -19,11 +19,7 @@ interface PricesTableProps {
 
 export function PricesTable({ prices }: PricesTableProps) {
   if (prices.length === 0) {
-    return (
-      <p className="text-muted-foreground">
-        Nenhum ativo com operação cadastrada ainda.
-      </p>
-    );
+    return <p className="text-muted-foreground">Nenhum ativo com operação cadastrada ainda.</p>;
   }
 
   return (

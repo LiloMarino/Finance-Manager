@@ -94,10 +94,7 @@ export function SegmentCombobox({ id, value, onChange, onCreate }: SegmentCombob
               {group.label && <ComboboxLabel>{group.label}</ComboboxLabel>}
               <ComboboxCollection>
                 {(item: SegmentItem) => (
-                  <ComboboxItem
-                    key={item.creatable ? "create" : String(item.value)}
-                    value={item}
-                  >
+                  <ComboboxItem key={item.creatable ? "create" : String(item.value)} value={item}>
                     {item.creatable && <Plus />}
                     {item.label}
                   </ComboboxItem>

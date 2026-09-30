@@ -5,11 +5,7 @@ import { Link } from "react-router-dom";
 import { DeleteIncomeDialog } from "@/features/income/delete-income-dialog";
 import { netHint } from "@/features/income/hints";
 import { IncomeFormDialog } from "@/features/income/income-form-dialog";
-import {
-  type IncomeEvent,
-  type IncomeFilters,
-  useIncome,
-} from "@/features/income/use-income";
+import { type IncomeEvent, type IncomeFilters, useIncome } from "@/features/income/use-income";
 import { AssetClassBadge } from "@/shared/components/asset-class-badge";
 import { AssetCombobox } from "@/shared/components/asset-combobox";
 import { CategorySelect } from "@/shared/components/category-select";
@@ -150,9 +146,7 @@ function IncomeTable({ events }: { events: IncomeEvent[] }) {
             <TableCell className="text-right tabular-nums">
               {formatQuantity(event.quantity)}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatBRL(event.unit_price)}
-            </TableCell>
+            <TableCell className="text-right tabular-nums">{formatBRL(event.unit_price)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatBRL(event.amount)}</TableCell>
             <TableCell className="text-right">
               <IncomeFormDialog
@@ -195,9 +189,7 @@ export function IncomeHistory({ subportfolioId }: { subportfolioId?: number }) {
                 Total recebido · {data.events.length} proventos
               </span>
             </MetricHint>
-            <span className="text-2xl font-semibold tabular-nums">
-              {formatBRL(data.total)}
-            </span>
+            <span className="text-2xl font-semibold tabular-nums">{formatBRL(data.total)}</span>
           </div>
           <IncomeTable events={data.events} />
         </>

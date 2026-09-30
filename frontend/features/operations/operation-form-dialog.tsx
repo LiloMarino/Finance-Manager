@@ -138,11 +138,7 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
             control={form.control}
             name="asset_id"
             render={({ field }) => (
-              <AssetCombobox
-                id="operation-asset"
-                value={field.value}
-                onChange={field.onChange}
-              />
+              <AssetCombobox id="operation-asset" value={field.value} onChange={field.onChange} />
             )}
           />
           <FieldError errors={[errors.asset_id]} />

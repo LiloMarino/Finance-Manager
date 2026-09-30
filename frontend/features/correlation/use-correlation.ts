@@ -23,10 +23,7 @@ export function useCorrelationMatrix(symbols: string[], window: CorrelationWindo
   });
 }
 
-export function useCorrelationPair(
-  pair: [string, string] | null,
-  window: CorrelationWindow,
-) {
+export function useCorrelationPair(pair: [string, string] | null, window: CorrelationWindow) {
   return useQuery({
     queryKey: [...queryKeys.correlation, "pair", pair, window],
     queryFn: pair

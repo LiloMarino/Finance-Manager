@@ -28,8 +28,7 @@ export function useDeleteAsset() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (asset: Asset) =>
-      del("/api/assets/{asset_id}", { path: { asset_id: asset.id } }),
+    mutationFn: (asset: Asset) => del("/api/assets/{asset_id}", { path: { asset_id: asset.id } }),
     onSuccess: (_, asset) => {
       toast.success(`${asset.ticker} apagado.`);
       return invalidatePortfolioData(queryClient);

@@ -3,7 +3,13 @@ import { CircleCheck } from "lucide-react";
 import { ClassificationSuggestions } from "@/features/data-health/classification-suggestions";
 import { IssuesTable } from "@/features/data-health/issues-table";
 import { type DataIssue, useDataHealth } from "@/features/data-health/use-data-health";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
 
@@ -19,7 +25,7 @@ const sections: {
     kind: "missing_prices",
     title: "Cotações faltando",
     description:
-      "Dias em que houve posição no ativo e a fonte de cotações não tem o preço. Ticker trocado se resolve com \"Trocar ticker\" no ativo.",
+      'Dias em que houve posição no ativo e a fonte de cotações não tem o preço. Ticker trocado se resolve com "Trocar ticker" no ativo.',
     subjectLabel: "Ativo",
     actionLabel: "Ver ativo",
   },
@@ -41,8 +47,7 @@ const sections: {
   {
     kind: "missing_cnpj",
     title: "Ativos sem CNPJ",
-    description:
-      "O item de Bens e Direitos do IRPF pede o CNPJ de cada ativo declarado no ano.",
+    description: "O item de Bens e Direitos do IRPF pede o CNPJ de cada ativo declarado no ano.",
     subjectLabel: "Ativo",
     actionLabel: "Editar ativo",
   },
@@ -64,8 +69,8 @@ export function DataHealthPage() {
       <div>
         <h1 className="text-2xl font-semibold">Saúde dos dados</h1>
         <p className="text-muted-foreground">
-          Os buracos de dado que deixam algum número do app errado, com o que falta e onde
-          se corrige.
+          Os buracos de dado que deixam algum número do app errado, com o que falta e onde se
+          corrige.
         </p>
       </div>
 

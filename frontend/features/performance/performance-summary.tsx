@@ -1,9 +1,4 @@
-import {
-  cdiShareHint,
-  periodHint,
-  quotaHint,
-  recentHint,
-} from "@/features/performance/hints";
+import { cdiShareHint, periodHint, quotaHint, recentHint } from "@/features/performance/hints";
 import type { Performance } from "@/features/performance/use-performance";
 import { Metric } from "@/shared/components/metric";
 import { signClass } from "@/shared/lib/sign";
@@ -19,11 +14,7 @@ function signed(value: DecimalString | null): { value: string | null; tone: stri
 export function PerformanceSummary({ performance }: { performance: Performance }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
-      <Metric
-        label="Desde o início"
-        hint={quotaHint}
-        {...signed(performance.since_inception)}
-      />
+      <Metric label="Desde o início" hint={quotaHint} {...signed(performance.since_inception)} />
       <Metric label="No período" hint={periodHint} {...signed(performance.period)} />
       <Metric
         label="% do CDI no período"
@@ -31,16 +22,8 @@ export function PerformanceSummary({ performance }: { performance: Performance }
         value={performance.cdi_share === null ? null : formatPercent(performance.cdi_share)}
       />
       <Metric label="6 meses" hint={recentHint(6)} {...signed(performance.last_6_months)} />
-      <Metric
-        label="12 meses"
-        hint={recentHint(12)}
-        {...signed(performance.last_12_months)}
-      />
-      <Metric
-        label="24 meses"
-        hint={recentHint(24)}
-        {...signed(performance.last_24_months)}
-      />
+      <Metric label="12 meses" hint={recentHint(12)} {...signed(performance.last_12_months)} />
+      <Metric label="24 meses" hint={recentHint(24)} {...signed(performance.last_24_months)} />
     </div>
   );
 }

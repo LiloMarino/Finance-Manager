@@ -14,5 +14,4 @@ export const worstMonthHint = "O mês de menor rentabilidade da série inteira."
 export const positiveMonthsHint =
   "Quantos meses a carteira subiu, do total de meses da série. Um mês parado, com variação zero, não conta como positivo nem como negativo.";
 
-export const negativeMonthsHint =
-  "Quantos meses a carteira caiu, do total de meses da série.";
+export const negativeMonthsHint = "Quantos meses a carteira caiu, do total de meses da série.";

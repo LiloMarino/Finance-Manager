@@ -28,11 +28,7 @@ export function SubportfolioCard({ subportfolio }: { subportfolio: Subportfolio 
             initialName={subportfolio.name}
             save={rename}
             trigger={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Renomear ${subportfolio.name}`}
-              >
+              <Button variant="ghost" size="icon-sm" aria-label={`Renomear ${subportfolio.name}`}>
                 <Pencil />
               </Button>
             }

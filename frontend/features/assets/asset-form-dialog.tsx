@@ -91,10 +91,7 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
   const [creating, setCreating] = useState<string | null>(null);
 
   const submit = form.handleSubmit((values) =>
-    save.mutate(
-      { ...values, cnpj: values.cnpj || null },
-      { onSuccess: onSaved },
-    ),
+    save.mutate({ ...values, cnpj: values.cnpj || null }, { onSuccess: onSaved }),
   );
   const chooseSegment = (id: number | null) =>
     form.setValue("segment_id", id, { shouldDirty: true });

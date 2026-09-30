@@ -85,9 +85,7 @@ export function FixedIncomeFormDialog({ investment, trigger }: FixedIncomeFormDi
             {investment ? `Editar ${investment.label}` : "Novo título de renda fixa"}
           </DialogTitle>
         </DialogHeader>
-        {open && (
-          <FixedIncomeForm investment={investment} onSaved={() => setOpen(false)} />
-        )}
+        {open && <FixedIncomeForm investment={investment} onSaved={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
   );
@@ -154,11 +152,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
         />
         <Field>
           <FieldLabel htmlFor="fixed-income-maturity">Vencimento (opcional)</FieldLabel>
-          <Input
-            id="fixed-income-maturity"
-            type="date"
-            {...form.register("maturity_date")}
-          />
+          <Input id="fixed-income-maturity" type="date" {...form.register("maturity_date")} />
         </Field>
         <Controller
           control={form.control}
@@ -193,9 +187,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
         {creating && (
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={Boolean(errors.application_date)}>
-              <FieldLabel htmlFor="fixed-income-application-date">
-                Data da aplicação
-              </FieldLabel>
+              <FieldLabel htmlFor="fixed-income-application-date">Data da aplicação</FieldLabel>
               <Input
                 id="fixed-income-application-date"
                 type="date"
@@ -204,9 +196,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
               <FieldError errors={[errors.application_date]} />
             </Field>
             <Field data-invalid={Boolean(errors.application_amount)}>
-              <FieldLabel htmlFor="fixed-income-application-amount">
-                Valor aplicado
-              </FieldLabel>
+              <FieldLabel htmlFor="fixed-income-application-amount">Valor aplicado</FieldLabel>
               <MoneyInput
                 id="fixed-income-application-amount"
                 {...withMask(form.register("application_amount"), maskMoney)}

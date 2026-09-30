@@ -130,20 +130,12 @@ function OptionForm({
         <div className="grid grid-cols-2 gap-4">
           <Field data-invalid={Boolean(errors.application_date)}>
             <FieldLabel htmlFor="option-application">Aplicação</FieldLabel>
-            <Input
-              id="option-application"
-              type="date"
-              {...form.register("application_date")}
-            />
+            <Input id="option-application" type="date" {...form.register("application_date")} />
             <FieldError errors={[errors.application_date]} />
           </Field>
           <Field data-invalid={Boolean(errors.redemption_date)}>
             <FieldLabel htmlFor="option-redemption">Resgate</FieldLabel>
-            <Input
-              id="option-redemption"
-              type="date"
-              {...form.register("redemption_date")}
-            />
+            <Input id="option-redemption" type="date" {...form.register("redemption_date")} />
             <FieldError errors={[errors.redemption_date]} />
           </Field>
         </div>

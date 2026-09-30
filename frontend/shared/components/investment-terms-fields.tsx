@@ -1,9 +1,4 @@
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/shared/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import {
   Select,
@@ -76,8 +71,7 @@ export function InvestmentTermsFields({
           </SelectContent>
         </Select>
         <FieldDescription>
-          O tipo decide a isenção de IR: LCI, LCA, CRI, CRA e debênture incentivada são
-          isentas.
+          O tipo decide a isenção de IR: LCI, LCA, CRI, CRA e debênture incentivada são isentas.
         </FieldDescription>
       </Field>
       <Field>

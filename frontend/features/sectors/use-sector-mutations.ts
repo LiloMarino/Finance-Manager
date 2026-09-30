@@ -27,10 +27,7 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
 }
 
 export function useCreateSector() {
-  return useWrite(
-    (name: string) => post("/api/sectors", { body: { name } }),
-    "Setor criado.",
-  );
+  return useWrite((name: string) => post("/api/sectors", { body: { name } }), "Setor criado.");
 }
 
 export function useRenameSector(sector: Sector) {
@@ -72,8 +69,7 @@ export function useRenameSegment(segment: Segment) {
 
 export function useDeleteSegment(segment: Segment) {
   return useWrite<void, void>(
-    () =>
-      del("/api/sectors/segments/{segment_id}", { path: { segment_id: segment.id } }),
+    () => del("/api/sectors/segments/{segment_id}", { path: { segment_id: segment.id } }),
     `${segment.name} apagado.`,
   );
 }

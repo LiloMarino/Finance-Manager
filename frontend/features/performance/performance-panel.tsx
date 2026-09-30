@@ -9,12 +9,7 @@ import { PeriodSelect } from "@/shared/components/period-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import {
-  type Benchmark,
-  benchmarkConfig,
-  benchmarks,
-  isBenchmark,
-} from "@/shared/lib/benchmark";
+import { type Benchmark, benchmarkConfig, benchmarks, isBenchmark } from "@/shared/lib/benchmark";
 import { formatDate } from "@/shared/lib/format";
 import { type PeriodChoice, periodRange } from "@/shared/lib/period";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
@@ -102,8 +97,8 @@ export function PerformancePanel({
           <div className="text-muted-foreground flex flex-col gap-1 text-xs">
             {data.first_date && (
               <p>
-                Série desde {formatDate(data.first_date)}. Variação de preço mais os
-                proventos, no dia do pagamento.
+                Série desde {formatDate(data.first_date)}. Variação de preço mais os proventos, no
+                dia do pagamento.
               </p>
             )}
             {staleBenchmarks(data, selected).map((note) => (

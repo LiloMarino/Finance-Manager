@@ -44,9 +44,7 @@ type BodyOption<O> = O extends {
 type Options<O> = PathOption<O> & QueryOption<O> & BodyOption<O>;
 
 /** As opções são argumento obrigatório só quando o endpoint exige path ou body. */
-type OptionsArgs<O> = object extends Options<O>
-  ? [options?: Options<O>]
-  : [options: Options<O>];
+type OptionsArgs<O> = object extends Options<O> ? [options?: Options<O>] : [options: Options<O>];
 
 interface RawOptions {
   path?: Record<string, unknown>;
@@ -115,11 +113,7 @@ function toFormData(form: Record<string, unknown>): FormData {
   return data;
 }
 
-async function request<T>(
-  method: Method,
-  url: string,
-  options: RawOptions = {},
-): Promise<T> {
+async function request<T>(method: Method, url: string, options: RawOptions = {}): Promise<T> {
   const init: RequestInit = { method: method.toUpperCase() };
   if (options.form) {
     // O navegador escreve o Content-Type com o boundary do multipart
@@ -134,9 +128,7 @@ async function request<T>(
   const payload: unknown = raw === "" ? null : JSON.parse(raw);
 
   if (!response.ok) {
-    const error = new Error(
-      `Request failed with status ${response.status}`,
-    ) as ApiError;
+    const error = new Error(`Request failed with status ${response.status}`) as ApiError;
     error.status = response.status;
     error.detail = getApiErrorMessage(payload);
     throw error;

@@ -13,13 +13,7 @@ import { portfolioCategoryConfig } from "@/shared/lib/portfolio-category";
 import { signClass } from "@/shared/lib/sign";
 import { formatBRL, formatSignedBRL, formatSignedPercent } from "@/types/decimal";
 
-function GrowthMetric({
-  months,
-  growth,
-}: {
-  months: number;
-  growth: Evolution["last_6_months"];
-}) {
+function GrowthMetric({ months, growth }: { months: number; growth: Evolution["last_6_months"] }) {
   return (
     <div className="flex flex-col gap-1">
       <MetricHint hint={growthHint(months)}>
@@ -75,9 +69,7 @@ export function EvolutionSummary({ evolution }: { evolution: Evolution }) {
                   {portfolioCategoryConfig[item.category].label}
                 </span>
               </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatBRL(item.value)}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">{formatBRL(item.value)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

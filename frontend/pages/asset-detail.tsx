@@ -127,9 +127,7 @@ export function AssetDetailPage() {
         {operations.isPending ? (
           <Skeleton className="h-40 w-full" />
         ) : operations.error ? (
-          <span className="text-destructive">
-            {getApiErrorMessage(operations.error)}
-          </span>
+          <span className="text-destructive">{getApiErrorMessage(operations.error)}</span>
         ) : (
           <OperationsTable operations={operations.data} />
         )}
