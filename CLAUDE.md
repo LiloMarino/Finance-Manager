@@ -70,4 +70,5 @@ não "(D4)"; "apuração mensal do imposto", e não "F21".
 - O front fica no TypeScript 6, que é o que o `openapi-typescript` suporta. O
   lint é `oxlint` com type-aware, que traz os próprios binários.
 - `shared/components/ui` e `shared/hooks/use-mobile.ts` são código vendorizado do
-  shadcn, fora do lint.
+  shadcn, fora do lint. O estilo é o `base-nova`: os primitivos são do Base UI, e a
+  troca de elemento é pela prop `render`.

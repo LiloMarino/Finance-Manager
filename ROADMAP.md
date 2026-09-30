@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-29):** Conforto de uso: Carteira reorganizada com cor por categoria e por sinal, seletor de ativo e filtros de operações na URL, mês do Fiscal na URL, linha clicável e máscaras nos campos; entrou e fechou a sugestão de ticker pela busca do yfinance. A sidebar fica para junto da identidade visual.
+> **Última mudança (2026-09-30):** Concluída a F56: o design system saiu do Radix para o Base UI, o que destrava o combobox com criar da F52.
 
 ## Glossário
 
@@ -17,7 +17,7 @@
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
 | **N1** | Medir rentabilidade real (contra CDI/IPCA/IBOV, mês a mês e ano a ano; carteira, subcarteira, categoria ou ativo) | F14, F15, F16, F17, F18, F41 | — |
-| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52, F54 | — |
+| **N2** | Ver o patrimônio consolidado (total, categoria, setor, posição com variação do dia, evolução; inclui RF) | F10, F11, F12, F14, F17, F32, F36, F37, F40, F41, F42, F44, F46, F50, F52, F54, F56 | — |
 | **N3** | Posições e preço médio corretos, numa fonte única | F1, F2, F3, F4, F5, F6, F7, F8, F9, F33, F34, F40, F42, F45, F50, F51, F55 | — |
 | **N4** | Acompanhar proventos (quanto, de quem, mês a mês, yield on cost; histórico auditável) | F19, F20, F38 | — |
 | **N5** | Resolver as obrigações fiscais (DARF, IRPF) no mesmo lugar | F20, F21, F22, F23, F33, F34, F35, F46, F48, F51 | — |
@@ -35,7 +35,7 @@
 | **F52** | Setor e segmento sugeridos pelo yfinance | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (58 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (59 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -97,6 +97,7 @@
 | **F53** | Simulador: escada de títulos | — | 🚫 |
 | **F54** | Saldo de investimento | — | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | — | ✅ |
+| **F56** | Design system sobre o Base UI | — | ✅ |
 
 </details>
 
@@ -316,15 +317,15 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 6/9 concluídas
+> **Progresso:** 7/10 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
 | **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
 | **F43** | Sidebar | F2, F30 | ⏳ |
-| **F52** | Setor e segmento sugeridos pelo yfinance | F37 | ⏳ |
+| **F52** | Setor e segmento sugeridos pelo yfinance | F37, F56 | ⏳ |
 
-<details><summary>Concluído (6 itens)</summary>
+<details><summary>Concluído (7 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
@@ -334,6 +335,7 @@
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | F36 | ✅ |
 | **F51** | Máscaras nos campos | F46 | ✅ |
 | **F55** | Sugestão de ticker nos campos livres | F45 | ✅ |
+| **F56** | Design system sobre o Base UI | — | ✅ |
 
 </details>
 
@@ -397,10 +399,11 @@
 | **F49** | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 | F47 | Médio | Baixo | Médio | Bom | ✅ Concluído |
 | **F50** | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 | F36 | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F51** | Máscaras nos campos | N3, N5 | — | M9 | F46 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
-| **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37 | Médio | Médio | Médio | Bom | ⏳ Pendente |
+| **F52** | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 | F37, F56 | Médio | Médio | Médio | Bom | ⏳ Pendente |
 | **F19** | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 | — | Baixo | Baixo | Alto | Excelente | ✅ Concluído |
 | **F54** | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 | F12, F17, F20 | Alto | Médio | Alto | Bom | ✅ Concluído |
 | **F55** | Sugestão de ticker nos campos livres | N3, N9 | — | M9 | F45 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
+| **F56** | Design system sobre o Base UI | N2 | — | M9 | — | Médio | Médio | Médio | Bom | ✅ Concluído |
 
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
 
@@ -1029,6 +1032,26 @@ Decisões tomadas durante:
 
 **Aceite verificado** no app de pé, numa cópia do banco: digitar o começo de um ticker na correlação sugere as classes daquela empresa na B3, Enter adiciona o chip, e a comparação roda com os dois tickers escolhidos.
 
+**F56 — Design system sobre o Base UI.** Os componentes vendorizados do shadcn passaram do estilo `radix-nova` para o `base-nova`, o default do shadcn desde julho de 2026. Os primitivos vêm do `@base-ui/react`, e o pacote `radix-ui` saiu do front. Destrava o combobox com "criar" da F52, que só existe sobre o Base UI; serve N2 por ela.
+
+- **Reinstalação:** `frontend/components.json` com `base-nova`, e cada componente de `shared/components/ui` de volta pela CLI com `--overwrite`. As customizações locais voltaram à mão: as variantes de categoria e de compra e venda do `badge`, a cor do `progress` e a linha clicável da `table`. O `command` segue no `cmdk`.
+- **No app:** `asChild` virou `render` nos triggers de diálogo, popover e tooltip; o `Button` que é link leva `nativeButton={false}`. O `ToggleGroup` e o `Accordion` trocaram `type` por `multiple`, e o valor do grupo é sempre lista. O `--radix-popover-trigger-width` virou `--anchor-width`.
+- **Select:** o rótulo do valor escolhido vem do `items` do `Select`, uma lista `{ value, label }` que também desenha as opções. A opção "Todos", "Sem classificação" ou "Carteira geral" é o valor `null`, no lugar dos textos-sentinela que o Radix exigia.
+
+Decisões tomadas durante:
+- **A ação do `AlertDialog` fecha o diálogo**, como no Radix: no `base-nova` ela é um botão comum, e o `AlertDialogAction` passou a ser um `Close` do Base UI.
+- **O `PopoverContent` aceita `anchor`:** a sugestão de ticker ancora a lista no campo, que não é o trigger. O foco fica no campo (`initialFocus` e `finalFocus` desligados).
+- **A linha clicável ignora `[role=checkbox]` e `[role=switch]`:** o checkbox do Base UI é um `span`, fora da lista de controles nativos.
+- O valor `null` do `Select` aparece com a cor de placeholder, que é como o Base UI marca "nada escolhido".
+
+**Aceite verificado** no app de pé, numa cópia do banco, sem erro nem aviso no console:
+- nenhum import de `radix-ui`;
+- os diálogos abrem, fecham no Esc e devolvem o foco ao botão, e o "Apagar" fecha o alerta e mostra o motivo do 409;
+- os Selects mostram o rótulo, e o filtro de tipo das operações vai para a URL;
+- a sugestão de ticker abre embaixo do campo, e as setas e o Enter escolhem;
+- as tooltips das métricas, as seções recolhíveis, as abas, o seletor de período do Fiscal e os grupos de alternância de uma e de várias opções funcionam;
+- a sidebar abre como sheet na largura de celular.
+
 ---
 ## 2. Nice-to-have
 
@@ -1043,7 +1066,7 @@ Plano:
 - cabeçalho com o nome e o ícone do app;
 - itens agrupados por assunto, com rótulo de grupo (carteira e ativos; operações e importação; mercado e análises; fiscal), ícone e texto maiores, e o item ativo destacado;
 - recolhível para só os ícones, com o estado guardado (o `SidebarProvider` já faz isso por cookie);
-- rodapé com a troca de tema e o contador do painel de dados (F42), que já existe e hoje fica no item "Saúde dos dados".
+- rodapé com o alternador de tema claro e escuro e o contador do painel de dados (F42). O contador já existe e hoje fica no item "Saúde dos dados"; o alternador é novo: o app não tem botão de tema nem `ThemeProvider` montado (o `next-themes` está instalado e só o `sonner` o lê), e nada aplica a classe `dark`, então o app abre sempre no claro.
 
 ---
 ## 3. Descartada
@@ -1068,7 +1091,7 @@ Plano:
 
 **F29 — Empacotamento desktop.** O que falta definir: se vale empacotar (PyInstaller .exe, como no SimuladorFinanceiro, ou Tauri) ou se `pnpm dev` com um atalho basta para o uso diário. Baixa prioridade: vale quando subir o app incomodar no uso real.
 
-**F30 — Identidade visual própria.** O que falta definir: paleta, tipografia e tom das cores de alta, de baixa e das categorias que digam *este* app — dashboard financeiro, tabela densa e muito gráfico — no lugar do preset `nova` do shadcn (base `radix`, Lucide, fonte Geist, baseColor neutral).
+**F30 — Identidade visual própria.** O que falta definir: paleta, tipografia e tom das cores de alta, de baixa e das categorias que digam *este* app — dashboard financeiro, tabela densa e muito gráfico — no lugar do preset `nova` do shadcn (Base UI, Lucide, fonte Geist, baseColor neutral).
 
 A decisão cobre o que já é token no `index.css`:
 - as cinco cores de série (`--chart-1` a `--chart-5`), hoje uma paleta categórica validada para daltonismo e contraste nos dois temas, e que a F44 torna a cor de cada categoria em todo o app; uma paleta nova passa pela mesma validação;
