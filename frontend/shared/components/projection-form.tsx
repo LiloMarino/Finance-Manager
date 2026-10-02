@@ -88,43 +88,47 @@ export function ProjectionForm({ current, draft, edited, onApply, onReset }: Pro
 
   return (
     <form
-      className="flex flex-col gap-4"
+      className="flex flex-wrap items-start gap-4"
       onSubmit={(event) => void form.handleSubmit(onApply)(event)}
     >
-      <MetricHint hint={projectionHint}>
-        <span className="font-medium">Projeção</span>
-      </MetricHint>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {projectionKeys.map((key) => {
-          const realValue = current[key];
-          const realDate = current[lastDate[key]];
-          return (
-            <Field key={key} data-invalid={Boolean(errors[key])}>
-              <FieldLabel htmlFor={`projection-${key}`}>
-                <MetricHint hint={labels[key].hint}>{labels[key].label}</MetricHint>
-              </FieldLabel>
-              <Input
-                id={`projection-${key}`}
-                inputMode="decimal"
-                {...withMask(form.register(key), key === "ipca" ? maskSignedPercent : maskPercent)}
-              />
-              <FieldDescription>
-                {realValue && realDate
-                  ? `Último real: ${formatQuantity(realValue)}% (${formatDate(realDate)})`
-                  : "Sem dado em cache: informe a taxa."}
-              </FieldDescription>
-              <FieldError errors={[errors[key]]} />
-            </Field>
-          );
-        })}
+      <div className="mr-auto flex flex-col gap-0.5">
+        <MetricHint hint={projectionHint}>
+          <span className="font-semibold">Projeção das taxas</span>
+        </MetricHint>
+        <span className="text-caption text-muted-foreground">
+          Vale para todas as opções. Começa no último dado do Banco Central.
+        </span>
       </div>
-      <div className="flex gap-2">
+      {projectionKeys.map((key) => {
+        const realValue = current[key];
+        const realDate = current[lastDate[key]];
+        return (
+          <Field key={key} className="w-36" data-invalid={Boolean(errors[key])}>
+            <FieldLabel htmlFor={`projection-${key}`}>
+              <MetricHint hint={labels[key].hint}>{labels[key].label}</MetricHint>
+            </FieldLabel>
+            <Input
+              id={`projection-${key}`}
+              inputMode="decimal"
+              className="text-right"
+              {...withMask(form.register(key), key === "ipca" ? maskSignedPercent : maskPercent)}
+            />
+            <FieldDescription>
+              {realValue && realDate
+                ? `Real: ${formatQuantity(realValue)}% (${formatDate(realDate)})`
+                : "Sem dado: informe a taxa."}
+            </FieldDescription>
+            <FieldError errors={[errors[key]]} />
+          </Field>
+        );
+      })}
+      <div className="flex gap-2 pt-6">
         <Button type="submit" variant="secondary">
           Aplicar projeção
         </Button>
         {edited && (
           <Button type="button" variant="ghost" onClick={onReset}>
-            Voltar ao último valor real
+            Voltar ao Banco Central
           </Button>
         )}
       </div>

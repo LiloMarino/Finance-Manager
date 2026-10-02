@@ -15,6 +15,9 @@ const cardVariants = cva(
         // Pendência que pede ação: a borda ganha o tom de atenção
         warning:
           "border border-warning/40 shadow-card",
+        // O melhor da comparação: a borda ganha o tom de alta
+        positive:
+          "border border-gain shadow-card",
         // Barra fixa no topo da conferência sem borda, com sombra
         sticky:
           "shadow-lg",

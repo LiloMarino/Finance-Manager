@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import {
   cdiEquivalentHint,
@@ -8,117 +9,126 @@ import {
   netValueHint,
 } from "@/features/fixed-income-comparison/hints";
 import { OptionFormDialog } from "@/features/fixed-income-comparison/option-form-dialog";
+import { optionStyle } from "@/features/fixed-income-comparison/option-style";
 import type { ComparisonOption } from "@/features/fixed-income-comparison/options";
 import type { Comparison } from "@/features/fixed-income-comparison/use-comparison";
-import { Metric } from "@/shared/components/metric";
+import { ColorSwatch } from "@/shared/components/color-swatch";
+import { MetricHint } from "@/shared/components/metric-hint";
+import { Money } from "@/shared/components/money";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { formatDate } from "@/shared/lib/format";
 import { describeRate, fixedIncomeTypeLabels } from "@/shared/lib/labels";
-import { signClass } from "@/shared/lib/sign";
-import { formatBRL, formatPercent, formatRate, formatSignedBRL, isZero } from "@/types/decimal";
+import { formatPercent, formatRate, isZero } from "@/types/decimal";
 
 type OptionResult = Comparison["results"][number];
 
+function Detail({ label, hint, children }: { label: string; hint: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-caption text-muted-foreground">
+        <MetricHint hint={hint}>{label}</MetricHint>
+      </span>
+      <span className="tabular-nums">{children}</span>
+    </div>
+  );
+}
+
 interface OptionCardProps {
   option: ComparisonOption;
+  /** A posição da opção, que define o traço dela */
+  index: number;
   result: OptionResult | undefined;
   best: boolean;
   onSave: (option: ComparisonOption) => void;
   onRemove: () => void;
 }
 
-export function OptionCard({ option, result, best, onSave, onRemove }: OptionCardProps) {
+export function OptionCard({ option, index, result, best, onSave, onRemove }: OptionCardProps) {
+  const style = optionStyle(index);
+
   return (
-    <Card>
+    <Card variant={best ? "positive" : "default"}>
       {/* Termos da opção */}
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2">
+        <CardTitle>
+          <ColorSwatch color={style.color} shape={style.shape} />
           {option.label}
-          {best && <Badge>Maior líquido</Badge>}
         </CardTitle>
-        <CardDescription>
-          {fixedIncomeTypeLabels[option.product_type]} · {describeRate(option.indexer, option.rate)}
-          <br />
-          {formatBRL(option.amount)} de {formatDate(option.application_date)} a{" "}
-          {formatDate(option.redemption_date)}
-          {result && ` · ${result.calendar_days} dias`}
-        </CardDescription>
-        <CardAction className="flex gap-1">
+        <CardAction className="flex items-center gap-1">
+          {best && <Badge variant="gain">Maior líquido</Badge>}
           <OptionFormDialog
             title={`Editar ${option.label}`}
             option={option}
             onSave={onSave}
             trigger={
-              <Button variant="ghost" size="icon-sm" aria-label="Editar opção">
+              <Button variant="ghost" size="icon-sm" aria-label={`Editar ${option.label}`}>
                 <Pencil />
               </Button>
             }
           />
-          <Button variant="ghost" size="icon-sm" aria-label="Remover opção" onClick={onRemove}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Remover ${option.label}`}
+            onClick={onRemove}
+          >
             <Trash2 />
           </Button>
         </CardAction>
       </CardHeader>
 
-      {/* Resultado no resgate */}
-      <CardContent className="grid grid-cols-2 gap-4">
+      <CardContent className="flex flex-col gap-4">
+        <span className="text-caption text-muted-foreground">
+          {fixedIncomeTypeLabels[option.product_type]} · {describeRate(option.indexer, option.rate)}{" "}
+          · <Money value={option.amount} /> de {formatDate(option.application_date)} a{" "}
+          {formatDate(option.redemption_date)}
+          {result && ` · ${result.calendar_days} dias`}
+        </span>
         {result ? (
           <>
-            <Metric
-              label="Líquido no resgate"
-              hint={netValueHint}
-              value={formatBRL(result.net_value)}
-            />
-            <Metric
-              label="Ganho líquido"
-              hint={netValueHint}
-              value={formatSignedBRL(result.net_gain)}
-              tone={signClass(result.net_gain)}
-            />
-            <Metric
-              label="Líquido ao ano"
-              hint={netAnnualHint}
-              value={
-                result.net_annual_return === null ? null : formatPercent(result.net_annual_return)
-              }
-            />
-            <Metric
-              label="Equivalente em CDB"
-              hint={cdiEquivalentHint}
-              value={
-                result.cdi_equivalent === null
-                  ? null
-                  : `${formatRate(result.cdi_equivalent)}% do CDI`
-              }
-            />
-            <Metric
-              label="IR"
-              hint={incomeTaxHint}
-              value={
-                result.income_tax_rate === null
-                  ? "Isento"
-                  : `${formatBRL(result.income_tax)} (${formatPercent(result.income_tax_rate)})`
-              }
-            />
-            {!isZero(result.iof) && (
-              <Metric
-                label="IOF"
-                hint={iofHint}
-                value={`${formatBRL(result.iof)} (${formatPercent(result.iof_rate)})`}
-              />
-            )}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-caption text-muted-foreground">
+                <MetricHint hint={netValueHint}>Líquido no resgate</MetricHint>
+              </span>
+              <span className="text-kpi-sm tabular-nums">
+                <Money value={result.net_value} />
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <Detail label="Taxa efetiva ao ano" hint={netAnnualHint}>
+                {result.net_annual_return === null
+                  ? "—"
+                  : `${formatPercent(result.net_annual_return)} líquido`}
+              </Detail>
+              <Detail label="Equivale a" hint={cdiEquivalentHint}>
+                {result.cdi_equivalent === null
+                  ? "—"
+                  : `${formatRate(result.cdi_equivalent)}% do CDI`}
+              </Detail>
+              <Detail label="IR retido" hint={incomeTaxHint}>
+                {result.income_tax_rate === null ? (
+                  "Isento"
+                ) : (
+                  <>
+                    <Money value={result.income_tax} /> ({formatPercent(result.income_tax_rate)})
+                  </>
+                )}
+              </Detail>
+              <Detail label="IOF" hint={iofHint}>
+                {isZero(result.iof) ? (
+                  <Money value={result.iof} />
+                ) : (
+                  <>
+                    <Money value={result.iof} /> ({formatPercent(result.iof_rate)})
+                  </>
+                )}
+              </Detail>
+            </div>
           </>
         ) : (
-          <span className="text-muted-foreground col-span-2 text-sm">Calculando…</span>
+          <span className="text-muted-foreground text-sm">Calculando…</span>
         )}
       </CardContent>
     </Card>

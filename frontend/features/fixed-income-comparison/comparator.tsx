@@ -1,60 +1,36 @@
-import { Plus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import { ComparisonChart } from "@/features/fixed-income-comparison/comparison-chart";
 import { chartHint } from "@/features/fixed-income-comparison/hints";
 import { OptionCard } from "@/features/fixed-income-comparison/option-card";
-import { OptionFormDialog } from "@/features/fixed-income-comparison/option-form-dialog";
-import {
-  type ComparisonOption,
-  MAX_OPTIONS,
-  readOptions,
-  writeOptions,
-} from "@/features/fixed-income-comparison/options";
+import { type ComparisonOption } from "@/features/fixed-income-comparison/options";
 import { useComparison } from "@/features/fixed-income-comparison/use-comparison";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { ProjectionForm } from "@/shared/components/projection-form";
-import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import type { CurrentRates } from "@/shared/hooks/use-current-rates";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import { isoDate } from "@/shared/lib/period";
 import {
   completeProjection,
   isProjectionEdited,
   projectionDraft,
   writeProjection,
 } from "@/shared/lib/projection";
-import { toDecimalString } from "@/types/decimal";
 
-/** A nova opção herda o valor e as datas da última, que é o caso comum de comparar
-títulos no mesmo prazo. */
-function suggestedOption(options: ComparisonOption[]): ComparisonOption {
-  const last = options.at(-1);
-  const today = new Date();
-  const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
-  return {
-    label: `Opção ${options.length + 1}`,
-    product_type: "cdb",
-    indexer: "cdi",
-    rate: toDecimalString("100"),
-    amount: last?.amount ?? toDecimalString("1000"),
-    application_date: last?.application_date ?? isoDate(today),
-    redemption_date: last?.redemption_date ?? isoDate(nextYear),
-  };
+interface ComparatorProps {
+  current: CurrentRates;
+  options: ComparisonOption[];
+  onChange: (options: ComparisonOption[]) => void;
 }
 
-export function Comparator({ current }: { current: CurrentRates }) {
+/** A projeção das taxas, as opções lado a lado e o líquido de cada uma no tempo. */
+export function Comparator({ current, options, onChange }: ComparatorProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const options = readOptions(searchParams);
   const draft = projectionDraft(searchParams, current);
   const projection = completeProjection(draft);
   const { data, error } = useComparison(projection && { options, projection });
   // Enquanto a resposta nova não chega, a anterior pode ter outro número de opções
   const comparison = data && data.results.length === options.length ? data : undefined;
-
-  const saveOptions = (next: ComparisonOption[]) =>
-    setSearchParams((params) => writeOptions(params, next));
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,21 +46,6 @@ export function Comparator({ current }: { current: CurrentRates }) {
         </CardContent>
       </Card>
 
-      {/* Opções lado a lado */}
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">Opções ({options.length})</h2>
-        <OptionFormDialog
-          title="Nova opção"
-          option={suggestedOption(options)}
-          onSave={(option) => saveOptions([...options, option])}
-          trigger={
-            <Button disabled={options.length >= MAX_OPTIONS}>
-              <Plus />
-              Adicionar opção
-            </Button>
-          }
-        />
-      </div>
       {error && <span className="text-destructive">{getApiErrorMessage(error)}</span>}
       {!projection && (
         <p className="text-muted-foreground">
@@ -102,12 +63,13 @@ export function Comparator({ current }: { current: CurrentRates }) {
             <OptionCard
               key={index}
               option={option}
+              index={index}
               result={comparison?.results[index]}
               best={comparison?.best === index && options.length > 1}
               onSave={(saved) =>
-                saveOptions(options.map((item, position) => (position === index ? saved : item)))
+                onChange(options.map((item, position) => (position === index ? saved : item)))
               }
-              onRemove={() => saveOptions(options.filter((_, position) => position !== index))}
+              onRemove={() => onChange(options.filter((_, position) => position !== index))}
             />
           ))}
         </div>
@@ -118,7 +80,7 @@ export function Comparator({ current }: { current: CurrentRates }) {
         <Card>
           <CardHeader>
             <CardTitle>
-              <MetricHint hint={chartHint}>Valor líquido no tempo</MetricHint>
+              <MetricHint hint={chartHint}>Líquido se resgatar em cada mês</MetricHint>
             </CardTitle>
           </CardHeader>
           <CardContent>
