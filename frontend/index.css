@@ -2,12 +2,14 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: "Geist Variable", sans-serif;
+  --font-sans: "Geist Variable", system-ui, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "Cascadia Mono", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -21,14 +23,30 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-grid: var(--chart-grid);
+  --color-ref-cdi: var(--ref-cdi);
+  --color-ref-ipca: var(--ref-ipca);
+  --color-ref-ibov: var(--ref-ibov);
+  --color-liquidity-daily: var(--liquidity-daily);
+  --color-liquidity-intermediate: var(--liquidity-intermediate);
+  --color-liquidity-locked: var(--liquidity-locked);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-critical-soft: var(--critical-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-gain: var(--gain);
+  --color-gain-soft: var(--gain-soft);
   --color-loss: var(--loss);
   --color-buy: var(--buy);
+  --color-buy-soft: var(--buy-soft);
   --color-sell: var(--sell);
+  --color-sell-soft: var(--sell-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -37,110 +55,231 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-canvas: var(--canvas);
   --color-foreground: var(--foreground);
+  --color-ink-2: var(--ink-2);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-subportfolio-green: var(--subportfolio-green);
+  --color-subportfolio-purple: var(--subportfolio-purple);
+  --color-subportfolio-slate-blue: var(--subportfolio-slate-blue);
+  --color-subportfolio-pink: var(--subportfolio-pink);
+  --color-subportfolio-gold: var(--subportfolio-gold);
+  --color-subportfolio-graphite: var(--subportfolio-graphite);
+  --color-subportfolio-teal: var(--subportfolio-teal);
+  --color-subportfolio-wine: var(--subportfolio-wine);
+  --color-subportfolio-terracotta: var(--subportfolio-terracotta);
+  --color-subportfolio-olive: var(--subportfolio-olive);
+  --color-subportfolio-indigo: var(--subportfolio-indigo);
+  --color-subportfolio-brown: var(--subportfolio-brown);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 14px;
+  --radius-3xl: 18px;
+  --radius-4xl: 22px;
+  --shadow-card: var(--card-shadow);
+  --shadow-popover: var(--popover-shadow);
+
+  /* Tipografia: um papel por token, com tamanho, altura de linha e peso */
+  --text-page-title: 22px;
+  --text-page-title--line-height: 28px;
+  --text-page-title--font-weight: 600;
+  --text-page-title--letter-spacing: -0.01em;
+  --text-section-title: 15px;
+  --text-section-title--line-height: 22px;
+  --text-section-title--font-weight: 600;
+  --text-kpi: 28px;
+  --text-kpi--line-height: 34px;
+  --text-kpi--font-weight: 600;
+  --text-kpi--letter-spacing: -0.02em;
+  --text-kpi-sm: 20px;
+  --text-kpi-sm--line-height: 26px;
+  --text-kpi-sm--font-weight: 600;
+  --text-kpi-sm--letter-spacing: -0.01em;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-label: 14px;
+  --text-label--line-height: 20px;
+  --text-label--font-weight: 500;
+  --text-table: 14px;
+  --text-table--line-height: 20px;
+  --text-caption: 13px;
+  --text-caption--line-height: 20px;
+  --text-eyebrow: 12px;
+  --text-eyebrow--line-height: 18px;
+  --text-eyebrow--font-weight: 600;
+  --text-eyebrow--letter-spacing: 0.06em;
+  --text-ticker: 13.5px;
+  --text-ticker--line-height: 20px;
+  --text-ticker--font-weight: 500;
   /* Matriz de correlação: a célula e o texto dela quando a matriz é grande */
   --text-2xs: 0.625rem;
   --aspect-cell: 4 / 3;
+
+  /* Medidas do layout */
+  --spacing-row: 36px;
+  --spacing-nav-item: 32px;
+  --spacing-control-sm: 28px;
+  --spacing-control-md: 34px;
 }
 
+/* O claro mora no `:root` e o escuro na classe `dark`, que o tema põe por padrão */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  /* Alta e baixa */
-  --gain: oklch(0.527 0.137 155);
-  --loss: oklch(0.577 0.245 27.325);
+  --background: #f1f3f6;
+  --canvas: #fbfcfd;
+  --foreground: #0f141a;
+  --ink-2: #475162;
+  --card: #ffffff;
+  --card-foreground: #0f141a;
+  --popover: #ffffff;
+  --popover-foreground: #0f141a;
+  --primary: #2167c2;
+  --primary-hover: #1c5aa9;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e5eefa;
+  --secondary: #f1f3f6;
+  --secondary-foreground: #0f141a;
+  --muted: #f1f3f6;
+  --muted-foreground: #647083;
+  --accent: #f1f3f6;
+  --accent-foreground: #0f141a;
+  --destructive: #c81e1e;
+  --destructive-foreground: #ffffff;
+  --critical-soft: #fdeaea;
+  --warning: #9a6200;
+  --warning-soft: #fdf2dc;
+  /* Alta e baixa, sempre com o sinal junto */
+  --gain: #0b7a4b;
+  --gain-soft: #e4f5ec;
+  --loss: #c4302b;
   /* Compra e venda: fora das cores de categoria e de alta e baixa */
-  --buy: oklch(0.55 0.2 295);
-  --sell: oklch(0.6 0.11 215);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --buy: #6d4fd8;
+  --buy-soft: #efebfd;
+  --sell: #0e7490;
+  --sell-soft: #e3f4f8;
+  --border: #e2e6ec;
+  --border-subtle: #eef1f4;
+  --border-strong: #848e9d;
+  --input: #848e9d;
+  --ring: #2167c2;
   /* Paleta categórica validada (daltonismo e contraste); a ordem é parte da validação */
   --chart-1: #2a78d6;
   --chart-2: #eb6834;
   --chart-3: #1baf7a;
   --chart-4: #eda100;
   --chart-5: #e87ba4;
+  --chart-grid: #e8ebef;
+  /* Referências: tracejadas quando são linha */
+  --ref-cdi: #7457d6;
+  --ref-ipca: #b0600f;
+  --ref-ibov: #008a78;
   /* Rampa ordinal da liquidez, um tom só: de hoje (claro) ao vencimento (escuro) */
   --liquidity-daily: #86b6ef;
   --liquidity-intermediate: #2a78d6;
   --liquidity-locked: #104281;
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Fundo do ícone da subcarteira; o ícone branco passa de 3:1 sobre todas */
+  --subportfolio-green: #5c8a12;
+  --subportfolio-purple: #8a3db3;
+  --subportfolio-slate-blue: #4a5f99;
+  --subportfolio-pink: #ad3a55;
+  --subportfolio-gold: #8a6608;
+  --subportfolio-graphite: #556070;
+  --subportfolio-teal: #226a74;
+  --subportfolio-wine: #7a2e4b;
+  --subportfolio-terracotta: #9c4e2b;
+  --subportfolio-olive: #66721f;
+  --subportfolio-indigo: #4a3fae;
+  --subportfolio-brown: #72553a;
+  --card-shadow: 0 1px 2px rgb(15 20 26 / 0.05);
+  --popover-shadow: 0 8px 24px rgb(15 20 26 / 0.12);
+  --sidebar: #f1f3f6;
+  --sidebar-foreground: #475162;
+  --sidebar-primary: #2167c2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5e9ef;
+  --sidebar-accent-foreground: #0f141a;
+  --sidebar-border: #e2e6ec;
+  --sidebar-ring: #2167c2;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --gain: oklch(0.765 0.177 158);
-  --loss: oklch(0.704 0.191 22.216);
-  --buy: oklch(0.7 0.16 295);
-  --sell: oklch(0.72 0.11 215);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #0c0f13;
+  --canvas: #12161c;
+  --foreground: #e9edf2;
+  --ink-2: #b0b8c4;
+  --card: #181d24;
+  --card-foreground: #e9edf2;
+  --popover: #181d24;
+  --popover-foreground: #e9edf2;
+  --primary: #4a90ea;
+  --primary-hover: #63a0ee;
+  --primary-foreground: #0c0f13;
+  --primary-soft: #172a44;
+  --secondary: #20262f;
+  --secondary-foreground: #e9edf2;
+  --muted: #20262f;
+  --muted-foreground: #8a94a3;
+  --accent: #20262f;
+  --accent-foreground: #e9edf2;
+  --destructive: #f0605f;
+  --destructive-foreground: #0c0f13;
+  --critical-soft: #3a1b1d;
+  --warning: #f5b335;
+  --warning-soft: #33280f;
+  --gain: #3fcf8e;
+  --gain-soft: #12301f;
+  --loss: #f47067;
+  --buy: #a48cf5;
+  --buy-soft: #241f3d;
+  --sell: #4fc3e0;
+  --sell-soft: #11303a;
+  --border: #2a313b;
+  --border-subtle: #222831;
+  --border-strong: #606a7a;
+  --input: #606a7a;
+  --ring: #4a90ea;
   --chart-1: #3987e5;
   --chart-2: #d95926;
   --chart-3: #199e70;
   --chart-4: #c98500;
   --chart-5: #d55181;
+  --chart-grid: #252c36;
+  --ref-cdi: #8c78e6;
+  --ref-ipca: #c27f30;
+  --ref-ibov: #2a9e8e;
   /* No escuro a rampa inverte: o mais rápido fica perto do fundo */
   --liquidity-daily: #184f95;
   --liquidity-intermediate: #3987e5;
   --liquidity-locked: #9ec5f4;
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --subportfolio-green: #6f9a1c;
+  --subportfolio-purple: #9550b8;
+  --subportfolio-slate-blue: #5b6fb0;
+  --subportfolio-pink: #c2506a;
+  --subportfolio-gold: #a8801a;
+  --subportfolio-graphite: #6b7585;
+  --subportfolio-teal: #2f7f8a;
+  --subportfolio-wine: #8e3b5a;
+  --subportfolio-terracotta: #b5603a;
+  --subportfolio-olive: #7d8a2e;
+  --subportfolio-indigo: #5a4fc0;
+  --subportfolio-brown: #8a6a4a;
+  --card-shadow: none;
+  --popover-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  --sidebar: #0c0f13;
+  --sidebar-foreground: #b0b8c4;
+  --sidebar-primary: #4a90ea;
+  --sidebar-primary-foreground: #0c0f13;
+  --sidebar-accent: #20262f;
+  --sidebar-accent-foreground: #e9edf2;
+  --sidebar-border: #2a313b;
+  --sidebar-ring: #4a90ea;
 }
 
 @layer base {
@@ -148,9 +287,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-body text-foreground antialiased;
   }
   html {
     @apply font-sans;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
 }

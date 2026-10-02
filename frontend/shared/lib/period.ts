@@ -11,9 +11,60 @@ export const presetLabels: Record<PeriodPreset, string> = {
   "12m": "12 meses",
   "24m": "24 meses",
   ytd: "Este ano",
-  all: "Desde o início",
+  all: "Tudo",
   custom: "Personalizado",
 };
+
+/** Os atalhos do seletor de período, na ordem da tela; o resto vem pelo calendário. */
+export const periodShortcuts: PeriodPreset[] = ["6m", "12m", "ytd", "all"];
+
+export interface DayRange {
+  start?: string;
+  end?: string;
+}
+
+/** Os atalhos do painel de datas, cada um com o intervalo de hoje. */
+export function rangePresets(today: Date): { label: string; range: Required<DayRange> }[] {
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  return [
+    { label: "Este mês", range: { start: isoDate(new Date(year, month, 1)), end: isoDate(today) } },
+    {
+      label: "Mês passado",
+      range: {
+        start: isoDate(new Date(year, month - 1, 1)),
+        end: isoDate(new Date(year, month, 0)),
+      },
+    },
+    {
+      label: "Últimos 3 meses",
+      range: { start: isoDate(new Date(year, month - 2, 1)), end: isoDate(today) },
+    },
+    { label: "Este ano", range: { start: `${year}-01-01`, end: isoDate(today) } },
+    { label: "Ano passado", range: { start: `${year - 1}-01-01`, end: `${year - 1}-12-31` } },
+  ];
+}
+
+/** A data ISO lida como dia local, sem o fuso deslocar para a véspera. */
+export function localDay(iso: string): Date {
+  const [year = 0, month = 1, day = 1] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/** "22/09/2026" vira "2026-09-22"; o texto que não é uma data válida vira nulo. */
+export function parseTypedDay(text: string): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
+  if (!match) return null;
+  const [, day, month, year] = match.map(Number);
+  const date = new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
+  return date.getDate() === day && date.getMonth() + 1 === month ? isoDate(date) : null;
+}
+
+/** Os dias do intervalo, contando o primeiro e o último. */
+export function daysInRange(range: Required<DayRange>): number {
+  const milliseconds = localDay(range.end).getTime() - localDay(range.start).getTime();
+  return Math.round(milliseconds / 86_400_000) + 1;
+}
 
 export function isPreset(value: string): value is PeriodPreset {
   return value in presetLabels;
@@ -53,4 +104,20 @@ export function periodRange(choice: PeriodChoice): { start?: string; end?: strin
     case "custom":
       return { start: choice.start, end: choice.end };
   }
+}
+
+/** O intervalo em texto curto: "10/08 a 22/09/2026", com o ano uma vez só quando
+os dois dias são do mesmo ano. */
+export function rangeLabel(range: DayRange): string | null {
+  const day = (iso: string, withYear: boolean) => {
+    const [year, month, date] = iso.split("-");
+    return withYear ? `${date}/${month}/${year}` : `${date}/${month}`;
+  };
+  if (range.start && range.end) {
+    const sameYear = range.start.slice(0, 4) === range.end.slice(0, 4);
+    return `${day(range.start, !sameYear)} a ${day(range.end, true)}`;
+  }
+  if (range.start) return `Desde ${day(range.start, true)}`;
+  if (range.end) return `Até ${day(range.end, true)}`;
+  return null;
 }

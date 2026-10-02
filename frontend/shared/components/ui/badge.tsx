@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-[22px] w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-4xl border border-transparent px-2 text-[12.5px] leading-[18px] font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
@@ -14,18 +14,18 @@ const badgeVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         outline:
-          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+          "border-border bg-muted text-ink-2 [a]:hover:bg-muted [a]:hover:text-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
-        // Uma por categoria, na cor da fatia dela no gráfico
-        stock: "border-chart-1/50 bg-chart-1/15 text-foreground",
-        fii: "border-chart-2/50 bg-chart-2/15 text-foreground",
-        etf: "border-chart-3/50 bg-chart-3/15 text-foreground",
-        bdr: "border-chart-4/50 bg-chart-4/15 text-foreground",
-        fixed_income: "border-chart-5/50 bg-chart-5/15 text-foreground",
-        buy: "border-buy/50 bg-buy/15 text-foreground",
-        sell: "border-sell/50 bg-sell/15 text-foreground",
+        buy: "bg-buy-soft text-buy",
+        sell: "bg-sell-soft text-sell",
+        gain: "bg-gain-soft text-gain",
+        critical: "bg-critical-soft text-destructive",
+        warning: "bg-warning-soft text-warning",
+        count: "h-[18px] min-w-[18px] bg-muted px-[5px] text-xs text-ink-2",
+        "count-critical": "h-[18px] min-w-[18px] bg-critical-soft px-[5px] text-xs text-destructive",
+        "count-warning": "h-[18px] min-w-[18px] bg-warning-soft px-[5px] text-xs text-warning",
       },
     },
     defaultVariants: {

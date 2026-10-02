@@ -11,7 +11,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn("w-full caption-bottom text-table tabular-nums", className)}
         {...props}
       />
     </div>
@@ -22,7 +22,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn("[&_tr]:border-b [&_tr]:border-border [&_tr]:hover:bg-transparent", className)}
       {...props}
     />
   )
@@ -43,7 +43,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+        "border-t border-border font-semibold [&>tr]:last:border-b-0 [&>tr]:hover:bg-transparent",
         className
       )}
       {...props}
@@ -56,13 +56,15 @@ const INTERACTIVE =
   "a, button, input, select, textarea, label, [role=menuitem], [role=checkbox], [role=switch]"
 
 const tableRowVariants = cva(
-  "transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+  "transition-colors hover:bg-muted has-aria-expanded:bg-muted data-[state=selected]:bg-muted",
   {
     variants: {
       variant: {
-        default: "border-b",
+        default: "border-b border-border-subtle",
         // A linha que fecha um bloco, como a referência acima dos anos
-        divider: "border-b-2",
+        divider: "border-b-2 border-border",
+        // A linha de total, que soma as de cima
+        total: "border-t border-border font-semibold hover:bg-transparent",
       },
     },
     defaultVariants: { variant: "default" },
@@ -120,7 +122,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-8 px-3 text-left align-middle text-caption font-medium whitespace-nowrap text-muted-foreground first:pl-5 last:pr-5 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -129,7 +131,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 }
 
 const tableCellVariants = cva(
-  "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+  "h-row px-3 align-middle whitespace-nowrap first:pl-5 last:pr-5 [&:has([role=checkbox])]:pr-0",
   {
     variants: {
       variant: {
@@ -140,7 +142,7 @@ const tableCellVariants = cva(
         gain: "text-gain",
         loss: "text-loss",
         // O cabeçalho de um grupo de linhas dentro da tabela
-        group: "bg-muted/40 text-xs font-semibold text-muted-foreground uppercase",
+        group: "h-7 bg-muted text-eyebrow text-muted-foreground uppercase",
       },
     },
     defaultVariants: { variant: "default" },
@@ -168,7 +170,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-muted-foreground", className)}
+      className={cn("mt-4 text-caption text-muted-foreground", className)}
       {...props}
     />
   )

@@ -188,7 +188,7 @@ const holdingColumns = holdingHelper.columns([
     sortFn: "alphanumeric",
     header: ({ column }) => <SortableHeader column={column}>Tipo</SortableHeader>,
     cell: ({ row }) => (
-      <Badge variant="fixed_income">{fixedIncomeTypeLabels[row.original.product_type]}</Badge>
+      <Badge variant="outline">{fixedIncomeTypeLabels[row.original.product_type]}</Badge>
     ),
   }),
   holdingHelper.accessor((row) => sortKey(row.invested), {

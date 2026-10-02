@@ -1,3 +1,4 @@
+import { ThemeProvider } from "next-themes";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -11,6 +12,14 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    {/* O escuro é o padrão; a escolha fica guardada no navegador */}
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      <App />
+    </ThemeProvider>
   </StrictMode>,
 );

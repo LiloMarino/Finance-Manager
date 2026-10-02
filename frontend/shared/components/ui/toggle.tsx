@@ -9,6 +9,9 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
+        // Controle segmentado: o item marcado vira um cartão sobre o trilho
+        segmented:
+          "rounded-md text-ink-2 hover:bg-transparent aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-[0_0_0_1px_var(--border)] data-[state=on]:bg-card",
       },
       size: {
         default:
