@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, XAxis, YAxis } from "recharts";
 
 import { ColorSwatch } from "@/shared/components/color-swatch";
 import { monthLabel } from "@/shared/lib/months";
@@ -6,16 +6,15 @@ import type { MonthlyReturns } from "@/features/monthly-returns/use-monthly-retu
 import {
   type ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
 import { type Benchmark, benchmarkConfig } from "@/shared/lib/benchmark";
 import { type DecimalString, formatSignedPercent, toChartNumber } from "@/types/decimal";
 
+// A barra da carteira leva a cor do sinal do mês; a da referência, a cor dela
 const chartConfig = {
-  portfolio: { label: "Carteira", color: "var(--chart-1)" },
+  portfolio: { label: "Carteira", color: "var(--foreground)" },
   ...benchmarkConfig,
 } satisfies ChartConfig;
 
@@ -112,7 +111,7 @@ export function MonthlyReturnsChart({
   }));
 
   if (data.length === 0) {
-    return <p className="text-muted-foreground text-sm">Sem meses no período.</p>;
+    return <p className="text-caption text-muted-foreground">Sem meses no período.</p>;
   }
 
   return (
@@ -126,7 +125,7 @@ export function MonthlyReturnsChart({
           width={48}
           tickFormatter={(value: number) => axisPercent.format(value)}
         />
-        <ReferenceLine y={0} stroke="var(--border)" />
+        <ReferenceLine y={0} stroke="var(--border-strong)" />
         <ChartTooltip
           content={
             <ChartTooltipContent
@@ -136,7 +135,16 @@ export function MonthlyReturnsChart({
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
+                      <ColorSwatch
+                        shape="square"
+                        color={
+                          key === "portfolio"
+                            ? String(label).startsWith("-")
+                              ? "var(--loss)"
+                              : "var(--gain)"
+                            : `var(--color-${key})`
+                        }
+                      />
                       {isSeriesKey(key) ? chartConfig[key].label : key}
                     </span>
                     <span className="tabular-nums">{String(label)}</span>
@@ -146,7 +154,6 @@ export function MonthlyReturnsChart({
             />
           }
         />
-        {benchmark && <ChartLegend content={<ChartLegendContent />} itemSorter={null} />}
         {series.map((key) => (
           <Bar
             key={key}
@@ -154,7 +161,15 @@ export function MonthlyReturnsChart({
             fill={`var(--color-${key})`}
             radius={2}
             isAnimationActive={false}
-          />
+          >
+            {key === "portfolio" &&
+              rows.map((row) => (
+                <Cell
+                  key={row.key}
+                  fill={row.values.portfolio?.startsWith("-") ? "var(--loss)" : "var(--gain)"}
+                />
+              ))}
+          </Bar>
         ))}
       </BarChart>
     </ChartContainer>

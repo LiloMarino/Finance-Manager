@@ -68,13 +68,19 @@ def _categories(records: Sequence[IncomeRecord]) -> list[CategoryAmountDTO]:
     ]
 
 
-def _records(session: Session, subportfolio_id: int | None) -> list[IncomeRecord]:
-    """Os proventos da carteira geral ou dos ativos da subcarteira."""
+def _records(
+    session: Session,
+    subportfolio_id: int | None,
+    category: PortfolioCategory | None = None,
+) -> list[IncomeRecord]:
+    """Os proventos da carteira geral ou dos ativos da subcarteira, de uma categoria
+    ou de todas."""
     scope = members(session, subportfolio_id)
     return [
         record
         for record in income_records(session)
-        if scope is None or record.asset_id in scope.asset_ids
+        if (scope is None or record.asset_id in scope.asset_ids)
+        and (category is None or _category(record) is category)
     ]
 
 
@@ -199,12 +205,14 @@ def income_performance(
     *,
     by_year: bool = False,
     subportfolio_id: int | None = None,
+    category: PortfolioCategory | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomePerformanceDTO:
     """As barras cobrem todo mês, ou ano, do período, inclusive os sem provento. Sem
-    período, vão do primeiro provento até hoje."""
-    records = _records(session, subportfolio_id)
+    período, vão do primeiro provento até hoje. A média por mês divide o recebido
+    no período pelos meses dele, contando os sem provento."""
+    records = _records(session, subportfolio_id, category)
     selected = _in_period(records, start, end)
 
     bars: list[IncomeBarDTO] = []
@@ -228,17 +236,28 @@ def income_performance(
         last_12_months=total(since(records, today, 12)),
         last_24_months=total(since(records, today, 24)),
         period_total=total(selected),
+        payments=len(selected),
+        monthly_average=(
+            total(selected) / len(periods(first, end or today, False))
+            if first is not None
+            else None
+        ),
+        first_payment=records[0].payment_date if records else None,
         bars=bars,
         categories=_categories(selected),
     )
 
 
 def income_distribution(
-    session: Session, today: date, months: int, subportfolio_id: int | None = None
+    session: Session,
+    today: date,
+    months: int,
+    subportfolio_id: int | None = None,
+    category: PortfolioCategory | None = None,
 ) -> IncomeDistributionDTO:
     """O que cada categoria e cada ativo pagou nos últimos `months` meses, do que
     mais pagou para o que menos pagou, com a posição de hoje ao lado."""
-    records = _records(session, subportfolio_id)
+    records = _records(session, subportfolio_id, category)
     window = since(records, today, months)
     window_total = total(window)
     positions = current_positions(operation_records(session))

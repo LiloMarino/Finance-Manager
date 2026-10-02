@@ -11,9 +11,9 @@ import {
   portfolioCategoryLabels,
 } from "@/shared/lib/portfolio-category";
 
-// Nulo é a carteira toda
+// Nulo são todas as categorias
 const items = [
-  { value: null, label: "Carteira toda" },
+  { value: null, label: "Todas as categorias" },
   ...portfolioCategories.map((category) => ({
     value: category,
     label: portfolioCategoryLabels[category],
@@ -32,7 +32,7 @@ export function CategorySelect({ value, onChange }: CategorySelectProps) {
       value={value ?? null}
       onValueChange={(selected) => onChange(selected ?? undefined)}
     >
-      <SelectTrigger className="w-44" aria-label="Categoria">
+      <SelectTrigger size="sm" className="w-48" aria-label="Categoria">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

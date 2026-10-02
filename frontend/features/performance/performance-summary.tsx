@@ -1,6 +1,7 @@
-import { cdiShareHint, periodHint, quotaHint, recentHint } from "@/features/performance/hints";
+import { cdiShareHint, quotaHint } from "@/features/performance/hints";
 import type { Performance } from "@/features/performance/use-performance";
-import { Metric } from "@/shared/components/metric";
+import { Metric, MetricStrip } from "@/shared/components/metric";
+import { formatDate } from "@/shared/lib/format";
 import { signClass } from "@/shared/lib/sign";
 import { type DecimalString, formatPercent, formatSignedPercent } from "@/types/decimal";
 
@@ -11,19 +12,49 @@ function signed(value: DecimalString | null): { value: string | null; tone: stri
     : { value: formatSignedPercent(value), tone: signClass(value) };
 }
 
-export function PerformanceSummary({ performance }: { performance: Performance }) {
+interface PerformanceSummaryProps {
+  performance: Performance;
+  /** O nome do período escolhido, como "Em 12 meses". */
+  periodLabel: string;
+}
+
+/** A rentabilidade no período, o CDI no mesmo período, a fração do CDI e a
+rentabilidade desde o início. */
+export function PerformanceSummary({ performance, periodLabel }: PerformanceSummaryProps) {
+  const cdi = performance.benchmarks.find((benchmark) => benchmark.series === "cdi")?.period;
+  const range =
+    performance.start && performance.end
+      ? `de ${formatDate(performance.start)} a ${formatDate(performance.end)}`
+      : undefined;
+
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
-      <Metric label="Desde o início" hint={quotaHint} {...signed(performance.since_inception)} />
-      <Metric label="No período" hint={periodHint} {...signed(performance.period)} />
+    <MetricStrip>
       <Metric
-        label="% do CDI no período"
-        hint={cdiShareHint}
-        value={performance.cdi_share === null ? null : formatPercent(performance.cdi_share)}
+        label={periodLabel}
+        hint={quotaHint}
+        size="lg"
+        {...signed(performance.period)}
+        detail={range}
       />
-      <Metric label="6 meses" hint={recentHint(6)} {...signed(performance.last_6_months)} />
-      <Metric label="12 meses" hint={recentHint(12)} {...signed(performance.last_12_months)} />
-      <Metric label="24 meses" hint={recentHint(24)} {...signed(performance.last_24_months)} />
-    </div>
+      <Metric
+        label={`CDI ${periodLabel.toLowerCase()}`}
+        size="lg"
+        value={cdi ? formatSignedPercent(cdi) : null}
+        detail="a referência da renda fixa"
+      />
+      <Metric
+        label="% do CDI"
+        hint={cdiShareHint}
+        size="lg"
+        value={performance.cdi_share === null ? null : formatPercent(performance.cdi_share)}
+        detail="acima de 100% bate o CDI"
+      />
+      <Metric
+        label="Desde o início"
+        size="lg"
+        {...signed(performance.since_inception)}
+        detail={performance.first_date && `desde ${formatDate(performance.first_date)}`}
+      />
+    </MetricStrip>
   );
 }

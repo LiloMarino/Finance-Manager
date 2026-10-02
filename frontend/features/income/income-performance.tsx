@@ -1,18 +1,15 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { netHint, recentHint } from "@/features/income/hints";
+import { netHint } from "@/features/income/hints";
 import { type IncomePerformance, useIncomePerformance } from "@/features/income/use-income";
+import { ChartLegend } from "@/shared/components/chart-legend";
 import { ColorSwatch } from "@/shared/components/color-swatch";
-import { Metric } from "@/shared/components/metric";
+import { Metric, MetricStrip } from "@/shared/components/metric";
+import { Money } from "@/shared/components/money";
 import { PeriodSelect } from "@/shared/components/period-select";
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/shared/components/ui/chart";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/ui/chart";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
@@ -23,15 +20,18 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
+import { useValueFormat } from "@/shared/hooks/use-value-format";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { formatDate } from "@/shared/lib/format";
 import { monthLabel } from "@/shared/lib/months";
-import { type PeriodChoice, periodRange } from "@/shared/lib/period";
+import { type PeriodChoice, periodRange, periodTitle } from "@/shared/lib/period";
 import {
+  type PortfolioCategory,
   isPortfolioCategory,
   portfolioCategoryConfig as categoryConfig,
   portfolioCategories,
 } from "@/shared/lib/portfolio-category";
-import { formatBRL, formatPercent, toChartNumber } from "@/types/decimal";
+import { formatPercent, toChartNumber } from "@/types/decimal";
 
 type Group = "month" | "year";
 
@@ -47,30 +47,37 @@ function periodLabel(period: string): string {
   return month ? monthLabel(Number(year), Number(month)) : period;
 }
 
-function Summary({ performance }: { performance: IncomePerformance }) {
+function Summary({ performance, title }: { performance: IncomePerformance; title: string }) {
+  const first = performance.bars[0]?.period;
+  const last = performance.bars.at(-1)?.period;
+  const range = first && last ? `, de ${periodLabel(first)} a ${periodLabel(last)}` : "";
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <MetricStrip>
       <Metric
-        label="Total recebido"
-        hint={`Tudo o que já foi recebido, desde o primeiro provento. ${netHint}`}
-        value={formatBRL(performance.total)}
-      />
-      <Metric label="6 meses" hint={recentHint(6)} value={formatBRL(performance.last_6_months)} />
-      <Metric
-        label="12 meses"
-        hint={recentHint(12)}
-        value={formatBRL(performance.last_12_months)}
+        label={`Recebido ${title.toLowerCase()}`}
+        hint={netHint}
+        size="lg"
+        value={<Money value={performance.period_total} />}
+        detail={`${performance.payments} ${performance.payments === 1 ? "pagamento" : "pagamentos"}${range}`}
       />
       <Metric
-        label="24 meses"
-        hint={recentHint(24)}
-        value={formatBRL(performance.last_24_months)}
+        label="Média por mês"
+        size="lg"
+        value={performance.monthly_average && <Money value={performance.monthly_average} />}
+        detail="contando os meses sem provento"
       />
-    </div>
+      <Metric
+        label="Desde o início"
+        size="lg"
+        value={<Money value={performance.total} />}
+        detail={performance.first_payment && `desde ${formatDate(performance.first_payment)}`}
+      />
+    </MetricStrip>
   );
 }
 
 function IncomeChart({ performance }: { performance: IncomePerformance }) {
+  const format = useValueFormat();
   const present = new Set(
     performance.bars.flatMap((bar) => bar.categories.map((item) => item.category)),
   );
@@ -78,9 +85,9 @@ function IncomeChart({ performance }: { performance: IncomePerformance }) {
   const series = portfolioCategories.filter((category) => present.has(category));
   const data = performance.bars.map((bar) => ({
     label: periodLabel(bar.period),
-    total: formatBRL(bar.total),
+    total: format.brl(bar.total),
     labels: Object.fromEntries(
-      bar.categories.map((item) => [item.category, formatBRL(item.amount)]),
+      bar.categories.map((item) => [item.category, format.brl(item.amount)]),
     ),
     ...Object.fromEntries(
       bar.categories.map((item) => [item.category, toChartNumber(item.amount)]),
@@ -88,19 +95,19 @@ function IncomeChart({ performance }: { performance: IncomePerformance }) {
   }));
 
   if (series.length === 0) {
-    return <p className="text-muted-foreground text-sm">Nenhum provento no período.</p>;
+    return <p className="text-caption text-muted-foreground">Nenhum provento no período.</p>;
   }
 
   return (
-    <ChartContainer config={categoryConfig} className="aspect-auto h-72 w-full">
-      <BarChart data={data} margin={{ left: 4, right: 4 }}>
+    <ChartContainer config={categoryConfig} className="aspect-auto h-64 w-full">
+      <BarChart data={data} margin={{ left: 4, right: 4, top: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={16} />
         <YAxis
           tickLine={false}
           axisLine={false}
           width={64}
-          tickFormatter={(value: number) => axisMoney.format(value)}
+          tickFormatter={(value: number) => format.amount(axisMoney.format(value))}
         />
         <ChartTooltip
           cursor={{ fill: "var(--muted)" }}
@@ -126,7 +133,6 @@ function IncomeChart({ performance }: { performance: IncomePerformance }) {
             />
           }
         />
-        {series.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
         {series.map((category, index) => (
           <Bar
             key={category}
@@ -135,7 +141,7 @@ function IncomeChart({ performance }: { performance: IncomePerformance }) {
             fill={`var(--color-${category})`}
             stroke="var(--card)"
             strokeWidth={index === 0 ? 0 : 2}
-            radius={index === series.length - 1 ? [4, 4, 0, 0] : 0}
+            radius={index === series.length - 1 ? [3, 3, 0, 0] : 0}
             isAnimationActive={false}
           />
         ))}
@@ -150,8 +156,8 @@ function CategoryTotals({ performance }: { performance: IncomePerformance }) {
       <TableHeader>
         <TableRow>
           <TableHead>Categoria</TableHead>
-          <TableHead className="text-right">Recebido no período</TableHead>
-          <TableHead className="text-right">% do período</TableHead>
+          <TableHead className="text-right">Recebido</TableHead>
+          <TableHead className="text-right">%</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -163,40 +169,64 @@ function CategoryTotals({ performance }: { performance: IncomePerformance }) {
                 {categoryConfig[item.category].label}
               </span>
             </TableCell>
-            <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
-            <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
+            <TableCell className="text-right">
+              <Money value={item.amount} />
+            </TableCell>
+            <TableCell variant="muted" className="text-right">
+              {formatPercent(item.share)}
+            </TableCell>
           </TableRow>
         ))}
-        <TableRow>
-          <TableCell className="font-medium">Total</TableCell>
-          <TableCell className="text-right font-medium tabular-nums">
-            {formatBRL(performance.period_total)}
+        <TableRow variant="total">
+          <TableCell>Total</TableCell>
+          <TableCell className="text-right">
+            <Money value={performance.period_total} />
           </TableCell>
-          <TableCell />
+          <TableCell className="text-right">100,00%</TableCell>
         </TableRow>
       </TableBody>
     </Table>
   );
 }
 
-export function IncomePerformancePanel({ subportfolioId }: { subportfolioId?: number }) {
+interface IncomePerformancePanelProps {
+  subportfolioId?: number;
+  category?: PortfolioCategory;
+  /** Filtros da tela, antes do período */
+  filters?: ReactNode;
+}
+
+/** O recebido no período: indicadores, as barras por categoria e a tabela ao lado. */
+export function IncomePerformancePanel({
+  subportfolioId,
+  category,
+  filters,
+}: IncomePerformancePanelProps) {
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
   const [group, setGroup] = useState<Group>("month");
   const { data, isPending, error } = useIncomePerformance({
     group,
+    category,
     subportfolio_id: subportfolioId,
     ...periodRange(period),
   });
+  const legend = (data?.categories ?? []).map((item) => ({
+    key: item.category,
+    label: categoryConfig[item.category].label,
+    color: categoryConfig[item.category].color,
+    shape: "square" as const,
+  }));
 
   return (
-    <div className="flex flex-col gap-6">
-      {data && <Summary performance={data} />}
-
-      <div className="flex flex-wrap items-end gap-3">
+    <>
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2">
+        {filters}
         <PeriodSelect value={period} onChange={setPeriod} />
         <ToggleGroup
-          variant="outline"
-          spacing={0}
+          variant="segmented"
+          size="sm"
+          aria-label="Agrupar"
           value={[group]}
           onValueChange={([value]) => {
             if (value === "month" || value === "year") setGroup(value);
@@ -208,15 +238,40 @@ export function IncomePerformancePanel({ subportfolioId }: { subportfolioId?: nu
       </div>
 
       {isPending ? (
-        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-96 w-full" />
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : (
         <>
-          <IncomeChart performance={data} />
-          {data.categories.length > 0 && <CategoryTotals performance={data} />}
+          {/* Indicadores */}
+          <Summary performance={data} title={periodTitle(period)} />
+
+          {/* Barras e totais */}
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <Card>
+              <CardHeader>
+                <CardTitle>{group === "month" ? "Por mês" : "Por ano"}</CardTitle>
+                <CardAction>
+                  <ChartLegend entries={legend} />
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <IncomeChart performance={data} />
+              </CardContent>
+            </Card>
+            {data.categories.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No período</CardTitle>
+                </CardHeader>
+                <CardContent data-flush>
+                  <CategoryTotals performance={data} />
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </>
       )}
-    </div>
+    </>
   );
 }

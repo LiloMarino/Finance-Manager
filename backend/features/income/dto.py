@@ -60,14 +60,18 @@ class IncomeBarDTO(BaseDTO):
 
 
 class IncomePerformanceDTO(BaseDTO):
-    """`total` e os recentes contam desde o primeiro provento até hoje; as barras e as
-    categorias, só o período pedido."""
+    """`total`, os recentes e `first_payment` contam desde o primeiro provento até
+    hoje; as barras, as categorias, `payments` e `monthly_average`, só o período
+    pedido. A média é nula sem nenhum provento."""
 
     total: DecimalStr
     last_6_months: DecimalStr
     last_12_months: DecimalStr
     last_24_months: DecimalStr
     period_total: DecimalStr
+    payments: int
+    monthly_average: DecimalStr | None
+    first_payment: date | None
     bars: list[IncomeBarDTO]
     categories: list[CategoryAmountDTO]
 

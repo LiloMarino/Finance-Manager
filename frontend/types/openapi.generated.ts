@@ -698,6 +698,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fixed-income/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summary */
+        get: operations["summary_api_fixed_income_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fixed-income/{investment_id}": {
         parameters: {
             query?: never;
@@ -1918,12 +1935,100 @@ export interface components {
          */
         FixedIncomeMovementType: "application" | "redemption";
         /**
+         * FixedIncomeSummaryDTO
+         * @description Os títulos que ainda não venceram, somados no total, por tipo (na ordem dos
+         *     tipos) e por liquidez: os de liquidez diária e os que só viram dinheiro no
+         *     vencimento. `daily_share` e `at_maturity_share` são as frações do bruto, nulas sem
+         *     nenhum título. O vencido já
+         *     foi resgatado para o saldo e fica fora da soma.
+         */
+        FixedIncomeSummaryDTO: {
+            total: components["schemas"]["FixedIncomeTotalsDTO"];
+            /** By Type */
+            by_type: components["schemas"]["FixedIncomeTypeTotalsDTO"][];
+            daily_liquidity: components["schemas"]["FixedIncomeTotalsDTO"];
+            at_maturity: components["schemas"]["FixedIncomeTotalsDTO"];
+            /** Daily Share */
+            daily_share: DecimalString | null;
+            /** At Maturity Share */
+            at_maturity_share: DecimalString | null;
+        };
+        /**
+         * FixedIncomeTotalsDTO
+         * @description A soma de um grupo de títulos, na marcação de hoje. `gross_result` é o bruto
+         *     menos o aplicado, e `gross_return` a fração dele sobre o aplicado.
+         */
+        FixedIncomeTotalsDTO: {
+            /** Count */
+            count: number;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Estimated Tax
+             * Format: decimal
+             */
+            estimated_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * Gross Result
+             * Format: decimal
+             */
+            gross_result: DecimalString;
+            /** Gross Return */
+            gross_return: DecimalString | null;
+        };
+        /**
          * FixedIncomeType
          * @description O produto de renda fixa. Ele decide a isenção de IR e, no Tesouro, o
          *     indexador.
          * @enum {string}
          */
         FixedIncomeType: "cdb" | "rdb" | "lc" | "lci" | "lca" | "cri" | "cra" | "debenture" | "incentivized_debenture" | "treasury_selic" | "treasury_prefixed" | "treasury_ipca";
+        /** FixedIncomeTypeTotalsDTO */
+        FixedIncomeTypeTotalsDTO: {
+            /** Count */
+            count: number;
+            /**
+             * Invested
+             * Format: decimal
+             */
+            invested: DecimalString;
+            /**
+             * Gross Value
+             * Format: decimal
+             */
+            gross_value: DecimalString;
+            /**
+             * Estimated Tax
+             * Format: decimal
+             */
+            estimated_tax: DecimalString;
+            /**
+             * Net Value
+             * Format: decimal
+             */
+            net_value: DecimalString;
+            /**
+             * Gross Result
+             * Format: decimal
+             */
+            gross_result: DecimalString;
+            /** Gross Return */
+            gross_return: DecimalString | null;
+            product_type: components["schemas"]["FixedIncomeType"];
+        };
         /**
          * GrowthDTO
          * @description A variação do patrimônio, com os aportes e os resgates dentro; o retorno é
@@ -2226,8 +2331,9 @@ export interface components {
         };
         /**
          * IncomePerformanceDTO
-         * @description `total` e os recentes contam desde o primeiro provento até hoje; as barras e as
-         *     categorias, só o período pedido.
+         * @description `total`, os recentes e `first_payment` contam desde o primeiro provento até
+         *     hoje; as barras, as categorias, `payments` e `monthly_average`, só o período
+         *     pedido. A média é nula sem nenhum provento.
          */
         IncomePerformanceDTO: {
             /**
@@ -2255,6 +2361,12 @@ export interface components {
              * Format: decimal
              */
             period_total: DecimalString;
+            /** Payments */
+            payments: number;
+            /** Monthly Average */
+            monthly_average: DecimalString | null;
+            /** First Payment */
+            first_payment: string | null;
             /** Bars */
             bars: components["schemas"]["IncomeBarDTO"][];
             /** Categories */
@@ -2760,7 +2872,10 @@ export interface components {
             /** Second */
             second: number;
         };
-        /** OperationDTO */
+        /**
+         * OperationDTO
+         * @description `total` é a quantidade vezes o preço unitário; zero nos eventos corporativos.
+         */
         OperationDTO: {
             /** Id */
             id: number;
@@ -2785,6 +2900,11 @@ export interface components {
              * Format: decimal
              */
             unit_price: DecimalString;
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
         };
         /**
          * OperationInDTO
@@ -4333,6 +4453,7 @@ export interface operations {
             query?: {
                 group?: "month" | "year";
                 subportfolio_id?: number | null;
+                category?: components["schemas"]["PortfolioCategory"] | null;
                 start?: string | null;
                 end?: string | null;
             };
@@ -4376,6 +4497,7 @@ export interface operations {
             query?: {
                 months?: number;
                 subportfolio_id?: number | null;
+                category?: components["schemas"]["PortfolioCategory"] | null;
             };
             header?: never;
             path?: never;
@@ -5848,6 +5970,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FixedIncomeDetailDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary_api_fixed_income_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedIncomeSummaryDTO"];
                 };
             };
             /** @description Unprocessable Content */

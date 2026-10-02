@@ -1,4 +1,4 @@
-import { Area, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import type { Evolution } from "@/features/evolution/use-evolution";
 import {
@@ -7,57 +7,50 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
+import { useValueFormat } from "@/shared/hooks/use-value-format";
 import { formatDate } from "@/shared/lib/format";
-import { formatBRL, formatSignedBRL, toChartNumber } from "@/types/decimal";
+import { signClass } from "@/shared/lib/sign";
+import { toChartNumber } from "@/types/decimal";
 
+// A carteira é a linha na cor do texto; o aplicado, a referência tracejada em cinza
 const chartConfig = {
-  value: { label: "Patrimônio", color: "var(--chart-1)" },
-  investedBand: { label: "Aplicado", color: "var(--chart-1)" },
-  gainBand: { label: "Ganho", color: "var(--chart-2)" },
+  value: { label: "Patrimônio", color: "var(--foreground)" },
   invested: { label: "Aplicado", color: "var(--muted-foreground)" },
 } satisfies ChartConfig;
 
 const axisCurrency = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
   notation: "compact",
   maximumFractionDigits: 1,
 });
 
-interface EvolutionChartProps {
-  points: Evolution["points"];
-  composition: boolean;
-}
-
-export function EvolutionChart({ points, composition }: EvolutionChartProps) {
-  // Na composição, as duas faixas somam o patrimônio: num dia de perda, a área
-  // inteira é aplicado, e o aplicado de verdade fica na linha acima dela
-  const data = points.map((point) => {
-    const loss = point.gain.startsWith("-");
-    return {
-      day: point.day,
-      value: toChartNumber(point.value),
-      investedBand: toChartNumber(loss ? point.value : point.invested),
-      gainBand: loss ? 0 : toChartNumber(point.gain),
-      invested: toChartNumber(point.invested),
-      point,
-    };
-  });
+/** O patrimônio e o aplicado no tempo; a distância entre as linhas é o ganho. */
+export function EvolutionChart({ points }: { points: Evolution["points"] }) {
+  const format = useValueFormat();
+  const data = points.map((point) => ({
+    day: point.day,
+    value: toChartNumber(point.value),
+    invested: toChartNumber(point.invested),
+    point,
+  }));
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-80 w-full">
-      <ComposedChart data={data} margin={{ left: 4, right: 4 }}>
+    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
+      <LineChart data={data} margin={{ left: 4, right: 8, top: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="day"
           tickLine={false}
           axisLine={false}
-          minTickGap={32}
+          minTickGap={48}
           tickFormatter={(day: string) => formatDate(day).slice(3)}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
-          width={56}
-          tickFormatter={(value: number) => axisCurrency.format(value)}
+          width={64}
+          tickFormatter={(value: number) => format.amount(axisCurrency.format(value))}
         />
         <ChartTooltip
           content={
@@ -69,21 +62,17 @@ export function EvolutionChart({ points, composition }: EvolutionChartProps) {
               }}
               formatter={(_, name, item) => {
                 // Uma linha só no tooltip, com os três números do dia
-                if (name !== (composition ? "investedBand" : "value")) return null;
+                if (name !== "value") return null;
                 const point: Evolution["points"][number] = item.payload.point;
                 return (
-                  <div className="flex w-full flex-col gap-1 tabular-nums">
-                    <span className="flex justify-between gap-4">
-                      <span>Patrimônio</span>
-                      <span>{formatBRL(point.value)}</span>
-                    </span>
-                    <span className="text-muted-foreground flex justify-between gap-4">
-                      <span>Aplicado</span>
-                      <span>{formatBRL(point.invested)}</span>
-                    </span>
-                    <span className="text-muted-foreground flex justify-between gap-4">
-                      <span>Ganho</span>
-                      <span>{formatSignedBRL(point.gain)}</span>
+                  <div className="grid w-full grid-cols-[auto_auto] gap-x-4 gap-y-0.5 tabular-nums">
+                    <span className="text-ink-2">Patrimônio</span>
+                    <span className="text-right">{format.brl(point.value)}</span>
+                    <span className="text-ink-2">Aplicado</span>
+                    <span className="text-right">{format.brl(point.invested)}</span>
+                    <span className="text-ink-2">Ganho</span>
+                    <span className={`text-right ${signClass(point.gain)}`}>
+                      {format.signedBrl(point.gain)}
                     </span>
                   </div>
                 );
@@ -91,47 +80,24 @@ export function EvolutionChart({ points, composition }: EvolutionChartProps) {
             />
           }
         />
-        {composition ? (
-          <>
-            <Area
-              dataKey="investedBand"
-              stackId="composition"
-              type="monotone"
-              stroke="var(--color-investedBand)"
-              fill="var(--color-investedBand)"
-              fillOpacity={0.35}
-              isAnimationActive={false}
-            />
-            <Area
-              dataKey="gainBand"
-              stackId="composition"
-              type="monotone"
-              stroke="var(--color-gainBand)"
-              fill="var(--color-gainBand)"
-              fillOpacity={0.5}
-              isAnimationActive={false}
-            />
-            <Line
-              dataKey="invested"
-              type="monotone"
-              stroke="var(--color-invested)"
-              strokeDasharray="4 4"
-              dot={false}
-              isAnimationActive={false}
-            />
-          </>
-        ) : (
-          <Area
-            dataKey="value"
-            type="monotone"
-            stroke="var(--color-value)"
-            fill="var(--color-value)"
-            fillOpacity={0.15}
-            strokeWidth={2}
-            isAnimationActive={false}
-          />
-        )}
-      </ComposedChart>
+        <Line
+          dataKey="invested"
+          type="monotone"
+          stroke="var(--color-invested)"
+          strokeWidth={2}
+          strokeDasharray="5 4"
+          dot={false}
+          isAnimationActive={false}
+        />
+        <Line
+          dataKey="value"
+          type="monotone"
+          stroke="var(--color-value)"
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </LineChart>
     </ChartContainer>
   );
 }

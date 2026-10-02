@@ -11,9 +11,10 @@ export function isBenchmark(value: string): value is Benchmark {
   return benchmarks.some((benchmark) => benchmark === value);
 }
 
-// A carteira fica com o --chart-1; cada referência tem o seu slot na sequência
+// A carteira é a linha na cor do texto; cada referência tem a cor própria, fora da
+// paleta das categorias, e é tracejada quando vira linha
 export const benchmarkConfig = {
-  cdi: { label: "CDI", color: "var(--chart-2)" },
-  ipca: { label: "IPCA", color: "var(--chart-3)" },
-  ibov: { label: "IBOV", color: "var(--chart-4)" },
+  cdi: { label: "CDI", color: "var(--ref-cdi)" },
+  ipca: { label: "IPCA", color: "var(--ref-ipca)" },
+  ibov: { label: "IBOV", color: "var(--ref-ibov)" },
 } satisfies ChartConfig & Record<Benchmark, { label: string; color: string }>;

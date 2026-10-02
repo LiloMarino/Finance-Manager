@@ -69,6 +69,7 @@ def get_performance(
     session: SessionDep,
     group: Literal["month", "year"] = "month",
     subportfolio_id: int | None = None,
+    category: PortfolioCategory | None = None,
     start: date | None = None,
     end: date | None = None,
 ) -> IncomePerformanceDTO:
@@ -77,6 +78,7 @@ def get_performance(
         date.today(),
         by_year=group == "year",
         subportfolio_id=subportfolio_id,
+        category=category,
         start=start,
         end=end,
     )
@@ -87,5 +89,6 @@ def get_distribution(
     session: SessionDep,
     months: Annotated[int, Query(ge=1)] = 12,
     subportfolio_id: int | None = None,
+    category: PortfolioCategory | None = None,
 ) -> IncomeDistributionDTO:
-    return income_distribution(session, date.today(), months, subportfolio_id)
+    return income_distribution(session, date.today(), months, subportfolio_id, category)

@@ -147,6 +147,29 @@ def test_performance_sums_by_month_and_by_year_with_recent_totals(
     }
 
 
+def test_performance_counts_payments_and_monthly_average_by_category(
+    api: TestClient, session: Session
+) -> None:
+    """Filtrando por FII, só os proventos de FII contam: 2 pagamentos de R$ 30 em 3
+    meses dão média de R$ 20 por mês, e o primeiro provento é o mais antigo deles."""
+    stock = _asset(session, "WXYZ3", AssetClass.STOCK)
+    fii = _asset(session, "ABCD11", AssetClass.FII)
+    start = date(2024, 1, 1)
+    _income(session, fii, date(2024, 1, 15), "30")
+    _income(session, fii, date(2024, 3, 15), "30")
+    _income(session, stock, date(2024, 2, 15), "100")
+
+    body = api.get(
+        "/api/income/performance",
+        params={"category": "fii", "start": start.isoformat(), "end": "2024-03-31"},
+    ).json()
+
+    assert body["period_total"] == "60"
+    assert body["payments"] == 2
+    assert Decimal(body["monthly_average"]) == Decimal(20)
+    assert body["first_payment"] == "2024-01-15"
+
+
 def test_distribution_brings_dividend_yield_and_yield_on_cost(
     api: TestClient, session: Session
 ) -> None:

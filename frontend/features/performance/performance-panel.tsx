@@ -4,21 +4,24 @@ import { benchmarksHint } from "@/features/performance/hints";
 import { PerformanceChart } from "@/features/performance/performance-chart";
 import { PerformanceSummary } from "@/features/performance/performance-summary";
 import { type Performance, usePerformance } from "@/features/performance/use-performance";
+import { ChartLegend } from "@/shared/components/chart-legend";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { PeriodSelect } from "@/shared/components/period-select";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { type Benchmark, benchmarkConfig, benchmarks, isBenchmark } from "@/shared/lib/benchmark";
 import { formatDate } from "@/shared/lib/format";
-import { type PeriodChoice, periodRange } from "@/shared/lib/period";
+import { type PeriodChoice, periodRange, periodTitle } from "@/shared/lib/period";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
+import { type DecimalString, formatSignedPercent } from "@/types/decimal";
 
 interface PerformancePanelProps {
   category?: PortfolioCategory;
   assetId?: number;
   subportfolioId?: number;
-  /** Filtros da tela, ao lado do seletor de período */
+  /** Filtros da tela, antes do seletor de período */
   filters?: ReactNode;
 }
 
@@ -37,6 +40,33 @@ function staleBenchmarks(performance: Performance, selected: Benchmark[]): strin
   });
 }
 
+/** A legenda do gráfico com o resultado de cada linha no período. */
+function legendEntries(performance: Performance, selected: Benchmark[]) {
+  const percent = (value: DecimalString | null) => (value ? ` ${formatSignedPercent(value)}` : "");
+  return [
+    {
+      key: "cumulative",
+      label: `Carteira${percent(performance.period)}`,
+      color: "var(--foreground)",
+      shape: "line" as const,
+    },
+    ...performance.benchmarks.flatMap((benchmark) =>
+      isBenchmark(benchmark.series) && selected.includes(benchmark.series)
+        ? [
+            {
+              key: benchmark.series,
+              label: `${benchmarkConfig[benchmark.series].label}${percent(benchmark.period)}`,
+              color: benchmarkConfig[benchmark.series].color,
+              shape: "dashed" as const,
+            },
+          ]
+        : [],
+    ),
+  ];
+}
+
+/** A rentabilidade acumulada: filtros, indicadores do período e o gráfico contra as
+referências. */
 export function PerformancePanel({
   category,
   assetId,
@@ -44,7 +74,7 @@ export function PerformancePanel({
   filters,
 }: PerformancePanelProps) {
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
-  const [selected, setSelected] = useState<Benchmark[]>(["cdi"]);
+  const [selected, setSelected] = useState<Benchmark[]>([...benchmarks]);
   const { data, isPending, error } = usePerformance({
     category,
     asset_id: assetId,
@@ -53,30 +83,19 @@ export function PerformancePanel({
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      {isPending ? (
-        <Skeleton className="h-16 w-full" />
-      ) : error ? (
-        <span className="text-destructive">{getApiErrorMessage(error)}</span>
-      ) : (
-        <PerformanceSummary performance={data} />
-      )}
-
+    <>
       {/* Filtros */}
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         {filters}
         <PeriodSelect value={period} onChange={setPeriod} />
-      </div>
-
-      {/* Referências */}
-      <div className="flex flex-wrap items-center gap-3">
         <MetricHint hint={benchmarksHint}>
-          <span className="text-muted-foreground text-sm">Comparar com</span>
+          <span className="text-caption text-muted-foreground ml-3">Comparar com</span>
         </MetricHint>
         <ToggleGroup
           multiple
-          variant="outline"
-          spacing={0}
+          variant="segmented"
+          size="sm"
+          aria-label="Referências"
           value={selected}
           onValueChange={(values) => setSelected(values.filter(isBenchmark))}
         >
@@ -88,27 +107,43 @@ export function PerformancePanel({
         </ToggleGroup>
       </div>
 
-      {/* Gráfico */}
       {isPending ? (
-        <Skeleton className="h-72 w-full" />
-      ) : data && data.points.length > 1 ? (
-        <>
-          <PerformanceChart performance={data} selected={selected} />
-          <div className="text-muted-foreground flex flex-col gap-1 text-xs">
-            {data.first_date && (
-              <p>
-                Série desde {formatDate(data.first_date)}. Variação de preço mais os proventos, no
-                dia do pagamento.
-              </p>
-            )}
-            {staleBenchmarks(data, selected).map((note) => (
-              <p key={note}>{note}</p>
-            ))}
-          </div>
-        </>
+        <Skeleton className="h-96 w-full" />
+      ) : error ? (
+        <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : (
-        <p className="text-muted-foreground text-sm">Sem dados no período.</p>
+        <>
+          {/* Indicadores */}
+          <PerformanceSummary performance={data} periodLabel={periodTitle(period)} />
+
+          {/* Gráfico */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Rentabilidade acumulada</CardTitle>
+              <CardAction>
+                <ChartLegend entries={legendEntries(data, selected)} />
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {data.points.length > 1 ? (
+                <PerformanceChart performance={data} selected={selected} />
+              ) : (
+                <p className="text-caption text-muted-foreground">Sem dados no período.</p>
+              )}
+              <div className="text-caption text-muted-foreground flex flex-col gap-1">
+                <p>
+                  {data.first_date && `Série desde ${formatDate(data.first_date)}. `}
+                  Variação de preço mais os proventos, no dia do pagamento. Cada linha parte do zero
+                  no início do período.
+                </p>
+                {staleBenchmarks(data, selected).map((note) => (
+                  <p key={note}>{note}</p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
-    </div>
+    </>
   );
 }

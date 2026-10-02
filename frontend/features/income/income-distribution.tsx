@@ -1,20 +1,19 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Cell, Pie, PieChart } from "recharts";
+import { type ReactNode, useState } from "react";
 
-import { dividendYieldHint, netHint, yieldOnCostHint } from "@/features/income/hints";
-import { type IncomeDistribution, useIncomeDistribution } from "@/features/income/use-income";
+import { dividendYieldHint, yieldOnCostHint } from "@/features/income/hints";
+import { useIncomeDistribution } from "@/features/income/use-income";
 import { ColorSwatch } from "@/shared/components/color-swatch";
 import { MetricHint } from "@/shared/components/metric-hint";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/shared/components/ui/accordion";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/ui/chart";
-import { Progress } from "@/shared/components/ui/progress";
+import { Money, Quantity } from "@/shared/components/money";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -23,17 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TickerLabel } from "@/shared/components/ticker-label";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
-import { portfolioCategoryConfig as categoryConfig } from "@/shared/lib/portfolio-category";
 import {
-  type DecimalString,
-  formatBRL,
-  formatPercent,
-  formatQuantity,
-  toChartNumber,
-} from "@/types/decimal";
+  portfolioCategoryConfig as categoryConfig,
+  type PortfolioCategory,
+} from "@/shared/lib/portfolio-category";
+import { formatPercent } from "@/types/decimal";
 
 const windows = ["6", "12", "24"] as const;
 type Window = (typeof windows)[number];
@@ -42,107 +39,66 @@ function isWindow(value: string): value is Window {
   return windows.some((found) => found === value);
 }
 
-function percent(value: DecimalString | null): string {
-  return value === null ? "—" : formatPercent(value);
+interface IncomeDistributionPanelProps {
+  subportfolioId?: number;
+  category?: PortfolioCategory;
+  /** Filtros da tela, antes do período */
+  filters?: ReactNode;
 }
 
-function CategoryDonut({ distribution }: { distribution: IncomeDistribution }) {
-  const data = distribution.categories.map((item) => ({
-    category: item.category,
-    value: toChartNumber(item.amount),
-  }));
+/** Recebido por ativo no período: tabela agrupada por categoria. */
+export function IncomeDistributionPanel({
+  subportfolioId,
+  category,
+  filters,
+}: IncomeDistributionPanelProps) {
+  const [months, setMonths] = useState<Window>("12");
+  const { data, isPending, error } = useIncomeDistribution({
+    months: Number(months),
+    category,
+    subportfolio_id: subportfolioId,
+  });
 
   return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row">
-      {/* Donut */}
-      <ChartContainer config={categoryConfig} className="aspect-square h-48 shrink-0">
-        <PieChart>
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                nameKey="category"
-                hideLabel
-                formatter={(_, name) => {
-                  const item = distribution.categories.find(
-                    (found) => found.category === String(name),
-                  );
-                  if (!item) return null;
-                  return (
-                    <span className="flex w-full justify-between gap-4">
-                      <span>{categoryConfig[item.category].label}</span>
-                      <span className="tabular-nums">
-                        {formatBRL(item.amount)} · {formatPercent(item.share)}
-                      </span>
-                    </span>
-                  );
-                }}
-              />
-            }
-          />
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="category"
-            innerRadius="60%"
-            stroke="var(--card)"
-            strokeWidth={2}
-          >
-            {data.map((item) => (
-              <Cell key={item.category} fill={categoryConfig[item.category].color} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ChartContainer>
-
-      {/* Legenda com os valores */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Categoria</TableHead>
-            <TableHead className="text-right">Recebido</TableHead>
-            <TableHead className="text-right">% do total</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {distribution.categories.map((item) => (
-            <TableRow key={item.category}>
-              <TableCell>
-                <span className="flex items-center gap-2">
-                  <ColorSwatch color={categoryConfig[item.category].color} />
-                  {categoryConfig[item.category].label}
-                </span>
-              </TableCell>
-              <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
-              <TableCell className="text-right tabular-nums">{formatPercent(item.share)}</TableCell>
-            </TableRow>
+    <>
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2">
+        {filters}
+        <ToggleGroup
+          variant="segmented"
+          size="sm"
+          aria-label="Janela"
+          value={[months]}
+          onValueChange={([value]) => {
+            if (value && isWindow(value)) setMonths(value);
+          }}
+        >
+          {windows.map((window) => (
+            <ToggleGroupItem key={window} value={window}>
+              {window} meses
+            </ToggleGroupItem>
           ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
+        </ToggleGroup>
+      </div>
 
-function AssetSections({ distribution }: { distribution: IncomeDistribution }) {
-  const categories = distribution.categories.map((item) => item.category);
-
-  return (
-    <Accordion multiple defaultValue={categories}>
-      {distribution.categories.map((category) => (
-        <AccordionItem key={category.category} value={category.category}>
-          <AccordionTrigger className="items-center hover:no-underline">
-            <span className="flex w-full items-center justify-between gap-4 pr-2">
-              <span className="font-medium">{categoryConfig[category.category].label}</span>
-              <span className="text-muted-foreground tabular-nums">
-                {formatBRL(category.amount)} · {formatPercent(category.share)}
-              </span>
-            </span>
-          </AccordionTrigger>
-          <AccordionContent>
+      {isPending ? (
+        <Skeleton className="h-96 w-full" />
+      ) : error ? (
+        <span className="text-destructive">{getApiErrorMessage(error)}</span>
+      ) : data.assets.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recebido por ativo em {months} meses</CardTitle>
+            <CardAction>
+              <CardDescription>Yield pelo valor de hoje e pelo custo</CardDescription>
+            </CardAction>
+          </CardHeader>
+          <CardContent data-flush>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Ativo</TableHead>
-                  <TableHead className="w-40">% do total</TableHead>
+                  <TableHead className="text-right">% do total</TableHead>
                   <TableHead className="text-right">Recebido</TableHead>
                   <TableHead className="text-right">Quantidade</TableHead>
                   <TableHead className="text-right">
@@ -156,108 +112,96 @@ function AssetSections({ distribution }: { distribution: IncomeDistribution }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {distribution.assets
-                  .filter((asset) => asset.category === category.category)
-                  .map((asset) => (
-                    <TableRow key={asset.asset_id}>
-                      <TableCell className="font-medium">
-                        <Link to={`/assets/${asset.asset_id}`} className="hover:underline">
-                          {asset.ticker}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <span className="flex items-center gap-2">
-                          <span className="w-20">
-                            <Progress
-                              value={toChartNumber(asset.share) * 100}
-                              aria-label={`${asset.ticker}: ${formatPercent(asset.share)}`}
+                {data.categories.map((categoryItem) => {
+                  const assets = data.assets.filter((a) => a.category === categoryItem.category);
+                  return (
+                    <div key={categoryItem.category} className="contents">
+                      <TableRow variant="group">
+                        <TableCell variant="group">
+                          <span className="flex items-center gap-2">
+                            <ColorSwatch color={categoryConfig[categoryItem.category].color} />
+                            {categoryConfig[categoryItem.category].label}
+                          </span>
+                        </TableCell>
+                        <TableCell variant="group" className="text-right">
+                          {formatPercent(categoryItem.share)}
+                        </TableCell>
+                        <TableCell variant="group" className="text-right">
+                          <Money value={categoryItem.amount} />
+                        </TableCell>
+                        <TableCell variant="group" />
+                        <TableCell variant="group" />
+                        <TableCell variant="group" />
+                        <TableCell variant="group" />
+                        <TableCell variant="group" />
+                      </TableRow>
+                      {assets.map((asset) => (
+                        <TableRow key={asset.asset_id}>
+                          <TableCell>
+                            <TickerLabel
+                              ticker={asset.ticker}
+                              category={asset.category}
+                              to={`/assets/${asset.asset_id}`}
                             />
-                          </span>
-                          <span className="w-14 text-right tabular-nums">
-                            {formatPercent(asset.share)}
-                          </span>
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatBRL(asset.amount)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatQuantity(asset.quantity)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {percent(asset.dividend_yield)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {percent(asset.yield_on_cost)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatBRL(asset.last_amount)}
-                        <span className="text-muted-foreground block text-xs">
-                          {formatDate(asset.last_payment_date)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatBRL(asset.accumulated)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          </TableCell>
+                          <TableCell className="text-right">{formatPercent(asset.share)}</TableCell>
+                          <TableCell className="text-right">
+                            <Money value={asset.amount} />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Quantity value={asset.quantity} />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {asset.dividend_yield ? formatPercent(asset.dividend_yield) : "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {asset.yield_on_cost ? formatPercent(asset.yield_on_cost) : "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Money value={asset.last_amount} />
+                            <span className="text-caption text-muted-foreground block">
+                              {formatDate(asset.last_payment_date)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Money value={asset.accumulated} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </div>
+                  );
+                })}
+                <TableRow variant="total">
+                  <TableCell>Total</TableCell>
+                  <TableCell />
+                  <TableCell className="text-right">
+                    <Money value={data.total} />
+                  </TableCell>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                </TableRow>
               </TableBody>
             </Table>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
-  );
-}
-
-export function IncomeDistributionPanel({ subportfolioId }: { subportfolioId?: number }) {
-  const [months, setMonths] = useState<Window>("12");
-  const { data, isPending, error } = useIncomeDistribution({
-    months: Number(months),
-    subportfolio_id: subportfolioId,
-  });
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <ToggleGroup
-          variant="outline"
-          spacing={0}
-          value={[months]}
-          onValueChange={([value]) => {
-            if (value && isWindow(value)) setMonths(value);
-          }}
-        >
-          {windows.map((window) => (
-            <ToggleGroupItem key={window} value={window}>
-              {window} meses
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        {data && (
-          <div className="flex flex-col items-end gap-1">
-            <MetricHint hint={netHint}>
-              <span className="text-muted-foreground text-sm">
-                Recebido nos últimos {months} meses
-              </span>
-            </MetricHint>
-            <span className="text-xl font-semibold tabular-nums">{formatBRL(data.total)}</span>
-          </div>
-        )}
-      </div>
-
-      {isPending ? (
-        <Skeleton className="h-72 w-full" />
-      ) : error ? (
-        <span className="text-destructive">{getApiErrorMessage(error)}</span>
-      ) : data.assets.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Nenhum provento na janela.</p>
-      ) : (
+          </CardContent>
+        </Card>
+      ) : null}
+      {!isPending && !error && (
         <>
-          <CategoryDonut distribution={data} />
-          <AssetSections distribution={data} />
+          {data.assets.length === 0 && (
+            <p className="text-caption text-muted-foreground">Nenhum provento no período.</p>
+          )}
+          {data.assets.length > 0 && (
+            <p className="text-caption text-muted-foreground">
+              Dividend yield: o recebido em {months} meses dividido pelo valor de hoje. Yield on
+              cost: o mesmo recebido dividido pelo que você pagou. Ex.: R$ 60 sobre R$ 1.000 de hoje
+              é 6%; se você pagou R$ 800, é 7,5% sobre o custo.
+            </p>
+          )}
         </>
       )}
-    </div>
+    </>
   );
 }

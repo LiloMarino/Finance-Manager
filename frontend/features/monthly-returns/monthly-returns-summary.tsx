@@ -4,50 +4,52 @@ import {
   positiveMonthsHint,
   worstMonthHint,
 } from "@/features/monthly-returns/hints";
-import { signClass } from "@/shared/lib/sign";
-import { monthLabel } from "@/shared/lib/months";
 import type { MonthlyReturns } from "@/features/monthly-returns/use-monthly-returns";
-import { Metric } from "@/shared/components/metric";
+import { Metric, MetricStrip } from "@/shared/components/metric";
+import { monthLabel } from "@/shared/lib/months";
+import { signClass } from "@/shared/lib/sign";
 import { formatSignedPercent } from "@/types/decimal";
 
 type MonthReturn = NonNullable<MonthlyReturns["best_month"]>;
 
-function MonthValue({ month }: { month: MonthReturn | null }) {
-  if (!month) return <span className="text-xl font-semibold">—</span>;
+function MonthMetric({
+  label,
+  hint,
+  month,
+}: {
+  label: string;
+  hint: string;
+  month: MonthReturn | null;
+}) {
   return (
-    <span className="flex items-baseline gap-2">
-      <span className={`text-xl font-semibold tabular-nums ${signClass(month.value)}`}>
-        {formatSignedPercent(month.value)}
-      </span>
-      <span className="text-muted-foreground text-sm">{monthLabel(month.year, month.month)}</span>
-    </span>
+    <Metric
+      label={label}
+      hint={hint}
+      tone={month ? signClass(month.value) : ""}
+      value={month && formatSignedPercent(month.value)}
+      detail={month && monthLabel(month.year, month.month)}
+    />
   );
 }
 
-function Count({ count, total }: { count: number; total: number }) {
-  return (
-    <span className="flex items-baseline gap-1">
-      <span className="text-xl font-semibold tabular-nums">{count}</span>
-      <span className="text-muted-foreground text-sm">de {total} meses</span>
-    </span>
-  );
-}
-
+/** O melhor e o pior mês e quantos meses subiram e caíram, na série inteira. */
 export function MonthlyReturnsSummary({ monthly }: { monthly: MonthlyReturns }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <Metric label="Melhor mês" hint={bestMonthHint}>
-        <MonthValue month={monthly.best_month} />
-      </Metric>
-      <Metric label="Pior mês" hint={worstMonthHint}>
-        <MonthValue month={monthly.worst_month} />
-      </Metric>
-      <Metric label="Meses positivos" hint={positiveMonthsHint}>
-        <Count count={monthly.positive_months} total={monthly.months} />
-      </Metric>
-      <Metric label="Meses negativos" hint={negativeMonthsHint}>
-        <Count count={monthly.negative_months} total={monthly.months} />
-      </Metric>
-    </div>
+    <MetricStrip>
+      <MonthMetric label="Melhor mês" hint={bestMonthHint} month={monthly.best_month} />
+      <MonthMetric label="Pior mês" hint={worstMonthHint} month={monthly.worst_month} />
+      <Metric
+        label="Meses positivos"
+        hint={positiveMonthsHint}
+        value={String(monthly.positive_months)}
+        detail={`de ${monthly.months} meses`}
+      />
+      <Metric
+        label="Meses negativos"
+        hint={negativeMonthsHint}
+        value={String(monthly.negative_months)}
+        detail={`de ${monthly.months} meses`}
+      />
+    </MetricStrip>
   );
 }

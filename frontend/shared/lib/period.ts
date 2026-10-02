@@ -121,3 +121,20 @@ export function rangeLabel(range: DayRange): string | null {
   if (range.end) return `Até ${day(range.end, true)}`;
   return null;
 }
+
+/** O nome do período num indicador: "Em 12 meses", "Este ano" ou "No período". */
+export function periodTitle(choice: PeriodChoice): string {
+  switch (choice.preset) {
+    case "6m":
+      return "Em 6 meses";
+    case "12m":
+      return "Em 12 meses";
+    case "24m":
+      return "Em 24 meses";
+    case "ytd":
+      return "Este ano";
+    case "all":
+    case "custom":
+      return "No período";
+  }
+}

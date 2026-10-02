@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { BenchmarkSelect } from "@/features/monthly-returns/benchmark-select";
 import { monthHint } from "@/features/monthly-returns/hints";
@@ -9,15 +9,21 @@ import {
 import { MonthlyReturnsSummary } from "@/features/monthly-returns/monthly-returns-summary";
 import { MonthlyReturnsTable } from "@/features/monthly-returns/monthly-returns-table";
 import { useMonthlyReturns } from "@/features/monthly-returns/use-monthly-returns";
-import { CategorySelect } from "@/shared/components/category-select";
+import { ChartLegend, type LegendEntry } from "@/shared/components/chart-legend";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { PeriodSelect } from "@/shared/components/period-select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
-import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import type { Benchmark } from "@/shared/lib/benchmark";
+import { type Benchmark, benchmarkConfig } from "@/shared/lib/benchmark";
 import { type PeriodChoice, periodRange } from "@/shared/lib/period";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
 
@@ -27,29 +33,48 @@ function isGranularity(value: string): value is Granularity {
   return value in granularityLabels;
 }
 
-export function MonthlyReturnsPage() {
-  const [category, setCategory] = useState<PortfolioCategory>();
-  const [benchmark, setBenchmark] = useState<Benchmark>();
+interface MonthlyReturnsPanelProps {
+  category?: PortfolioCategory;
+  subportfolioId?: number;
+  /** Filtros da tela, antes da referência */
+  filters?: ReactNode;
+}
+
+/** A rentabilidade de cada mês e de cada ano: indicadores, a tabela mês × ano com a
+referência embaixo de cada ano e as barras. */
+export function MonthlyReturnsPanel({
+  category,
+  subportfolioId,
+  filters,
+}: MonthlyReturnsPanelProps) {
+  const [benchmark, setBenchmark] = useState<Benchmark | undefined>("cdi");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
-  const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = useMonthlyReturns({
     category,
     subportfolio_id: subportfolioId,
   });
+  const legend: LegendEntry[] = [
+    { key: "gain", label: "Carteira, alta", color: "var(--gain)", shape: "square" },
+    { key: "loss", label: "Carteira, baixa", color: "var(--loss)", shape: "square" },
+    ...(benchmark
+      ? [
+          {
+            key: benchmark,
+            label: benchmarkConfig[benchmark].label,
+            color: benchmarkConfig[benchmark].color,
+            shape: "square" as const,
+          },
+        ]
+      : []),
+  ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Ano a ano</h1>
-        <p className="text-muted-foreground">
-          A rentabilidade por cota de cada mês e de cada ano, sem contar aportes e resgates.
-        </p>
-      </div>
-
+    <>
       {/* Filtros */}
-      <div className="flex flex-wrap items-end gap-3">
-        <CategorySelect value={category} onChange={setCategory} />
+      <div className="flex flex-wrap items-center gap-2">
+        {filters}
+        <span className="text-caption text-muted-foreground ml-3">Referência</span>
         <BenchmarkSelect value={benchmark} onChange={setBenchmark} />
       </div>
 
@@ -58,33 +83,41 @@ export function MonthlyReturnsPage() {
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : data.years.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Sem dados.</p>
+        <p className="text-caption text-muted-foreground">Sem dados.</p>
       ) : (
         <>
+          {/* Indicadores */}
           <MonthlyReturnsSummary monthly={data} />
 
           {/* Tabela mês × ano */}
           <Card>
             <CardHeader>
               <CardTitle>
-                <MetricHint hint={monthHint}>Rentabilidade mês a mês</MetricHint>
+                <MetricHint hint={monthHint}>Mês a mês</MetricHint>
               </CardTitle>
+              <CardAction>
+                <CardDescription>
+                  O ano mais recente no topo
+                  {benchmark &&
+                    `, com o ${benchmarkConfig[benchmark].label} do mesmo mês logo abaixo`}
+                </CardDescription>
+              </CardAction>
             </CardHeader>
-            <CardContent>
+            <CardContent data-flush>
               <MonthlyReturnsTable monthly={data} benchmark={benchmark} />
-              <p className="text-muted-foreground mt-3 text-xs">
-                Variação de preço mais os proventos, no mês do pagamento.
-              </p>
             </CardContent>
           </Card>
 
-          {/* Gráfico de barras */}
+          {/* Barras */}
           <Card>
-            <CardContent className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-end gap-3">
+            <CardHeader>
+              <CardTitle>{granularity === "month" ? "Cada mês do período" : "Cada ano"}</CardTitle>
+              <CardAction className="flex flex-wrap items-center gap-3">
+                <ChartLegend entries={legend} />
                 <ToggleGroup
-                  variant="outline"
-                  spacing={0}
+                  variant="segmented"
+                  size="sm"
+                  aria-label="Agrupar"
                   value={[granularity]}
                   onValueChange={([value]) => {
                     if (value && isGranularity(value)) setGranularity(value);
@@ -96,18 +129,23 @@ export function MonthlyReturnsPage() {
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>
-                {granularity === "month" && <PeriodSelect value={period} onChange={setPeriod} />}
-              </div>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {granularity === "month" && <PeriodSelect value={period} onChange={setPeriod} />}
               <MonthlyReturnsChart
                 monthly={data}
                 benchmark={benchmark}
                 granularity={granularity}
                 {...periodRange(period)}
               />
+              <p className="text-caption text-muted-foreground">
+                Variação de preço mais os proventos, no mês do pagamento.
+              </p>
             </CardContent>
           </Card>
         </>
       )}
-    </div>
+    </>
   );
 }

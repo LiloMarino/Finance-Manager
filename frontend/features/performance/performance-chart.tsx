@@ -1,21 +1,19 @@
-import { Area, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 
 import type { Performance } from "@/features/performance/use-performance";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import {
   type ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
-import { ColorSwatch } from "@/shared/components/color-swatch";
 import { type Benchmark, benchmarkConfig } from "@/shared/lib/benchmark";
 import { formatDate } from "@/shared/lib/format";
 import { formatSignedPercent, toChartNumber } from "@/types/decimal";
 
 const chartConfig = {
-  cumulative: { label: "Carteira", color: "var(--chart-1)" },
+  cumulative: { label: "Carteira", color: "var(--foreground)" },
   ...benchmarkConfig,
 } satisfies ChartConfig;
 
@@ -28,14 +26,19 @@ function isSeriesKey(value: string): value is SeriesKey {
 const axisPercent = new Intl.NumberFormat("pt-BR", {
   style: "percent",
   maximumFractionDigits: 0,
+  signDisplay: "exceptZero",
 });
 
 interface PerformanceChartProps {
   performance: Performance;
   selected: Benchmark[];
+  /** O nome da linha principal no tooltip: a carteira ou o ativo. */
+  label?: string;
 }
 
-export function PerformanceChart({ performance, selected }: PerformanceChartProps) {
+/** A rentabilidade acumulada no período, com as referências escolhidas tracejadas;
+todas partem do zero no início dele. */
+export function PerformanceChart({ performance, selected, label }: PerformanceChartProps) {
   const shown = performance.benchmarks.filter(
     (benchmark): benchmark is typeof benchmark & { series: Benchmark } =>
       selected.some((series) => series === benchmark.series) &&
@@ -62,14 +65,15 @@ export function PerformanceChart({ performance, selected }: PerformanceChartProp
   });
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
-      <ComposedChart data={data} margin={{ left: 4, right: 4 }}>
+    <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
+      <LineChart data={data} margin={{ left: 4, right: 8, top: 8 }}>
         <CartesianGrid vertical={false} />
+        <ReferenceLine y={0} stroke="var(--border-strong)" />
         <XAxis
           dataKey="day"
           tickLine={false}
           axisLine={false}
-          minTickGap={32}
+          minTickGap={48}
           tickFormatter={(day: string) => formatDate(day).slice(3)}
         />
         <YAxis
@@ -87,29 +91,26 @@ export function PerformanceChart({ performance, selected }: PerformanceChartProp
               }}
               formatter={(_, name, item) => {
                 const key = String(name);
-                const label: unknown = item.payload.labels?.[key];
+                const value: unknown = item.payload.labels?.[key];
                 return (
                   <span className="flex w-full items-center justify-between gap-4">
                     <span className="flex items-center gap-2">
-                      <ColorSwatch shape="square" color={`var(--color-${key})`} />
-                      {isSeriesKey(key) ? chartConfig[key].label : key}
+                      <ColorSwatch
+                        shape={key === "cumulative" ? "line" : "dashed"}
+                        color={`var(--color-${key})`}
+                      />
+                      {key === "cumulative" && label
+                        ? label
+                        : isSeriesKey(key)
+                          ? chartConfig[key].label
+                          : key}
                     </span>
-                    <span className="tabular-nums">{String(label)}</span>
+                    <span className="tabular-nums">{String(value)}</span>
                   </span>
                 );
               }}
             />
           }
-        />
-        {shown.length > 0 && <ChartLegend content={<ChartLegendContent />} itemSorter={null} />}
-        <Area
-          dataKey="cumulative"
-          type="monotone"
-          stroke="var(--color-cumulative)"
-          fill="var(--color-cumulative)"
-          fillOpacity={0.15}
-          strokeWidth={2}
-          isAnimationActive={false}
         />
         {shown.map((benchmark) => (
           <Line
@@ -118,11 +119,20 @@ export function PerformanceChart({ performance, selected }: PerformanceChartProp
             type="monotone"
             stroke={`var(--color-${benchmark.series})`}
             strokeWidth={2}
+            strokeDasharray="5 4"
             dot={false}
             isAnimationActive={false}
           />
         ))}
-      </ComposedChart>
+        <Line
+          dataKey="cumulative"
+          type="monotone"
+          stroke="var(--color-cumulative)"
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </LineChart>
     </ChartContainer>
   );
 }

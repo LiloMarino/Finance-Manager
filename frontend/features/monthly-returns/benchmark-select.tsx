@@ -8,10 +8,10 @@ import {
 import { type Benchmark, benchmarkConfig, benchmarks } from "@/shared/lib/benchmark";
 
 const items = [
-  { value: null, label: "Sem referência" },
+  { value: null, label: "Nenhuma" },
   ...benchmarks.map((benchmark) => ({
     value: benchmark,
-    label: `Comparar com ${benchmarkConfig[benchmark].label}`,
+    label: benchmarkConfig[benchmark].label,
   })),
 ];
 
@@ -27,7 +27,7 @@ export function BenchmarkSelect({ value, onChange }: BenchmarkSelectProps) {
       value={value ?? null}
       onValueChange={(selected) => onChange(selected ?? undefined)}
     >
-      <SelectTrigger className="w-44" aria-label="Referência">
+      <SelectTrigger size="sm" className="w-32" aria-label="Referência">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
