@@ -39,13 +39,23 @@ function amountInput(value: DecimalString | null | undefined): string {
   return value ? toMoneyInput(value) : "";
 }
 
-export function DarfPaymentDialog({ month }: { month: MonthlyTax }) {
+interface DarfPaymentDialogProps {
+  month: MonthlyTax;
+  /** No card do DARF, o botão de registrar é o destaque; na tabela, é um botão comum. */
+  prominent?: boolean;
+}
+
+export function DarfPaymentDialog({ month, prominent = false }: DarfPaymentDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant={month.payment ? "ghost" : "outline"} size="sm" />}>
-        {month.payment ? "Editar pagamento" : "Marcar pago"}
+      <DialogTrigger
+        render={
+          <Button variant={month.payment ? "ghost" : prominent ? "default" : "outline"} size="sm" />
+        }
+      >
+        {month.payment ? "Editar pagamento" : "Registrar pagamento"}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -3106,7 +3106,9 @@ export interface components {
         /**
          * PeriodReportDTO
          * @description Um mês ou um ano: as posições na abertura (fim do dia anterior a `start`) e
-         *     no fechamento (fim de `end`), e a apuração de cada mês do recorte.
+         *     no fechamento (fim de `end`), e a apuração de cada mês do recorte. Os totais
+         *     contam os DARFs do recorte: o imposto dos meses com DARF, o que já foi pago e o
+         *     que falta pagar, cada um com a quantidade de DARFs.
          */
         PeriodReportDTO: {
             /**
@@ -3125,6 +3127,27 @@ export interface components {
             closing: components["schemas"]["PeriodPositionDTO"][];
             /** Months */
             months: components["schemas"]["MonthlyTaxDTO"][];
+            /**
+             * Darf Total
+             * Format: decimal
+             */
+            darf_total: DecimalString;
+            /** Darf Count */
+            darf_count: number;
+            /**
+             * Paid Total
+             * Format: decimal
+             */
+            paid_total: DecimalString;
+            /** Paid Count */
+            paid_count: number;
+            /**
+             * To Pay Total
+             * Format: decimal
+             */
+            to_pay_total: DecimalString;
+            /** To Pay Count */
+            to_pay_count: number;
         };
         /**
          * PlanDTO

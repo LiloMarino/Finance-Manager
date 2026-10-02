@@ -37,9 +37,9 @@ export const tradeTypeLabels: Record<TradeType, string> = {
 };
 
 export const darfStatusLabels: Record<DarfStatus, string> = {
-  paid: "DARF pago",
-  due: "DARF a pagar",
-  overdue: "DARF vencido",
+  paid: "Pago",
+  due: "A pagar",
+  overdue: "Vencido",
   carried: "Acumulando",
   exempt: "Isento",
   compensated: "Compensado",
@@ -47,9 +47,9 @@ export const darfStatusLabels: Record<DarfStatus, string> = {
 };
 
 export const darfStatusVariants: Record<DarfStatus, BadgeVariant> = {
-  paid: "secondary",
-  due: "default",
-  overdue: "destructive",
+  paid: "gain",
+  due: "warning",
+  overdue: "critical",
   carried: "outline",
   exempt: "outline",
   compensated: "outline",

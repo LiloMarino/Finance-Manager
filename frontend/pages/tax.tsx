@@ -2,62 +2,85 @@ import { useSearchParams } from "react-router-dom";
 
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
-import { DarfCard } from "@/features/tax/darf-card";
+import { CategoryResultCard, DarfCard, PoolsCard } from "@/features/tax/darf-card";
 import { IrpfReport } from "@/features/tax/irpf-report";
 import { formatMonth } from "@/features/tax/labels";
-import { LossesSection } from "@/features/tax/losses-section";
 import { MonthsTable } from "@/features/tax/months-table";
 import { PeriodNavigator } from "@/features/tax/period-navigator";
 import { PositionsSection } from "@/features/tax/positions-section";
 import { type TaxParams, isTaxTab, readTaxParams, writeTaxParams } from "@/features/tax/tax-params";
 import { type MonthlyTax, useIrpfReport, useTaxMonths, useTaxPeriod } from "@/features/tax/use-tax";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { YearToggle } from "@/features/tax/year-toggle";
+import { Metric, MetricStrip } from "@/shared/components/metric";
+import { Money } from "@/shared/components/money";
+import { PageHeader } from "@/shared/components/page-header";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { monthLabel } from "@/shared/lib/months";
+
+function isoDate(year: number, month: number, day: number): string {
+  return new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
+}
 
 export function TaxPage() {
   const { data, isPending, error } = useTaxMonths();
+  const today = new Date();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const current = readTaxParams(searchParams, today);
+
+  // A aba e o período moram na URL: as setas, a grade e o voltar do navegador andam
+  // pelo histórico, e um link abre a mesma tela
+  const go = (next: Partial<TaxParams>) =>
+    setSearchParams((params) => writeTaxParams(params, { ...current, ...next }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Fiscal</h1>
-        <p className="text-muted-foreground">
-          Apuração mensal do IR sobre renda variável, pelas regras da Receita, com o DARF de cada
-          mês.
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          A apuração ainda não considera o custo atribuído à bonificação, as taxas da nota de
-          corretagem nem o IRRF retido na fonte.
-        </p>
-      </div>
+    <Tabs
+      value={current.tab}
+      onValueChange={(value) => {
+        if (isTaxTab(value)) go({ tab: value });
+      }}
+      className="gap-6"
+    >
+      <PageHeader
+        title="Fiscal"
+        description="Apuração mensal do IR sobre renda variável, pelas regras da Receita, com o DARF de cada mês. Ainda sem o custo da bonificação, as taxas da nota e o IRRF retido: o imposto calculado só pode sair maior que o devido."
+      >
+        <TabsList>
+          <TabsTrigger value="monthly">Mês</TabsTrigger>
+          <TabsTrigger value="all">Todos os meses</TabsTrigger>
+          <TabsTrigger value="irpf">IRPF</TabsTrigger>
+        </TabsList>
+      </PageHeader>
 
       {isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : (
-        <TaxTabs months={data} />
+        <TaxContent months={data} current={current} go={go} today={today} />
       )}
-    </div>
+    </Tabs>
   );
 }
 
-function isoDate(year: number, month: number, day: number): string {
-  return new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
+interface TaxContentProps {
+  months: MonthlyTax[];
+  current: TaxParams;
+  go: (next: Partial<TaxParams>) => void;
+  today: Date;
 }
 
-/** A aba e o período moram na URL: as setas, a grade e o voltar do navegador
-andam pelo histórico, e um link abre a mesma tela. */
-function TaxTabs({ months }: { months: MonthlyTax[] }) {
-  const today = new Date();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const current = readTaxParams(searchParams, today);
-  const { tab, year, month } = current;
-
-  const go = (next: Partial<TaxParams>) =>
-    setSearchParams((params) => writeTaxParams(params, { ...current, ...next }));
+function TaxContent({ months, current, go, today }: TaxContentProps) {
+  const { year, month } = current;
 
   // Anos navegáveis: da primeira apuração até o ano corrente
   const firstYear = months[0]?.year ?? today.getFullYear();
@@ -68,54 +91,34 @@ function TaxTabs({ months }: { months: MonthlyTax[] }) {
     go({ tab: "monthly", year: item.year, month: item.month });
 
   return (
-    <Tabs
-      value={tab}
-      onValueChange={(value) => {
-        if (isTaxTab(value)) go({ tab: value });
-      }}
-      className="gap-6"
-    >
-      <TabsList>
-        <TabsTrigger value="monthly">Mensal</TabsTrigger>
-        <TabsTrigger value="yearly">Anual</TabsTrigger>
-        <TabsTrigger value="all">Todos os meses</TabsTrigger>
-        <TabsTrigger value="irpf">IRPF</TabsTrigger>
-      </TabsList>
-
+    <>
       <TabsContent value="monthly" className="flex flex-col gap-6">
         <PeriodNavigator years={years} year={year} month={month} onChange={go} />
-        <PeriodView year={year} month={month} />
+        <MonthView year={year} month={month} />
       </TabsContent>
 
-      <TabsContent value="yearly" className="flex flex-col gap-6">
-        <PeriodNavigator years={years} year={year} onChange={(next) => go({ year: next.year })} />
-        <PeriodView year={year} onSelectMonth={openMonth} />
-      </TabsContent>
-
-      <TabsContent value="all">
-        <MonthsTable months={[...months].reverse()} onSelect={openMonth} />
+      <TabsContent value="all" className="flex flex-col gap-6">
+        <YearToggle years={years} year={year} onChange={(next) => go({ year: next })} />
+        <YearView year={year} months={months} onSelect={openMonth} />
       </TabsContent>
 
       <TabsContent value="irpf" className="flex flex-col gap-6">
-        <PeriodNavigator years={years} year={year} onChange={(next) => go({ year: next.year })} />
+        <div className="flex items-center gap-2">
+          <span className="text-caption text-muted-foreground">Declaração de</span>
+          <YearToggle years={years} year={year} onChange={(next) => go({ year: next })} />
+        </div>
         <IrpfView year={year} />
       </TabsContent>
-    </Tabs>
+    </>
   );
 }
 
-interface PeriodViewProps {
-  year: number;
-  /** Sem `month`, o ano inteiro. */
-  month?: number;
-  onSelectMonth?: (month: MonthlyTax) => void;
-}
-
-function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
+function MonthView({ year, month }: { year: number; month: number }) {
   const report = useTaxPeriod(year, month);
-  const start = isoDate(year, month ?? 1, 1);
-  const end = month === undefined ? isoDate(year, 12, 31) : isoDate(year, month + 1, 0);
-  const operations = useOperations({ start, end });
+  const operations = useOperations({
+    start: isoDate(year, month, 1),
+    end: isoDate(year, month + 1, 0),
+  });
 
   if (report.error) {
     return <span className="text-destructive">{getApiErrorMessage(report.error)}</span>;
@@ -124,22 +127,37 @@ function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
     return <Skeleton className="h-40 w-full" />;
   }
 
-  const byMonth = month !== undefined;
   const [assessed] = report.data.months;
-  const lastMonth = report.data.months.at(-1);
 
   return (
-    <div className="flex flex-col gap-6">
-      <PositionsSection
-        title={byMonth ? "Posições no início do mês" : "Posições no início do ano"}
-        positions={report.data.opening}
-      />
+    <>
+      {assessed ? (
+        <>
+          {/* O DARF primeiro, e o caminho até ele */}
+          <DarfCard month={assessed} />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <CategoryResultCard month={assessed} />
+            <PoolsCard month={assessed} />
+          </div>
+        </>
+      ) : (
+        <p className="text-muted-foreground">
+          Sem apuração em {formatMonth(year, month)}: o mês está fora do histórico de operações.
+        </p>
+      )}
 
+      {/* Operações do mês */}
       <Card>
         <CardHeader>
-          <CardTitle>Operações</CardTitle>
+          <CardTitle>Operações do mês</CardTitle>
+          <CardAction>
+            <CardDescription>
+              {operations.data?.length ?? 0}{" "}
+              {operations.data?.length === 1 ? "operação" : "operações"}
+            </CardDescription>
+          </CardAction>
         </CardHeader>
-        <CardContent>
+        <CardContent data-flush>
           {operations.isPending ? (
             <Skeleton className="h-24 w-full" />
           ) : operations.error ? (
@@ -150,39 +168,65 @@ function PeriodView({ year, month, onSelectMonth }: PeriodViewProps) {
         </CardContent>
       </Card>
 
-      <PositionsSection
-        title={byMonth ? "Posições no fim do mês" : "Posições no fim do ano"}
-        positions={report.data.closing}
-      />
+      <PositionsSection report={report.data} period="mês" />
+    </>
+  );
+}
 
-      {byMonth ? (
-        assessed ? (
-          <DarfCard month={assessed} />
-        ) : (
-          <p className="text-muted-foreground">
-            Sem apuração em {formatMonth(year, month)}: o mês está fora do histórico de operações.
-          </p>
-        )
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumo de DARFs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MonthsTable months={report.data.months} onSelect={onSelectMonth} />
-          </CardContent>
-        </Card>
-      )}
+interface YearViewProps {
+  year: number;
+  months: MonthlyTax[];
+  onSelect: (month: MonthlyTax) => void;
+}
 
-      {lastMonth && (
-        <LossesSection
-          title={
-            byMonth ? "Prejuízo a compensar no fim do mês" : "Prejuízo a compensar no fim do ano"
-          }
-          pools={lastMonth.pools}
+function YearView({ year, months, onSelect }: YearViewProps) {
+  const report = useTaxPeriod(year);
+
+  if (report.error) {
+    return <span className="text-destructive">{getApiErrorMessage(report.error)}</span>;
+  }
+  if (report.isPending) {
+    return <Skeleton className="h-40 w-full" />;
+  }
+
+  const { data } = report;
+  const firstUnpaid = data.months.find(
+    (item) => item.status === "due" || item.status === "overdue",
+  );
+
+  return (
+    <>
+      <MetricStrip>
+        <Metric
+          label={`Imposto em ${year}`}
+          size="lg"
+          value={<Money value={data.darf_total} />}
+          detail={`${data.darf_count} ${data.darf_count === 1 ? "DARF" : "DARFs"}`}
         />
-      )}
-    </div>
+        <Metric
+          label="Pago"
+          value={<Money value={data.paid_total} />}
+          detail={`${data.paid_count} de ${data.darf_count} DARFs`}
+        />
+        <Metric
+          label="A pagar"
+          value={<Money value={data.to_pay_total} />}
+          tone={data.to_pay_count > 0 ? "text-destructive" : ""}
+          detail={
+            firstUnpaid
+              ? `${monthLabel(firstUnpaid.year, firstUnpaid.month)}${firstUnpaid.status === "overdue" ? ", vencido" : ""}`
+              : "nada em aberto"
+          }
+        />
+      </MetricStrip>
+
+      <MonthsTable
+        months={months
+          .filter((item) => item.year === year && item.categories.length > 0)
+          .toReversed()}
+        onSelect={onSelect}
+      />
+    </>
   );
 }
 

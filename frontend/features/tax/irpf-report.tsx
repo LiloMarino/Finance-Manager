@@ -8,9 +8,10 @@ import {
   lossPoolLabels,
 } from "@/features/tax/labels";
 import type { IrpfReport as IrpfReportData } from "@/features/tax/use-tax";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -19,10 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { Money } from "@/shared/components/money";
 import { formatDate } from "@/shared/lib/format";
 import { incomeTypeLabels } from "@/shared/lib/labels";
 import { signTone } from "@/shared/lib/sign";
-import { formatBRL, formatSignedBRL } from "@/types/decimal";
 
 type IncomeItem = IrpfReportData["income"][number];
 
@@ -59,9 +60,13 @@ function IncomeTable({ items, withCode }: { items: IncomeItem[]; withCode: boole
               </TableCell>
             )}
             <CnpjCell item={item} />
-            <TableCell className="font-medium">{item.ticker}</TableCell>
+            <TableCell>
+              <span className="text-ticker font-mono">{item.ticker}</span>
+            </TableCell>
             <TableCell>{incomeTypeLabels[item.income_type]}</TableCell>
-            <TableCell className="text-right tabular-nums">{formatBRL(item.amount)}</TableCell>
+            <TableCell className="text-right tabular-nums">
+              <Money value={item.amount} />
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -71,67 +76,80 @@ function IncomeTable({ items, withCode }: { items: IncomeItem[]; withCode: boole
 
 export function IrpfReport({ report }: { report: IrpfReportData }) {
   const { year } = report;
+  const assetsWithoutCnpj = report.assets.filter((asset) => asset.cnpj === null).length;
 
   return (
     <div className="flex flex-col gap-6">
       {/* Aviso de conferência */}
-      <Alert>
+      <Alert variant="warning">
         <TriangleAlert />
         <AlertTitle>Confira antes de declarar</AlertTitle>
         <AlertDescription>
-          Este relatório é um cálculo do app a partir do que está cadastrado, e pode ter erros. Para
-          a declaração, a fonte é o informe de rendimentos da corretora: use este relatório para
-          cruzar os valores e achar o que falta ou diverge.
+          Este relatório é um cálculo do app a partir do que está cadastrado. A fonte da declaração
+          é o informe de rendimentos da corretora: use este para cruzar os valores e achar o que
+          falta.
         </AlertDescription>
+        {assetsWithoutCnpj > 0 && (
+          <AlertAction>
+            <Button variant="outline" size="sm" render={<Link to="/assets" />}>
+              {assetsWithoutCnpj} ativo{assetsWithoutCnpj === 1 ? "" : "s"} sem CNPJ
+            </Button>
+          </AlertAction>
+        )}
       </Alert>
 
       {/* Bens e Direitos */}
       <Card>
         <CardHeader>
           <CardTitle>Bens e Direitos</CardTitle>
+          <CardAction>
+            <span className="text-caption text-muted-foreground">
+              Pelo custo de aquisição, nunca pelo valor de mercado
+            </span>
+          </CardAction>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-muted-foreground text-sm">
-            Um item por ativo, pelo custo de aquisição (quantidade × preço médio), nunca pelo valor
-            de mercado. Ativo comprado e vendido dentro do ano não entra.
-          </p>
+        <CardContent data-flush>
           {report.assets.length === 0 ? (
-            <p className="text-muted-foreground">Nenhum bem em 31/12.</p>
+            <div className="px-5 py-3">
+              <p className="text-muted-foreground">Nenhum bem em 31/12.</p>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Grupo / código</TableHead>
-                  <TableHead>CNPJ</TableHead>
-                  <TableHead>Discriminação</TableHead>
-                  <TableHead className="text-right">31/12/{year - 1}</TableHead>
-                  <TableHead className="text-right">31/12/{year}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {report.assets.map((asset) => (
-                  <TableRow key={asset.asset_id}>
-                    <TableCell className="tabular-nums">
-                      {asset.group} / {asset.code}
-                    </TableCell>
-                    <TableCell className="tabular-nums">
-                      {asset.cnpj ?? (
-                        <Link to={`/assets/${asset.asset_id}`}>
-                          <Badge variant="destructive">sem CNPJ</Badge>
-                        </Link>
-                      )}
-                    </TableCell>
-                    <TableCell>{asset.description}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatBRL(asset.previous_value)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatBRL(asset.current_value)}
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Grupo / código</TableHead>
+                    <TableHead>CNPJ</TableHead>
+                    <TableHead>Discriminação</TableHead>
+                    <TableHead className="text-right">31/12/{year - 1}</TableHead>
+                    <TableHead className="text-right">31/12/{year}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {report.assets.map((asset) => (
+                    <TableRow key={asset.asset_id}>
+                      <TableCell className="tabular-nums">
+                        {asset.group} / {asset.code}
+                      </TableCell>
+                      <TableCell className="tabular-nums">
+                        {asset.cnpj ?? (
+                          <Link to={`/assets/${asset.asset_id}`}>
+                            <Badge variant="destructive">sem CNPJ</Badge>
+                          </Link>
+                        )}
+                      </TableCell>
+                      <TableCell>{asset.description}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        <Money value={asset.previous_value} />
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        <Money value={asset.current_value} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           )}
         </CardContent>
       </Card>
@@ -141,25 +159,30 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         <CardHeader>
           <CardTitle>Rendimentos Isentos e Não Tributáveis · código 20</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-muted-foreground text-sm">
-            Lucro com ações nos meses em que o total vendido de ações não passou de R$ 20 mil.
-          </p>
+        <CardContent data-flush>
           {report.exempt_months.length === 0 ? (
-            <p className="text-muted-foreground">Nenhum lucro isento no ano.</p>
+            <div className="px-5 py-3">
+              <p className="text-muted-foreground">Nenhum lucro isento no ano.</p>
+            </div>
           ) : (
-            <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            <div className="grid gap-4 lg:grid-cols-2 px-5 py-3">
               {report.exempt_months.map((item) => (
-                <div key={item.month}>
-                  <dt className="text-muted-foreground">{formatMonth(year, item.month)}</dt>
-                  <dd className="tabular-nums">{formatBRL(item.profit)}</dd>
+                <div key={item.month} className="grid grid-cols-3 gap-3">
+                  <span className="text-caption text-muted-foreground">
+                    {formatMonth(year, item.month)}
+                  </span>
+                  <span className="tabular-nums">
+                    <Money value={item.profit} />
+                  </span>
                 </div>
               ))}
-              <div>
-                <dt className="text-muted-foreground">Total do ano</dt>
-                <dd className="font-medium tabular-nums">{formatBRL(report.exempt_total)}</dd>
+              <div className="grid grid-cols-3 gap-3">
+                <span className="text-caption text-muted-foreground">Total do ano</span>
+                <span className="tabular-nums font-semibold">
+                  <Money value={report.exempt_total} />
+                </span>
               </div>
-            </dl>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -168,13 +191,13 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
       <Card>
         <CardHeader>
           <CardTitle>Renda Variável · demonstrativo mensal</CardTitle>
+          <CardAction>
+            <span className="text-caption text-muted-foreground">
+              Sem o lucro isento; FII na ficha própria
+            </span>
+          </CardAction>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-muted-foreground text-sm">
-            Resultado líquido de cada mês, sem o lucro isento. Operações comuns reúnem ações, ETF e
-            BDR; o FII vai na ficha própria de fundos imobiliários. O imposto pago é o DARF{" "}
-            {report.darf_code} registrado como pago.
-          </p>
+        <CardContent data-flush>
           <Table>
             <TableHeader>
               <TableRow>
@@ -191,22 +214,26 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
                 <TableRow key={item.month}>
                   <TableCell>{formatMonth(year, item.month)}</TableCell>
                   <TableCell variant={signTone(item.common)} className="text-right tabular-nums">
-                    {formatSignedBRL(item.common)}
+                    <Money value={item.common} signed />
                   </TableCell>
                   <TableCell variant={signTone(item.day_trade)} className="text-right tabular-nums">
-                    {formatSignedBRL(item.day_trade)}
+                    <Money value={item.day_trade} signed />
                   </TableCell>
                   <TableCell variant={signTone(item.fii)} className="text-right tabular-nums">
-                    {formatSignedBRL(item.fii)}
+                    <Money value={item.fii} signed />
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{formatBRL(item.tax)}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <Money value={item.tax} />
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {item.paid_amount && item.paid_on ? (
                       <span title={`Pago em ${formatDate(item.paid_on)}`}>
-                        {formatBRL(item.paid_amount)}
+                        <Money value={item.paid_amount} />
                       </span>
                     ) : item.darf_amount ? (
-                      <Badge variant="destructive">{formatBRL(item.darf_amount)} não pago</Badge>
+                      <Badge variant="destructive">
+                        <Money value={item.darf_amount} /> não pago
+                      </Badge>
                     ) : (
                       "—"
                     )}
@@ -215,6 +242,9 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
               ))}
             </TableBody>
           </Table>
+          <p className="text-caption text-muted-foreground px-5 pt-3">
+            O imposto pago é o DARF {report.darf_code} registrado como pago.
+          </p>
         </CardContent>
       </Card>
 
@@ -223,18 +253,24 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         <CardHeader>
           <CardTitle>Prejuízo a compensar em 31/12/{year}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent data-flush>
           {report.losses.length === 0 ? (
-            <p className="text-muted-foreground">Sem apuração no ano.</p>
+            <div className="px-5 py-3">
+              <p className="text-muted-foreground">Sem apuração no ano.</p>
+            </div>
           ) : (
-            <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-2 px-5 py-3">
               {report.losses.map((loss) => (
-                <div key={loss.pool}>
-                  <dt className="text-muted-foreground">{lossPoolLabels[loss.pool]}</dt>
-                  <dd className="tabular-nums">{formatBRL(loss.amount)}</dd>
+                <div key={loss.pool} className="grid grid-cols-3 gap-3">
+                  <span className="text-caption text-muted-foreground">
+                    {lossPoolLabels[loss.pool]}
+                  </span>
+                  <span className="tabular-nums">
+                    <Money value={loss.amount} />
+                  </span>
                 </div>
               ))}
-            </dl>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -247,16 +283,20 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
             <CardHeader>
               <CardTitle>{incomeFormLabels[form]} · proventos</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <p className="text-muted-foreground text-sm">
-                {form === "exempt"
-                  ? "Um item por fonte pagadora, pelo valor recebido no ano."
-                  : "Um item por fonte pagadora, pelo valor líquido: o IR já foi retido na fonte."}
-              </p>
+            <CardContent data-flush>
               {items.length === 0 ? (
-                <p className="text-muted-foreground">Nenhum provento no ano.</p>
+                <div className="px-5 py-3">
+                  <p className="text-muted-foreground">Nenhum provento no ano.</p>
+                </div>
               ) : (
-                <IncomeTable items={items} withCode />
+                <>
+                  <IncomeTable items={items} withCode />
+                  <p className="text-caption text-muted-foreground px-5 pt-3">
+                    {form === "exempt"
+                      ? "Um item por fonte pagadora, pelo valor recebido no ano."
+                      : "Um item por fonte pagadora, pelo valor líquido: o IR já foi retido na fonte."}
+                  </p>
+                </>
               )}
             </CardContent>
           </Card>
@@ -269,15 +309,15 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
           <CardHeader>
             <CardTitle>Proventos sem ficha automática</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <p className="text-muted-foreground text-sm">
-              O app não sabe em que ficha eles entram, como o dividendo de BDR, que é tributado pelo
-              carnê-leão. Confira no informe da corretora.
-            </p>
+          <CardContent data-flush>
             <IncomeTable
               items={report.income.filter((item) => item.form === null)}
               withCode={false}
             />
+            <p className="text-caption text-muted-foreground px-5 pt-3">
+              O app não sabe em que ficha eles entram, como o dividendo de BDR, que é tributado pelo
+              carnê-leão. Confira no informe da corretora.
+            </p>
           </CardContent>
         </Card>
       )}

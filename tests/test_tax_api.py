@@ -240,3 +240,25 @@ def test_irpf_report_puts_each_income_in_its_form(
         ("ABCD3", "dividend", "exempt", "09", "15"),
         ("EFGH11", "distribution", "exempt", "26", "20"),
     ]
+
+
+def test_year_period_totals_split_paid_and_unpaid_darfs(
+    api: TestClient, session: Session
+) -> None:
+    """O ano soma o imposto dos meses com DARF, separa o que já foi pago do que falta e
+    conta os DARFs de cada parte."""
+    _etf_with_gain(session)
+
+    before = api.get("/api/tax/period", params={"year": 2024}).json()
+    assert Decimal(before["darf_total"]) == Decimal(750)
+    assert before["darf_count"] == 1
+    assert Decimal(before["to_pay_total"]) == Decimal(750)
+    assert Decimal(before["paid_total"]) == Decimal(0)
+
+    api.put(
+        "/api/tax/darf/2024/2/payment", json={"paid_on": "2024-03-20", "amount": "750"}
+    )
+    after = api.get("/api/tax/period", params={"year": 2024}).json()
+    assert Decimal(after["paid_total"]) == Decimal(750)
+    assert after["paid_count"] == 1
+    assert after["to_pay_count"] == 0

@@ -3,7 +3,7 @@ export interface Period {
   month: number;
 }
 
-export const taxTabs = ["monthly", "yearly", "all", "irpf"] as const;
+export const taxTabs = ["monthly", "all", "irpf"] as const;
 export type TaxTab = (typeof taxTabs)[number];
 
 export function isTaxTab(value: string): value is TaxTab {

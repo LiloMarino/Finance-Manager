@@ -15,6 +15,9 @@ const cardVariants = cva(
         // Pendência que pede ação: a borda ganha o tom de atenção
         warning:
           "border border-warning/40 shadow-card",
+        // O que está vencido ou vence: a borda ganha o tom de perigo
+        critical:
+          "border border-destructive/45 shadow-card",
         // O melhor da comparação: a borda ganha o tom de alta
         positive:
           "border border-gain shadow-card",

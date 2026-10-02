@@ -81,13 +81,21 @@ class PeriodPositionDTO(BaseDTO):
 
 class PeriodReportDTO(BaseDTO):
     """Um mês ou um ano: as posições na abertura (fim do dia anterior a `start`) e
-    no fechamento (fim de `end`), e a apuração de cada mês do recorte."""
+    no fechamento (fim de `end`), e a apuração de cada mês do recorte. Os totais
+    contam os DARFs do recorte: o imposto dos meses com DARF, o que já foi pago e o
+    que falta pagar, cada um com a quantidade de DARFs."""
 
     start: date
     end: date
     opening: list[PeriodPositionDTO]
     closing: list[PeriodPositionDTO]
     months: list[MonthlyTaxDTO]
+    darf_total: DecimalStr
+    darf_count: int
+    paid_total: DecimalStr
+    paid_count: int
+    to_pay_total: DecimalStr
+    to_pay_count: int
 
 
 class DarfPaymentInDTO(BaseDTO):

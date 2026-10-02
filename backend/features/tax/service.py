@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import calendar
 from datetime import date, timedelta
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import IndexSeries
+from backend.core.enum import DarfStatus, IndexSeries
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, DarfPayment
 from backend.domain.business_days import BusinessCalendar
@@ -24,6 +25,8 @@ from backend.features.tax.dto import (
 from backend.repository.market import index_rates
 from backend.repository.operations import operation_records
 from backend.repository.tickers import ticker_history
+
+ZERO = Decimal(0)
 
 
 class TaxPeriodNotFoundError(FinanceError):
@@ -111,17 +114,36 @@ def period_report(
     start = date(year, month or 1, 1)
     last_month = month or 12
     end = date(year, last_month, calendar.monthrange(year, last_month)[1])
+    months = [
+        item
+        for item in list_months(session, today)
+        if item.year == year and (month is None or item.month == month)
+    ]
+    with_darf = [item for item in months if item.darf_amount]
+    paid = [item for item in with_darf if item.status is DarfStatus.PAID]
+    to_pay = [
+        item
+        for item in with_darf
+        if item.status in (DarfStatus.DUE, DarfStatus.OVERDUE)
+    ]
     return PeriodReportDTO(
         start=start,
         end=end,
         opening=positions_at(session, start - timedelta(days=1)),
         closing=positions_at(session, end),
-        months=[
-            item
-            for item in list_months(session, today)
-            if item.year == year and (month is None or item.month == month)
-        ],
+        months=months,
+        darf_total=_total(with_darf),
+        darf_count=len(with_darf),
+        paid_total=_total(paid),
+        paid_count=len(paid),
+        to_pay_total=_total(to_pay),
+        to_pay_count=len(to_pay),
     )
+
+
+def _total(months: list[MonthlyTaxDTO]) -> Decimal:
+    """A soma dos DARFs dos meses."""
+    return sum((item.darf_amount or ZERO for item in months), ZERO)
 
 
 def _assessed_month(session: Session, year: int, month: int, today: date) -> MonthlyTax:
