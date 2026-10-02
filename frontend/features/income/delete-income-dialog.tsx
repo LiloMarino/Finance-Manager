@@ -12,10 +12,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
+import { Money } from "@/shared/components/money";
 import { Button } from "@/shared/components/ui/button";
 import { formatDate } from "@/shared/lib/format";
 import { incomeTypeLabels } from "@/shared/lib/labels";
-import { formatBRL } from "@/types/decimal";
 
 export function DeleteIncomeDialog({ event }: { event: IncomeEvent }) {
   const remove = useDeleteIncome();
@@ -31,8 +31,8 @@ export function DeleteIncomeDialog({ event }: { event: IncomeEvent }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Apagar provento?</AlertDialogTitle>
           <AlertDialogDescription>
-            {incomeTypeLabels[event.income_type]} de {event.ticker} de {formatBRL(event.amount)},
-            pago em {formatDate(event.payment_date)}.
+            {incomeTypeLabels[event.income_type]} de {event.ticker} de{" "}
+            <Money value={event.amount} />, pago em {formatDate(event.payment_date)}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { Money } from "@/shared/components/money";
 import { ColorSwatch } from "@/shared/components/color-swatch";
 import { TickerLabel } from "@/shared/components/ticker-label";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -16,7 +17,7 @@ import { get, getApiErrorMessage } from "@/shared/lib/api";
 import { formatDate } from "@/shared/lib/format";
 import { monthLabel } from "@/shared/lib/months";
 import { queryKeys } from "@/shared/lib/query-keys";
-import { formatBRL, formatQuantity, formatRate } from "@/types/decimal";
+import { formatQuantity, formatRate } from "@/types/decimal";
 import type { components } from "@/types/openapi.generated";
 
 type LatestIndex = components["schemas"]["LatestIndexDTO"];
@@ -115,7 +116,7 @@ export function MarketPanel() {
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      {price.close ? formatBRL(price.close) : "—"}
+                      {price.close ? <Money value={price.close} /> : "—"}
                     </TableCell>
                     <TableCell variant="muted" className="text-right">
                       {price.price_date ? formatDate(price.price_date) : "sem cotação"}

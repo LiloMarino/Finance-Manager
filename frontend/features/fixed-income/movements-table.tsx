@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
+import { Money } from "@/shared/components/money";
 import { Button } from "@/shared/components/ui/button";
 import {
   Table,
@@ -23,7 +24,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
-import { formatBRL } from "@/types/decimal";
 
 export function MovementsTable({ movements }: { movements: Movement[] }) {
   if (movements.length === 0) {
@@ -45,7 +45,9 @@ export function MovementsTable({ movements }: { movements: Movement[] }) {
           <TableRow key={movement.id}>
             <TableCell className="tabular-nums">{formatDate(movement.movement_date)}</TableCell>
             <TableCell>{movementTypeLabels[movement.movement_type]}</TableCell>
-            <TableCell className="text-right tabular-nums">{formatBRL(movement.amount)}</TableCell>
+            <TableCell className="text-right tabular-nums">
+              <Money value={movement.amount} />
+            </TableCell>
             <TableCell className="text-right">
               <DeleteMovementDialog movement={movement} />
             </TableCell>
@@ -70,7 +72,7 @@ function DeleteMovementDialog({ movement }: { movement: Movement }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Apagar movimentação?</AlertDialogTitle>
           <AlertDialogDescription>
-            {movementTypeLabels[movement.movement_type]} de {formatBRL(movement.amount)} em{" "}
+            {movementTypeLabels[movement.movement_type]} de <Money value={movement.amount} /> em{" "}
             {formatDate(movement.movement_date)}. O valor do título é recalculado sem ela.
           </AlertDialogDescription>
         </AlertDialogHeader>

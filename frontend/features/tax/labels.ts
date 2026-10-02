@@ -1,7 +1,7 @@
 import type { MonthlyTax } from "@/features/tax/use-tax";
 import type { badgeVariants } from "@/shared/components/ui/badge";
 import { formatDate } from "@/shared/lib/format";
-import { formatBRL } from "@/types/decimal";
+import type { useValueFormat } from "@/shared/hooks/use-value-format";
 import type { components } from "@/types/openapi.generated";
 import type { VariantProps } from "class-variance-authority";
 
@@ -56,24 +56,27 @@ export const darfStatusVariants: Record<DarfStatus, BadgeVariant> = {
   none: "outline",
 };
 
-/** O porquê do status, numa frase. */
-export function describeStatus(month: MonthlyTax): string {
+/** O porquê do status, numa frase; os valores seguem o modo de ocultar. */
+export function describeStatus(
+  month: MonthlyTax,
+  format: ReturnType<typeof useValueFormat>,
+): string {
   switch (month.status) {
     case "paid":
       return month.payment
-        ? `Pago em ${formatDate(month.payment.paid_on)}: ${formatBRL(month.payment.amount)}.`
+        ? `Pago em ${formatDate(month.payment.paid_on)}: ${format.brl(month.payment.amount)}.`
         : "Pago.";
     case "due":
     case "overdue":
       return month.darf_amount && month.due_date
-        ? `DARF de ${formatBRL(month.darf_amount)}, código 6015, com vencimento em ${formatDate(month.due_date)}.`
+        ? `DARF de ${format.brl(month.darf_amount)}, código 6015, com vencimento em ${formatDate(month.due_date)}.`
         : "DARF a pagar.";
     case "carried":
-      return `O imposto não chega a R$ 10,00: ${formatBRL(month.carried_after)} somam ao DARF do mês seguinte.`;
+      return `O imposto não chega a R$ 10,00: ${format.brl(month.carried_after)} somam ao DARF do mês seguinte.`;
     case "exempt":
-      return `Vendas de ações até R$ 20 mil no mês: ${formatBRL(month.exempt_profit)} de lucro isento.`;
+      return `Vendas de ações até R$ 20 mil no mês: ${format.brl(month.exempt_profit)} de lucro isento.`;
     case "compensated":
-      return `O prejuízo acumulado absorveu ${formatBRL(month.compensated)} de lucro.`;
+      return `O prejuízo acumulado absorveu ${format.brl(month.compensated)} de lucro.`;
     case "none":
       return "Nenhum lucro tributável no mês.";
   }

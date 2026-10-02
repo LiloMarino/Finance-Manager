@@ -1,5 +1,6 @@
 import { cashEntryKindLabels } from "@/features/cash/labels";
 import { type CashEntry, useDeleteCheck, useDeleteWithdrawal } from "@/features/cash/use-cash";
+import { Money } from "@/shared/components/money";
 import { DeleteDialog } from "@/shared/components/delete-dialog";
 import {
   Table,
@@ -10,7 +11,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
-import { formatBRL, formatSignedBRL } from "@/types/decimal";
 
 export function EntriesTable({ entries }: { entries: CashEntry[] }) {
   return (
@@ -33,9 +33,11 @@ export function EntriesTable({ entries }: { entries: CashEntry[] }) {
               {entry.label && <span className="text-muted-foreground"> {entry.label}</span>}
             </TableCell>
             <TableCell className="text-right tabular-nums">
-              {formatSignedBRL(entry.amount)}
+              <Money value={entry.amount} signed />
             </TableCell>
-            <TableCell className="text-right tabular-nums">{formatBRL(entry.balance)}</TableCell>
+            <TableCell className="text-right tabular-nums">
+              <Money value={entry.balance} />
+            </TableCell>
             <TableCell className="text-right">
               {entry.record_id !== null && <DeleteEntry entry={entry} recordId={entry.record_id} />}
             </TableCell>

@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { useValueFormat } from "@/shared/hooks/use-value-format";
 import { formatDate } from "@/shared/lib/format";
 import { signClass, signTone } from "@/shared/lib/sign";
 import { formatPercent, isZero } from "@/types/decimal";
@@ -27,6 +28,7 @@ import { formatPercent, isZero } from "@/types/decimal";
 /** O DARF do mês: o status, o vencimento, o botão do pagamento e os quatro números que
 levam ao imposto. */
 export function DarfCard({ month }: { month: MonthlyTax }) {
+  const format = useValueFormat();
   const unpaid = month.status === "due" || month.status === "overdue";
   const losses = month.pools.filter((pool) => !isZero(pool.loss_after));
   const monthName = new Date(month.year, month.month - 1).toLocaleDateString("pt-BR", {
@@ -50,7 +52,7 @@ export function DarfCard({ month }: { month: MonthlyTax }) {
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <p className="text-ink-2">{describeStatus(month)}</p>
+        <p className="text-ink-2">{describeStatus(month, format)}</p>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
           <Metric
