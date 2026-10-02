@@ -8,7 +8,7 @@
 >
 > **Regra de sincronização:** os dois documentos usam os mesmos IDs (`N#`, `D#`) e devem sempre concordar sobre a decisão vigente de cada item.
 >
-> **Última mudança (2026-09-30):** Concluída a F57: o front tem formatter, e o lint confere que o design system é estendido, e não sobrescrito.
+> **Última mudança (2026-10-02):** Concluído o redesenho da interface (F30), com a sidebar (F43) e o modo de ocultar valores (F58).
 
 ## Glossário
 
@@ -26,15 +26,13 @@
 | **N8** | Análises extras: risco × retorno e correlação da carteira | F10, F26, F39 | — |
 | **N9** | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | F27, F47, F49, F55 | — |
 | **F29** | Empacotamento desktop | — | 🔍 |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | — | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 🔍 |
 | **F33** | Custo da bonificação | — | 💤 |
 | **F34** | Taxas da nota no resultado | — | 💤 |
 | **F35** | IRRF abatido do DARF | — | 💤 |
-| **F43** | Sidebar | — | ⏳ |
 
 <details>
-<summary><strong>Concluído / decidido / descartado (61 itens — clique pra expandir)</strong></summary>
+<summary><strong>Concluído / decidido / descartado (64 itens — clique pra expandir)</strong></summary>
 
 | ID | Resumo | Condiciona (F#) | Status |
 | --- | --- | --- | --- |
@@ -77,6 +75,7 @@
 | **F26** | Risco × retorno | — | ✅ |
 | **F27** | Ferramenta de correlação entre ativos | — | ✅ |
 | **F28** | Alerta de rebalanceamento com o app fechado | — | ✅ |
+| **F30** | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | ✅ |
 | **F32** | Liquidez em três camadas | — | ✅ |
 | **F36** | Posição por categoria com variação do dia | — | ✅ |
 | **F37** | Setor e segmento cadastrados | — | ✅ |
@@ -85,6 +84,7 @@
 | **F40** | Troca de ticker como renomeação | — | ✅ |
 | **F41** | Cache de dados externos idempotente | — | ✅ |
 | **F42** | Painel de saúde dos dados | — | ✅ |
+| **F43** | Sidebar | — | ✅ |
 | **F44** | Carteira: layout, gráfico e cor | — | ✅ |
 | **F45** | Operações: filtros e seletor de ativo | — | ✅ |
 | **F46** | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ |
@@ -99,6 +99,7 @@
 | **F55** | Sugestão de ticker nos campos livres | — | ✅ |
 | **F56** | Design system sobre o Base UI | — | ✅ |
 | **F57** | Lint do design system e formatter no front | — | ✅ |
+| **F58** | Modo de ocultar valores financeiros | — | ✅ |
 
 </details>
 
@@ -110,7 +111,6 @@
 
 | ID | Resumo | Marco | Destrava | Status |
 | --- | --- | --- | --- | --- |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | M9 | 1 | 🔍 |
 | **F29** | Empacotamento desktop | — | 0 | 🔍 |
 | **F31** | Hot-reload do backend não reinicia o worker | — | 0 | 🔍 |
 
@@ -317,17 +317,18 @@
 >
 > **Serve:** N2, N3, N5
 >
-> **Progresso:** 9/11 concluídas
+> **Progresso:** 12/12 concluídas
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | F11 | 🔍 |
-| **F43** | Sidebar | F2, F30 | ⏳ |
+| — | *(nada em aberto)* | — | — |
 
-<details><summary>Concluído (9 itens)</summary>
+<details><summary>Concluído (12 itens)</summary>
 
 | ID | Resumo | Depende de | Status |
 | --- | --- | --- | --- |
+| **F30** | Redesenho da interface: identidade visual, navegação, telas e gráficos | F11 | ✅ |
+| **F43** | Sidebar | F2, F30 | ✅ |
 | **F44** | Carteira: layout, gráfico e cor | F11 | ✅ |
 | **F45** | Operações: filtros e seletor de ativo | F9 | ✅ |
 | **F48** | Fiscal: navegação por mês na URL | F23 | ✅ |
@@ -337,6 +338,7 @@
 | **F55** | Sugestão de ticker nos campos livres | F45 | ✅ |
 | **F56** | Design system sobre o Base UI | — | ✅ |
 | **F57** | Lint do design system e formatter no front | — | ✅ |
+| **F58** | Modo de ocultar valores financeiros | — | ✅ |
 
 </details>
 
@@ -1063,17 +1065,19 @@ Decisões tomadas durante:
 
 | ID | Resumo | D# | Marco | Depende de | Esforço | Risco | Valor | Custo-benefício | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **F43** | Sidebar | — | M9 | F2, F30 | Baixo | Baixo | Médio | Bom | ⏳ Pendente |
+| **F43** | Sidebar | — | M9 | F2, F30 | Baixo | Baixo | Médio | Bom | ✅ Concluído |
 | **F57** | Lint do design system e formatter no front | — | M9 | — | Médio | Baixo | Médio | Bom | ✅ Concluído |
+| **F58** | Modo de ocultar valores financeiros | — | M9 | — | Médio | Baixo | Baixo | Médio | ✅ Concluído |
+| **F30** | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | M9 | F11 | Alto | Médio | Alto | Bom | ✅ Concluído |
 
-**F43 — Sidebar.** A sidebar de hoje é uma lista crua de links com texto pequeno, abaixo até do exemplo do shadcn. Vai junto com a identidade visual (F30): a sidebar é a parte mais visível dela.
+**F43 — Sidebar.** A sidebar agora tem grupos com rótulo e ícone, o item ativo em destaque (inclusive nas telas de detalhe) e o modo só-ícones, que guarda o estado. Foi feita junto com o redesenho (F30).
 
-Plano:
-- referência: as sidebars do SimuladorFinanceiro e do IR-Helper, e os blocos de sidebar do shadcn;
-- cabeçalho com o nome e o ícone do app;
-- itens agrupados por assunto, com rótulo de grupo (carteira e ativos; operações e importação; mercado e análises; fiscal), ícone e texto maiores, e o item ativo destacado;
-- recolhível para só os ícones, com o estado guardado (o `SidebarProvider` já faz isso por cookie);
-- rodapé com o alternador de tema claro e escuro e o contador do painel de dados (F42). O contador já existe e hoje fica no item "Saúde dos dados"; o alternador é novo: o app não tem botão de tema nem `ThemeProvider` montado (o `next-themes` está instalado e só o `sonner` o lê), e nada aplica a classe `dark`, então o app abre sempre no claro.
+- **Cabeçalho:** o seletor de carteira, com o ícone e a cor da subcarteira, e a busca de telas, ativos e títulos por Ctrl+K.
+- **Grupos:** Visão geral, Análises, Lançamentos, Organização, Impostos e Ferramentas; no rodapé, Dados com o contador (só pendências críticas e de atenção), o seletor de Valores e o alternador de tema.
+- **Tema:** o `ThemeProvider` do `next-themes` aplica a classe `dark`, e o app abre no escuro.
+
+**Aceite verificado:**
+- no app de pé, numa cópia do banco, as 22 telas pela sidebar, nos dois temas e recolhida, sem erro no console.
 
 **F57 — Lint do design system e formatter no front.** O front ganhou formatter, e a regra "estenda o design system, não sobrescreva" passou a ser verificada pelo lint. Vem antes da identidade visual (F30), que mexe nos tokens que essas regras protegem.
 
@@ -1094,6 +1098,54 @@ Decisões tomadas durante:
 - `pnpm check` do front sem nenhum aviso;
 - no app de pé, numa cópia do banco, sem erro no console: matriz de correlação (cores, grade, tooltip e escala), tabela ano a ano (linha de referência acinzentada e com borda), cabeçalho de grupo do Fiscal, cartões de indicador e gráfico de setores com a altura pelo número de barras.
 
+**F58 — Modo de ocultar valores.** Um seletor "Valores" no rodapé da sidebar, com o atalho Ctrl+Shift+H, esconde todo valor em R$ e toda quantidade na tela, para mostrar o app a outra pessoa usando o banco real.
+
+- **Estado:** um `PrivacyProvider` guarda o booleano no `localStorage`.
+- **Onde esconde:** o componente `Money` e o `Quantity` leem o provider, e o hook `useValueFormat` cobre o texto montado fora de JSX (eixo, tooltip, frase de status e texto vindo do backend). O valor vira `R$ •••••`.
+- **Fica visível:** o percentual e a forma dos gráficos, porque não revelam o tamanho da carteira, e os campos de formulário.
+
+Decisões tomadas durante:
+- **O que o modo esconde:** valor em R$ e quantidade, inclusive preço médio e preço atual; o percentual fica.
+- **Não é uma proteção:** o dado continua indo da API ao navegador, e quem abrir as ferramentas do navegador o vê.
+
+**Aceite verificado:**
+- no app de pé, numa cópia do banco, com o modo ligado, nenhum valor em R$ no texto, nos eixos, nas tabelas nem nos tooltips das telas.
+
+**F30 — Redesenho da interface.** O app inteiro foi para o design novo: identidade visual, navegação em grupos, telas e gráficos. O visual segue o design system aprovado, com tema escuro e claro, e a fonte da verdade dos tokens é o `index.css`.
+
+Entregue, em lotes:
+- **Base:** tokens de cor, tipografia (`--text-*`) e raio nos dois temas; variantes novas nos componentes do design system (Badge, Alert, Card, Tabs, ToggleGroup, Table, Button); componentes compartilhados (`PageHeader`, `Metric`, `Money`, `ChartLegend`, seletor de período) e a fonte Geist Mono no ticker.
+- **Visão geral:** Carteira com as pendências no topo e a composição em rosca; Evolução; Rentabilidade com o ano a ano em aba; Proventos em abas.
+- **Análises:** Risco × retorno com os pontos rotulados; Correlação da carteira com a matriz só do triângulo de baixo, a linha IBOV/CDI e o par aberto na própria tela; Correlação entre ativos como ferramenta.
+- **Lançamentos:** Operações com a coluna de total, Importar com o confirmar fixo, Renda fixa agrupada por tipo com a liquidez e os próximos vencimentos, e o Saldo.
+- **Organização:** Ativos com a aba Setores e os ativos sem segmento; detalhe do ativo com a posição, a rentabilidade e os proventos; Subcarteiras com ícone, cor, divisão da carteira, detalhe (Atual × meta e Rebalancear com cotas, antes e depois) e o assistente de três passos.
+- **Impostos e ferramentas:** Fiscal com as abas Mês, Todos os meses e IRPF; Comparador de renda fixa com o traço por opção; À vista ou parcelado com três abas, duas delas com conta nova (parcelar e adiantar × à vista; adiantar × deixar aplicado, com a escolha das parcelas e o desconto do banco por taxa ou por valor).
+- **Dados:** pendências por gravidade (crítica, atenção e informativa), com o DARF vencido e o saldo parado; Mercado com a taxa ao ano; Alerta diário.
+
+Backend que o design pediu: ícone e cor da subcarteira; gravidade e DARF nas pendências; correlação da carteira contra IBOV e CDI; subtotal da renda variável e total por operação; resumo da renda fixa; proventos com a contagem, a média e o filtro de categoria; a divisão da carteira entre subcarteiras; as linhas antes e depois do plano de aporte; a taxa anual das séries; os totais de DARF do ano; e as duas contas novas do parcelado.
+
+Decisões tomadas durante:
+- **Desbalanceamento:** continua sendo a raiz da soma dos quadrados dos desvios; o texto do design diz "soma dos desvios", e a dica da tela explica a conta.
+- **Janela da correlação:** segue o enum da API (6 meses, 1, 3 e 5 anos), e não os 1 e 3 meses do desenho.
+- **Soma de Decimal fica no backend:** o front só formata; por isso entraram os campos de total nas respostas.
+- **Parcelar e adiantar:** o "valor" que o banco cobra é a soma que ele pede hoje para adiantar todas as parcelas menos a da fatura atual, e o app acha a taxa por bisseção. A antecedência conta faturas, e o rendimento aplicado conta os dias reais.
+- **Telas que saíram:** Rebalanceamento, Setores, Mercado, Saúde dos dados e a aba Anual do Fiscal viraram abas ou telas novas.
+
+Ficou de fora do desenho, por precisar de endpoint novo:
+- a paginação e a prévia de posição e preço médio em Operações;
+- o "Saldo depois" nos diálogos do Saldo;
+- o "Posição depois" nas operações do ativo;
+- a coluna "Hoje" no passo das metas do assistente de subcarteira;
+- o "Aceitar N sugestões" em lote dos segmentos.
+
+Pendências de limpeza, sem prioridade:
+- `maturities_by_*` do `/api/portfolio` e o saldo dia a dia do `/api/simulation/installments` seguem calculados e sem uso no front;
+- o plano de rebalanceamento com venda arredonda para baixo em cotas inteiras e pode gastar mais que o aporte (sobra negativa).
+
+**Aceite verificado:**
+- `pnpm check` do front sem nenhum aviso e `pytest` verde;
+- cada tela no app de pé, numa cópia do banco, no escuro e no claro, com os valores ocultos e sem erro no console.
+
 ---
 ## 3. Descartada
 
@@ -1112,21 +1164,9 @@ Decisões tomadas durante:
 | ID | Resumo | Conexão | Marco | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
 | **F29** | Empacotamento desktop | Nenhuma N# direta — conforto de uso | — | F2 | 🔍 Em avaliação |
-| **F30** | Identidade visual própria (sair do tema padrão do shadcn) | Nenhuma N# direta — qualidade de uso das telas de N1/N2 | M9 | F11 | 🔍 Em avaliação |
 | **F31** | Hot-reload do backend não reinicia o worker | Nenhuma N# direta — atrito de desenvolvimento | — | F2 | 🔍 Em avaliação |
 
 **F29 — Empacotamento desktop.** O que falta definir: se vale empacotar (PyInstaller .exe, como no SimuladorFinanceiro, ou Tauri) ou se `pnpm dev` com um atalho basta para o uso diário. Baixa prioridade: vale quando subir o app incomodar no uso real.
-
-**F30 — Identidade visual própria.** O que falta definir: paleta, tipografia e tom das cores de alta, de baixa e das categorias que digam *este* app — dashboard financeiro, tabela densa e muito gráfico — no lugar do preset `nova` do shadcn (Base UI, Lucide, fonte Geist, baseColor neutral).
-
-A decisão cobre o que já é token no `index.css`:
-- as cinco cores de série (`--chart-1` a `--chart-5`), hoje uma paleta categórica validada para daltonismo e contraste nos dois temas, e que a F44 torna a cor de cada categoria em todo o app; uma paleta nova passa pela mesma validação;
-- o tom dos tokens de alta e baixa que a F44 cria, distintos do verde e do vermelho puros, por daltonismo e porque o vermelho do `destructive` significa erro;
-- contraste para tabela densa no claro e no escuro.
-
-Pontos de partida baratos: os outros presets do shadcn (`vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`), que se trocam com um comando, e os registries do diretório do shadcn, cujos componentes entram pela mesma CLI e ficam no repo como os do shadcn.
-
-Os problemas de uso que o usuário relata viram cards próprios (F43 a F48); esta feature fica com a identidade.
 
 **F31 — Hot-reload do backend não reinicia o worker.** O que falta definir: por que o worker não reinicia no Windows. Enquanto isso, o `main.py` sobe o uvicorn sem reload, e mudança no backend pede reiniciar o `pnpm dev`. Baixa prioridade.
 
