@@ -8,7 +8,7 @@ import { AssetDetailPage } from "@/pages/asset-detail";
 import { AssetsPage } from "@/pages/assets";
 import { CashPage } from "@/pages/cash";
 import { CorrelationPage } from "@/pages/correlation";
-import { DataHealthPage } from "@/pages/data-health";
+import { DataPage } from "@/pages/data";
 import { ErrorPage } from "@/pages/error";
 import { EvolutionPage } from "@/pages/evolution";
 import { FixedIncomePage } from "@/pages/fixed-income";
@@ -18,7 +18,6 @@ import { HomePage } from "@/pages/home";
 import { ImportPage } from "@/pages/import";
 import { InstallmentsPage } from "@/pages/installments";
 import { IncomePage } from "@/pages/income";
-import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
 import { RiskReturnPage } from "@/pages/risk-return";
@@ -50,14 +49,13 @@ export default function App() {
                 <Route path="subportfolios/:subportfolioId" element={<SubportfolioDetailPage />} />
                 <Route path="fixed-income" element={<FixedIncomePage />} />
                 <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
-                <Route path="market" element={<MarketPage />} />
                 <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
                 <Route path="installments" element={<InstallmentsPage />} />
                 <Route path="correlation" element={<CorrelationPage />} />
                 <Route path="asset-correlation" element={<AssetCorrelationPage />} />
                 <Route path="income" element={<IncomePage />} />
                 <Route path="tax" element={<TaxPage />} />
-                <Route path="data" element={<DataHealthPage />} />
+                <Route path="data" element={<DataPage />} />
                 <Route path="*" element={<ErrorPage />} />
               </Route>
             </Routes>

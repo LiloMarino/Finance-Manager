@@ -23,7 +23,7 @@ export function useRefreshIndexes() {
       // `failed` traz só o problema novo; os já avisados ficam no painel
       if (failed.length > 0) {
         toast.warning(`Série do BCB atrasada: ${failed.join(", ")}.`, {
-          action: { label: "Ver painel", onClick: () => void navigate("/data-health") },
+          action: { label: "Ver painel", onClick: () => void navigate("/data") },
         });
       }
     },

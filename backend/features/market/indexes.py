@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 _refresh_lock = Lock()
 
+HUNDRED = Decimal(100)
+BUSINESS_DAYS_PER_YEAR = 252
 IBOV_TICKER = "^BVSP"
 # O primeiro pregão do IBOV no yfinance
 IBOV_FIRST_DATE = date(1993, 4, 27)
@@ -33,9 +35,13 @@ IBOV_FIRST_DATE = date(1993, 4, 27)
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class LatestIndex:
+    """`annual` é o valor em % ao ano: o CDI e a Selic do dia, compostos por 252 dias
+    úteis, e o IPCA dos últimos 12 meses publicados. Nulo no IBOV e sem histórico."""
+
     series: IndexSeries
     value: Decimal | None
     rate_date: date | None
+    annual: Decimal | None
 
 
 def _first_date(provider: IndexSeriesProvider, series: IndexSeries) -> date:
@@ -186,6 +192,32 @@ def latest_indexes(session: Session) -> list[LatestIndex]:
             series=series,
             value=cached[series][0] if series in cached else None,
             rate_date=cached[series][1] if series in cached else None,
+            annual=_annual(session, series, cached.get(series)),
         )
         for series in IndexSeries
     ]
+
+
+def _annual(
+    session: Session, series: IndexSeries, latest: tuple[Decimal, date] | None
+) -> Decimal | None:
+    if latest is None:
+        return None
+    if series in (IndexSeries.CDI, IndexSeries.SELIC):
+        return ((1 + latest[0] / HUNDRED) ** BUSINESS_DAYS_PER_YEAR - 1) * HUNDRED
+    if series is IndexSeries.IPCA:
+        months = list(
+            session.scalars(
+                select(IndexHistory.value)
+                .where(IndexHistory.series == series)
+                .order_by(IndexHistory.rate_date.desc())
+                .limit(12)
+            )
+        )
+        if len(months) < 12:
+            return None
+        factor = Decimal(1)
+        for month in months:
+            factor *= 1 + month / HUNDRED
+        return (factor - 1) * HUNDRED
+    return None

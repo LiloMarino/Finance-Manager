@@ -21,7 +21,7 @@ export function useRefreshPrices() {
       // `failed` traz só o problema novo; os já avisados ficam no painel
       if (failed.length > 0) {
         toast.warning(`Faltam cotações de ${failed.join(", ")}.`, {
-          action: { label: "Ver painel", onClick: () => void navigate("/data-health") },
+          action: { label: "Ver painel", onClick: () => void navigate("/data") },
         });
       }
     },

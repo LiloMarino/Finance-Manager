@@ -25,9 +25,14 @@ class AssetPriceDTO(BaseDTO):
 
 
 class LatestIndexDTO(BaseDTO):
+    """O último valor em cache da série, na unidade dela (% ao dia no CDI e na Selic,
+    % no mês no IPCA, pontos no IBOV); `annual` é o equivalente em % ao ano, ou os 12
+    meses no IPCA."""
+
     series: IndexSeries
     value: DecimalStr | None
     rate_date: date | None
+    annual: DecimalStr | None
 
 
 class TickerMatchDTO(BaseDTO):

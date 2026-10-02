@@ -16,7 +16,8 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import type { Asset } from "@/shared/hooks/use-assets";
-import { sourceLabel } from "@/shared/lib/classification";
+import { useSectors } from "@/shared/hooks/use-sectors";
+import { segmentLabel, sourceLabel } from "@/shared/lib/classification";
 
 interface RowProps {
   asset: Asset;
@@ -28,14 +29,30 @@ interface RowProps {
 /** O ativo, o que o Yahoo diz dele e o segmento a escolher. */
 function UnclassifiedRow({ asset, segmentId, onChange, onCreate }: RowProps) {
   const { data: suggestion } = useClassificationSuggestion(asset.ticker);
+  const { data: sectors = [] } = useSectors();
+  const suggested =
+    suggestion?.segment_id == null ? undefined : segmentLabel(sectors, suggestion.segment_id);
 
   return (
     <TableRow>
       <TableCell>
         <TickerLabel ticker={asset.ticker} category={asset.asset_class} />
       </TableCell>
-      <TableCell variant="muted">
+      <TableCell variant="muted" className="whitespace-normal">
         {suggestion ? sourceLabel(suggestion) || "sem classificação no Yahoo" : "consultando…"}
+        {suggestion?.segment_id != null && suggested && segmentId !== suggestion.segment_id && (
+          <span className="flex flex-wrap items-center gap-2">
+            Sugestão: <span className="text-foreground">{suggested}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => onChange(suggestion.segment_id)}
+            >
+              Usar
+            </Button>
+          </span>
+        )}
       </TableCell>
       <TableCell className="w-72">
         <SegmentCombobox

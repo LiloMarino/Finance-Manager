@@ -2682,13 +2682,20 @@ export interface components {
             /** Paid Amount */
             paid_amount: DecimalString | null;
         };
-        /** LatestIndexDTO */
+        /**
+         * LatestIndexDTO
+         * @description O último valor em cache da série, na unidade dela (% ao dia no CDI e na Selic,
+         *     % no mês no IPCA, pontos no IBOV); `annual` é o equivalente em % ao ano, ou os 12
+         *     meses no IPCA.
+         */
         LatestIndexDTO: {
             series: components["schemas"]["IndexSeries"];
             /** Value */
             value: DecimalString | null;
             /** Rate Date */
             rate_date: string | null;
+            /** Annual */
+            annual: DecimalString | null;
         };
         /**
          * LiquidityAllocationDTO

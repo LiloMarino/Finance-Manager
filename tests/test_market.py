@@ -34,6 +34,7 @@ from backend.domain.market_data import DailyClose, MarketDataProvider
 from backend.features.market.indexes import (
     IBOV_FIRST_DATE,
     IBOV_TICKER,
+    latest_indexes,
     refresh_indexes,
 )
 from backend.features.market.service import refresh_prices
@@ -625,3 +626,39 @@ def test_corporate_event_drops_the_price_cache_of_the_asset(
     logged = set(session.scalars(select(FetchLog.asset_id)))
     assert cached == {other.id}
     assert logged == {other.id}
+
+
+def test_latest_indexes_annualize_the_daily_rate_and_the_twelve_months(
+    session: Session,
+) -> None:
+    """O CDI do dia vira taxa ao ano por 252 dias úteis; o IPCA, o composto dos 12 meses
+    publicados; o IBOV, que é pontuação, fica sem valor anual."""
+    session.add(
+        IndexHistory(
+            series=IndexSeries.CDI, rate_date=date(2026, 9, 29), value=Decimal("0.05")
+        )
+    )
+    session.add_all(
+        IndexHistory(
+            series=IndexSeries.IPCA, rate_date=date(2025, month, 1), value=Decimal(1)
+        )
+        for month in range(10, 13)
+    )
+    session.add_all(
+        IndexHistory(
+            series=IndexSeries.IPCA, rate_date=date(2026, month, 1), value=Decimal(1)
+        )
+        for month in range(1, 10)
+    )
+    session.commit()
+
+    latest = {index.series: index.annual for index in latest_indexes(session)}
+    cdi = latest[IndexSeries.CDI]
+    ipca = latest[IndexSeries.IPCA]
+
+    assert cdi is not None
+    assert Decimal("13.4") < cdi < Decimal("13.5")
+    assert ipca is not None
+    assert Decimal("12.68") < ipca < Decimal("12.69")
+    assert latest[IndexSeries.IBOV] is None
+    assert latest[IndexSeries.SELIC] is None
