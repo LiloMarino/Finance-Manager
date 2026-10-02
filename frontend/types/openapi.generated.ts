@@ -1036,6 +1036,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/simulation/cash-or-advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cash Or Advance
+         * @description Parcelar e adiantar contra pagar à vista, sobre os valores enviados, sem
+         *     gravar nada.
+         */
+        post: operations["cash_or_advance_api_simulation_cash_or_advance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/simulation/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Advance
+         * @description Adiantar parcelas contra deixar o dinheiro aplicado, sobre os valores
+         *     enviados, sem gravar nada.
+         */
+        post: operations["advance_api_simulation_advance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/correlation/pair": {
         parameters: {
             query?: never;
@@ -1113,6 +1155,167 @@ export interface components {
             asset_id: number;
             /** Segment Id */
             segment_id: number;
+        };
+        /**
+         * AdvanceDTO
+         * @description `monthly_rate` em % ao mês: a informada, ou a achada pelo valor do banco.
+         *     Os totais somam só as parcelas escolhidas, e `difference` é o desconto menos o
+         *     rendimento, positivo a favor de adiantar. `recommended` conta as parcelas em
+         *     que o desconto vence. `earnings_rate_low` e `earnings_rate_high`, em % ao mês,
+         *     são o menor e o maior rendimento líquido por fatura de antecedência, nulos sem
+         *     parcela para adiantar.
+         */
+        AdvanceDTO: {
+            /**
+             * Current Due Date
+             * Format: date
+             */
+            current_due_date: string;
+            /**
+             * Current Amount
+             * Format: decimal
+             */
+            current_amount: DecimalString;
+            /**
+             * Monthly Rate
+             * Format: decimal
+             */
+            monthly_rate: DecimalString;
+            /** Installments */
+            installments: components["schemas"]["AdvanceOrKeepDTO"][];
+            /** Chosen Count */
+            chosen_count: number;
+            /**
+             * Face
+             * Format: decimal
+             */
+            face: DecimalString;
+            /**
+             * Paid Today
+             * Format: decimal
+             */
+            paid_today: DecimalString;
+            /**
+             * Discount
+             * Format: decimal
+             */
+            discount: DecimalString;
+            /**
+             * Earnings
+             * Format: decimal
+             */
+            earnings: DecimalString;
+            /**
+             * Difference
+             * Format: decimal
+             */
+            difference: DecimalString;
+            /** Recommended */
+            recommended: number;
+            /** Earnings Rate Low */
+            earnings_rate_low: DecimalString | null;
+            /** Earnings Rate High */
+            earnings_rate_high: DecimalString | null;
+        };
+        /**
+         * AdvanceInDTO
+         * @description `installments` parcelas de `amount` que faltam, a primeira na fatura atual,
+         *     vencendo em `next_due_date`, sem desconto. `chosen` traz as posições adiantadas
+         *     (1 é a parcela seguinte à da fatura atual); sem ele, as posições em que o
+         *     desconto vence o rendimento.
+         */
+        AdvanceInDTO: {
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /** Installments */
+            installments: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Next Due Date
+             * Format: date
+             */
+            next_due_date: string;
+            /** Bank Discount */
+            bank_discount: components["schemas"]["BankRateInDTO"] | components["schemas"]["BankTotalInDTO"];
+            /** Chosen */
+            chosen?: number[] | null;
+            investment: components["schemas"]["InvestmentInDTO"];
+            projection: components["schemas"]["ProjectionInDTO"];
+        };
+        /**
+         * AdvanceOrKeepDTO
+         * @description Uma parcela que dá para adiantar, `position` faturas depois da atual.
+         *     `earnings` é o rendimento líquido de IR e IOF de deixar o dinheiro aplicado até o
+         *     vencimento; `advance_wins` quando o desconto passa dele.
+         */
+        AdvanceOrKeepDTO: {
+            /** Position */
+            position: number;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /**
+             * Paid Today
+             * Format: decimal
+             */
+            paid_today: DecimalString;
+            /**
+             * Discount
+             * Format: decimal
+             */
+            discount: DecimalString;
+            /**
+             * Earnings
+             * Format: decimal
+             */
+            earnings: DecimalString;
+            /** Advance Wins */
+            advance_wins: boolean;
+            /** Chosen */
+            chosen: boolean;
+        };
+        /**
+         * AdvancedInstallmentDTO
+         * @description `months_ahead` zero é a parcela da fatura atual, paga cheia. `paid` é o que
+         *     o banco cobra ao adiantar, em centavos.
+         */
+        AdvancedInstallmentDTO: {
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Amount
+             * Format: decimal
+             */
+            amount: DecimalString;
+            /** Months Ahead */
+            months_ahead: number;
+            /**
+             * Paid
+             * Format: decimal
+             */
+            paid: DecimalString;
+            /**
+             * Discount
+             * Format: decimal
+             */
+            discount: DecimalString;
         };
         /**
          * ApplicationInDTO
@@ -1224,6 +1427,39 @@ export interface components {
             cash: DecimalString | null;
         };
         /**
+         * BankRateInDTO
+         * @description O desconto do banco pela taxa, em % ao mês por fatura de antecedência.
+         */
+        BankRateInDTO: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "rate";
+            /**
+             * Monthly Rate
+             * Format: decimal
+             */
+            monthly_rate: DecimalString;
+        };
+        /**
+         * BankTotalInDTO
+         * @description O desconto do banco pelo valor: a soma que o banco pede hoje para adiantar de
+         *     uma vez todas as parcelas menos a da fatura atual. A taxa sai dele.
+         */
+        BankTotalInDTO: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "total";
+            /**
+             * Bank Total
+             * Format: decimal
+             */
+            bank_total: DecimalString;
+        };
+        /**
          * BenchmarkReturnDTO
          * @description A referência no mesmo período e nos mesmos dias da carteira, recomeçando do
          *     zero na base dele. Depois de `data_until`, o último valor da série se repete.
@@ -1332,6 +1568,79 @@ export interface components {
          * @enum {string}
          */
         CashEntryKind: "opening" | "sale" | "income" | "redemption" | "maturity" | "deposit" | "purchase" | "application" | "withdrawal" | "check";
+        /**
+         * CashOrAdvanceDTO
+         * @description `advanced_total` é o que sai parcelando e adiantando; `saved`, o preço cheio
+         *     menos ele. `break_even_discount` em fração: com desconto à vista acima dele, o à
+         *     vista vence. `winner` `installments` é parcelar e adiantar, nulo no empate; e
+         *     `difference` é o quanto o vencedor sai mais barato.
+         */
+        CashOrAdvanceDTO: {
+            /**
+             * Price
+             * Format: decimal
+             */
+            price: DecimalString;
+            /**
+             * Cash Price
+             * Format: decimal
+             */
+            cash_price: DecimalString;
+            /**
+             * Advanced Total
+             * Format: decimal
+             */
+            advanced_total: DecimalString;
+            /**
+             * Saved
+             * Format: decimal
+             */
+            saved: DecimalString;
+            /**
+             * Break Even Discount
+             * Format: decimal
+             */
+            break_even_discount: DecimalString;
+            winner: components["schemas"]["PaymentChoice"] | null;
+            /**
+             * Difference
+             * Format: decimal
+             */
+            difference: DecimalString;
+            /** Installments */
+            installments: components["schemas"]["AdvancedInstallmentDTO"][];
+        };
+        /**
+         * CashOrAdvanceInDTO
+         * @description Parcelar `price` em `installments` vezes e adiantar logo em seguida tudo o
+         *     que dá, contra pagar à vista. `cash_discount` em %; `monthly_rate`, o desconto do
+         *     banco para adiantar, em % ao mês por fatura de antecedência. A primeira parcela
+         *     vence em `first_due_date`, na fatura atual, e é paga cheia.
+         */
+        CashOrAdvanceInDTO: {
+            /**
+             * Price
+             * Format: decimal
+             */
+            price: DecimalString;
+            /** Installments */
+            installments: number;
+            /**
+             * First Due Date
+             * Format: date
+             */
+            first_due_date: string;
+            /**
+             * Cash Discount
+             * Format: decimal
+             */
+            cash_discount: DecimalString;
+            /**
+             * Monthly Rate
+             * Format: decimal
+             */
+            monthly_rate: DecimalString;
+        };
         /** CashSettingsInDTO */
         CashSettingsInDTO: {
             /**
@@ -2470,13 +2779,6 @@ export interface components {
          */
         Indexer: "cdi" | "selic" | "ipca" | "prefixed";
         /**
-         * InstallmentMode
-         * @description Compra: o valor é o preço, dividido nas parcelas. Adiantamento: o valor é o de
-         *     cada parcela que falta.
-         * @enum {string}
-         */
-        InstallmentMode: "purchase" | "prepayment";
-        /**
          * InstallmentsDTO
          * @description As sobras são o que cada caminho deixa no último vencimento, líquido.
          *     `difference` é a sobra do vencedor menos a do outro.
@@ -2515,11 +2817,10 @@ export interface components {
         };
         /**
          * InstallmentsInDTO
-         * @description `amount` segue o `mode`: o preço na compra, a parcela no adiantamento.
-         *     `cash_discount` em %, opcional: sem ele, sai só o desconto de empate.
+         * @description `amount` é o preço. `cash_discount` em %, opcional: sem ele, sai só o
+         *     desconto de empate.
          */
         InstallmentsInDTO: {
-            mode: components["schemas"]["InstallmentMode"];
             /**
              * Amount
              * Format: decimal
@@ -3889,7 +4190,10 @@ export interface components {
          * @enum {string}
          */
         TradeType: "swing" | "day_trade";
-        /** WithdrawalDTO */
+        /**
+         * WithdrawalDTO
+         * @description `remaining` é o líquido do que fica aplicado logo depois da parcela.
+         */
         WithdrawalDTO: {
             /**
              * Due Date
@@ -3921,6 +4225,11 @@ export interface components {
              * Format: decimal
              */
             income_tax: DecimalString;
+            /**
+             * Remaining
+             * Format: decimal
+             */
+            remaining: DecimalString;
         };
         /**
          * YearReturnsDTO
@@ -7000,6 +7309,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstallmentsDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cash_or_advance_api_simulation_cash_or_advance_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashOrAdvanceInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashOrAdvanceDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    advance_api_simulation_advance_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdvanceInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdvanceDTO"];
                 };
             };
             /** @description Unprocessable Content */

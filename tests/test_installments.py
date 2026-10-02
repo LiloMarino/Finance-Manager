@@ -5,13 +5,7 @@ from decimal import Decimal
 
 from fastapi.testclient import TestClient
 
-from backend.core.enum import (
-    FixedIncomeType,
-    Indexer,
-    IndexSeries,
-    InstallmentMode,
-    PaymentChoice,
-)
+from backend.core.enum import FixedIncomeType, Indexer, IndexSeries, PaymentChoice
 from backend.domain.business_days import BusinessCalendar
 from backend.domain.fixed_income import FixedIncomeTerms, tax_rate
 from backend.domain.installments import Purchase, schedule, simulate
@@ -37,13 +31,11 @@ CDB = FixedIncomeTerms(
 def _purchase(
     discount: str | None = "5",
     *,
-    mode: InstallmentMode = InstallmentMode.PURCHASE,
     amount: str = "1000",
     installments: int = 10,
     first_due: date = FIRST_DUE,
 ) -> Purchase:
     return Purchase(
-        mode=mode,
         amount=Decimal(amount),
         installments=installments,
         start=START,
@@ -55,9 +47,7 @@ def _purchase(
 def test_purchase_splits_the_price_in_cents() -> None:
     """R$ 1.000 em 3x dá 333,34 na primeira e 333,33 nas outras, e o vencimento de dia
     31 cai no último dia dos meses mais curtos."""
-    installments = schedule(
-        InstallmentMode.PURCHASE, Decimal(1000), 3, date(2027, 1, 31)
-    )
+    installments = schedule(Decimal(1000), 3, date(2027, 1, 31))
 
     assert [installment.amount for installment in installments] == [
         Decimal("333.34"),
@@ -141,17 +131,13 @@ def test_break_even_rates_tie_both_paths() -> None:
     assert lca < cdb
 
 
-def test_prepayment_matches_a_purchase_with_the_same_installments() -> None:
-    """Adiantar 10 parcelas de R$ 100 é a mesma conta de uma compra de R$ 1.000 em
-    10x."""
-    purchase = simulate(_purchase(), CDB, RATES)
+def test_remaining_falls_to_the_leftover() -> None:
+    """O que fica aplicado cai a cada parcela, e depois da última é a sobra."""
+    simulation = simulate(_purchase(), CDB, RATES)
 
-    prepayment = simulate(
-        _purchase(mode=InstallmentMode.PREPAYMENT, amount="100"), CDB, RATES
-    )
-
-    assert prepayment.installments_leftover == purchase.installments_leftover
-    assert prepayment.break_even_discount == purchase.break_even_discount
+    remaining = [withdrawal.remaining for withdrawal in simulation.withdrawals]
+    assert remaining == sorted(remaining, reverse=True)
+    assert remaining[-1] == simulation.installments_leftover
 
 
 def test_iof_reaches_only_the_installment_due_within_thirty_days() -> None:
@@ -179,7 +165,6 @@ def test_without_discount_only_the_break_even_is_computed() -> None:
 
 def _payload(**changes: object) -> dict[str, object]:
     return {
-        "mode": "purchase",
         "amount": "1000",
         "installments": 10,
         "start_date": "2027-01-04",

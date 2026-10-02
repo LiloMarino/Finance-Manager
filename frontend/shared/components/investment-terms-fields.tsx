@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { UnitInput } from "@/shared/components/unit-input";
 import type { InvestmentTermsInput } from "@/shared/lib/investment-terms";
 import { maskPercent, maskSignedPercent } from "@/shared/lib/mask";
 import {
@@ -27,11 +28,22 @@ const rateLabels: Record<Indexer, string> = {
   prefixed: "Taxa a.a. (%)",
 };
 
+// No formato curto, a unidade da taxa vai dentro do campo
+const rateUnits: Record<Indexer, string> = {
+  cdi: "% do CDI",
+  selic: "% + Selic",
+  ipca: "% + IPCA",
+  prefixed: "% a.a.",
+};
+
 interface InvestmentTermsFieldsProps {
   id: string;
   value: InvestmentTermsInput;
   onChange: (value: InvestmentTermsInput) => void;
   rateError?: { message?: string };
+  /** Rótulos curtos, a unidade dentro do campo da taxa e sem as explicações: para
+  quando os três campos dividem uma coluna estreita. */
+  compact?: boolean;
 }
 
 /** Tipo, indexador e taxa de um título. O Tesouro fixa o indexador do próprio nome. */
@@ -40,8 +52,13 @@ export function InvestmentTermsFields({
   value,
   onChange,
   rateError,
+  compact = false,
 }: InvestmentTermsFieldsProps) {
   const treasuryIndexer = treasuryIndexers[value.product_type];
+  const changeRate = (text: string) => {
+    const mask = value.indexer === "selic" ? maskSignedPercent : maskPercent;
+    onChange({ ...value, rate: mask(text) });
+  };
 
   return (
     <>
@@ -70,12 +87,14 @@ export function InvestmentTermsFields({
             ))}
           </SelectContent>
         </Select>
-        <FieldDescription>
-          O tipo decide a isenção de IR: LCI, LCA, CRI, CRA e debênture incentivada são isentas.
-        </FieldDescription>
+        {!compact && (
+          <FieldDescription>
+            O tipo decide a isenção de IR: LCI, LCA, CRI, CRA e debênture incentivada são isentas.
+          </FieldDescription>
+        )}
       </Field>
       <Field>
-        <FieldLabel htmlFor={`${id}-indexer`}>Indexador</FieldLabel>
+        <FieldLabel htmlFor={`${id}-indexer`}>{compact ? "Rende pelo" : "Indexador"}</FieldLabel>
         <Select
           items={indexerLabels}
           value={value.indexer}
@@ -97,17 +116,25 @@ export function InvestmentTermsFields({
         </Select>
       </Field>
       <Field data-invalid={Boolean(rateError)}>
-        <FieldLabel htmlFor={`${id}-rate`}>{rateLabels[value.indexer]}</FieldLabel>
-        <Input
-          id={`${id}-rate`}
-          inputMode="decimal"
-          value={value.rate}
-          onChange={(event) => {
-            const mask = value.indexer === "selic" ? maskSignedPercent : maskPercent;
-            onChange({ ...value, rate: mask(event.target.value) });
-          }}
-        />
-        {value.indexer === "selic" && (
+        <FieldLabel htmlFor={`${id}-rate`}>
+          {compact ? "Taxa" : rateLabels[value.indexer]}
+        </FieldLabel>
+        {compact ? (
+          <UnitInput
+            id={`${id}-rate`}
+            unit={rateUnits[value.indexer]}
+            value={value.rate}
+            onChange={(event) => changeRate(event.target.value)}
+          />
+        ) : (
+          <Input
+            id={`${id}-rate`}
+            inputMode="decimal"
+            value={value.rate}
+            onChange={(event) => changeRate(event.target.value)}
+          />
+        )}
+        {!compact && value.indexer === "selic" && (
           <FieldDescription>
             Selic + 0,10% a.a. se digita 0,10. Pode ser zero ou negativo.
           </FieldDescription>

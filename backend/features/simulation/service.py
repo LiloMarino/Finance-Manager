@@ -6,6 +6,11 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from backend.domain.comparison import Option, compare
+from backend.domain.early_payment import (
+    advance_or_keep,
+    cash_or_advance,
+    implied_rate,
+)
 from backend.domain.fixed_income import FixedIncomeTerms
 from backend.domain.installments import (
     CURVE_INSTALLMENTS,
@@ -14,8 +19,15 @@ from backend.domain.installments import (
 )
 from backend.domain.projection import Assumptions, current_rates, project
 from backend.features.simulation.dto import (
+    AdvancedInstallmentDTO,
+    AdvanceDTO,
+    AdvanceInDTO,
+    AdvanceOrKeepDTO,
     BalancePointDTO,
+    BankRateInDTO,
     BreakEvenRateDTO,
+    CashOrAdvanceDTO,
+    CashOrAdvanceInDTO,
     ComparisonDTO,
     ComparisonInDTO,
     ComparisonPointDTO,
@@ -121,7 +133,6 @@ def simulate_installments(
     session: Session, payload: InstallmentsInDTO
 ) -> InstallmentsDTO:
     purchase = Purchase(
-        mode=payload.mode,
         amount=payload.amount,
         installments=payload.installments,
         start=payload.start_date,
@@ -154,6 +165,7 @@ def simulate_installments(
                 gross=withdrawal.redemption.gross,
                 iof=withdrawal.redemption.iof,
                 income_tax=withdrawal.redemption.income_tax,
+                remaining=withdrawal.remaining,
             )
             for withdrawal in simulation.withdrawals
         ],
@@ -170,4 +182,86 @@ def simulate_installments(
         else None,
         balance=[BalancePointDTO.model_validate(point) for point in simulation.balance],
         curve=[CurvePointDTO.model_validate(point) for point in simulation.curve],
+    )
+
+
+def compare_cash_and_advance(payload: CashOrAdvanceInDTO) -> CashOrAdvanceDTO:
+    comparison = cash_or_advance(
+        price=payload.price,
+        count=payload.installments,
+        first_due=payload.first_due_date,
+        cash_discount=payload.cash_discount,
+        monthly_rate=payload.monthly_rate,
+    )
+    return CashOrAdvanceDTO(
+        price=comparison.price,
+        cash_price=comparison.cash_price,
+        advanced_total=comparison.advanced_total,
+        saved=comparison.saved,
+        break_even_discount=comparison.break_even_discount,
+        winner=comparison.winner,
+        difference=comparison.difference,
+        installments=[
+            AdvancedInstallmentDTO(
+                due_date=item.installment.due_date,
+                amount=item.installment.amount,
+                months_ahead=item.months_ahead,
+                paid=item.paid,
+                discount=item.discount,
+            )
+            for item in comparison.installments
+        ],
+    )
+
+
+def compare_advance_and_keep(session: Session, payload: AdvanceInDTO) -> AdvanceDTO:
+    discount = payload.bank_discount
+    monthly_rate = (
+        discount.monthly_rate
+        if isinstance(discount, BankRateInDTO)
+        else implied_rate(payload.amount, payload.installments, discount.bank_total)
+    )
+    rates = project(
+        index_rates(session),
+        _assumptions(payload.projection),
+        payload.start_date,
+        _months_after(payload.next_due_date, payload.installments + 1),
+    )
+    plan = advance_or_keep(
+        amount=payload.amount,
+        count=payload.installments,
+        next_due=payload.next_due_date,
+        start=payload.start_date,
+        monthly_rate=monthly_rate,
+        terms=_terms(payload.investment),
+        rates=rates,
+        chosen=payload.chosen,
+    )
+    earnings_rates = plan.earnings_rates
+    return AdvanceDTO(
+        current_due_date=plan.current.due_date,
+        current_amount=plan.current.amount,
+        monthly_rate=plan.monthly_rate,
+        installments=[
+            AdvanceOrKeepDTO(
+                position=item.position,
+                due_date=item.installment.due_date,
+                amount=item.installment.amount,
+                paid_today=item.paid_today,
+                discount=item.discount,
+                earnings=item.earnings,
+                advance_wins=item.advance_wins,
+                chosen=item.chosen,
+            )
+            for item in plan.installments
+        ],
+        chosen_count=len(plan.chosen),
+        face=plan.face,
+        paid_today=plan.paid_today,
+        discount=plan.discount,
+        earnings=plan.earnings,
+        difference=plan.difference,
+        recommended=plan.recommended,
+        earnings_rate_low=earnings_rates[0] if earnings_rates else None,
+        earnings_rate_high=earnings_rates[1] if earnings_rates else None,
     )

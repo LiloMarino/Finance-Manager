@@ -15,11 +15,15 @@ MAX_DOUBLINGS = 30
 
 
 def solve(
-    fn: Callable[[Decimal], Decimal], low: Decimal, high: Decimal
+    fn: Callable[[Decimal], Decimal],
+    low: Decimal,
+    high: Decimal,
+    *,
+    tolerance: Decimal = TOLERANCE,
 ) -> Decimal | None:
-    """O `x` em que `fn`, crescente, cruza zero. O teto dobra até `fn` ficar
-    positiva, e `low` volta quando `fn` já não é negativa nele. Nulo quando nem o
-    maior teto cruza zero."""
+    """O `x` em que `fn`, crescente, cruza zero, com erro até `tolerance`. O teto
+    dobra até `fn` ficar positiva, e `low` volta quando `fn` já não é negativa nele.
+    Nulo quando nem o maior teto cruza zero."""
     if fn(low) >= 0:
         return low
     doublings = 0
@@ -28,7 +32,7 @@ def solve(
             return None
         low, high = high, high * TWO
         doublings += 1
-    while high - low > TOLERANCE:
+    while high - low > tolerance:
         middle = (low + high) / TWO
         if fn(middle) < 0:
             low = middle

@@ -1,4 +1,4 @@
-"""À vista, parcelado ou adiantar a fatura: qual caminho termina com mais dinheiro.
+"""À vista ou parcelado com o dinheiro aplicado: qual caminho termina com mais dinheiro.
 
 No parcelado, o valor inteiro fica aplicado desde o início e cada parcela sai do
 investimento no dia dela, pelo bruto que deixa a parcela líquida de IOF e IR. O que
@@ -19,13 +19,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import ROUND_DOWN, Decimal
 
-from backend.core.enum import (
-    FixedIncomeType,
-    Indexer,
-    IndexSeries,
-    InstallmentMode,
-    PaymentChoice,
-)
+from backend.core.enum import FixedIncomeType, Indexer, IndexSeries, PaymentChoice
 from backend.domain.break_even import solve
 from backend.domain.business_days import BusinessCalendar
 from backend.domain.fixed_income import Application, FixedIncomeTerms, Redemption
@@ -44,10 +38,9 @@ Rates = Mapping[IndexSeries, Sequence[DailyRate]]
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Purchase:
-    """`amount` segue o `mode`: o preço na compra, a parcela no adiantamento.
-    `discount` em %, nulo quando só interessa o desconto de empate."""
+    """`amount` é o preço. `discount` em %, nulo quando só interessa o desconto de
+    empate."""
 
-    mode: InstallmentMode
     amount: Decimal
     installments: int
     start: date
@@ -63,11 +56,14 @@ class Installment:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Withdrawal:
-    """A parcela paga pelo investimento no último dia útil até o vencimento."""
+    """A parcela paga pelo investimento no último dia útil até o vencimento.
+    `remaining` é o líquido do que fica aplicado logo depois dela, se tudo fosse
+    resgatado no dia."""
 
     installment: Installment
     withdrawn_on: date
     redemption: Redemption
+    remaining: Decimal
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -123,24 +119,20 @@ BREAK_EVEN_PRODUCTS = (
 )
 
 
-def _add_months(day: date, months: int) -> date:
+def add_months(day: date, months: int) -> date:
+    """O mesmo dia do mês `months` meses depois, limitado ao último dia do mês."""
     index = day.year * 12 + day.month - 1 + months
     year, month = index // 12, index % 12 + 1
     return date(year, month, min(day.day, calendar.monthrange(year, month)[1]))
 
 
-def schedule(
-    mode: InstallmentMode, amount: Decimal, count: int, first_due: date
-) -> list[Installment]:
-    """Parcelas mensais no mesmo dia do mês, limitado ao último. Na compra, o preço
-    se divide em centavos, e o resto vai na primeira parcela."""
-    if mode is InstallmentMode.PURCHASE:
-        base = (amount / count).quantize(CENT, rounding=ROUND_DOWN)
-        amounts = [amount - base * (count - 1), *([base] * (count - 1))]
-    else:
-        amounts = [amount] * count
+def schedule(price: Decimal, count: int, first_due: date) -> list[Installment]:
+    """Parcelas mensais no mesmo dia do mês, limitado ao último. O preço se divide
+    em centavos, e o resto vai na primeira parcela."""
+    base = (price / count).quantize(CENT, rounding=ROUND_DOWN)
+    amounts = [price - base * (count - 1), *([base] * (count - 1))]
     return [
-        Installment(due_date=_add_months(first_due, index), amount=value)
+        Installment(due_date=add_months(first_due, index), amount=value)
         for index, value in enumerate(amounts)
     ]
 
@@ -164,15 +156,16 @@ class _InstallmentsPath:
         for installment in installments:
             day = max(start, business.on_or_before(installment.due_date))
             gross = application.gross_for_net(installment.amount, day)
+            units -= gross / application.factor(day)
+            self.remaining.append((day, units))
             self.withdrawals.append(
                 Withdrawal(
                     installment=installment,
                     withdrawn_on=day,
                     redemption=application.redeem(gross, day),
+                    remaining=self.net_at(units, day),
                 )
             )
-            units -= gross / application.factor(day)
-            self.remaining.append((day, units))
         self.end = self.withdrawals[-1].withdrawn_on
         self.leftover = self.net_at(units, self.end)
 
@@ -238,12 +231,10 @@ def simulate(purchase: Purchase, terms: FixedIncomeTerms, rates: Rates) -> Simul
     depois do dado real."""
     business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
     curve_count = max(CURVE_INSTALLMENTS, purchase.installments)
-    horizon = business.on_or_before(_add_months(purchase.first_due, curve_count - 1))
+    horizon = business.on_or_before(add_months(purchase.first_due, curve_count - 1))
     application = Application(terms, purchase.start, rates, horizon)
 
-    installments = schedule(
-        purchase.mode, purchase.amount, purchase.installments, purchase.first_due
-    )
+    installments = schedule(purchase.amount, purchase.installments, purchase.first_due)
     total = sum((installment.amount for installment in installments), ZERO)
     path = _InstallmentsPath(application, installments, purchase.start, business)
 
@@ -277,7 +268,7 @@ def simulate(purchase: Purchase, terms: FixedIncomeTerms, rates: Rates) -> Simul
 
     curve: list[CurvePoint] = []
     for count in range(1, curve_count + 1):
-        option = schedule(purchase.mode, purchase.amount, count, purchase.first_due)
+        option = schedule(purchase.amount, count, purchase.first_due)
         curve.append(
             CurvePoint(
                 installments=count,

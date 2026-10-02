@@ -1,4 +1,4 @@
-import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceDot, XAxis, YAxis } from "recharts";
 
 import type { Installments } from "@/features/installments/use-installments";
 import {
@@ -7,10 +7,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
-import { type DecimalString, formatPercent, toChartNumber } from "@/types/decimal";
+import { type DecimalString, formatPercent, formatQuantity, toChartNumber } from "@/types/decimal";
 
 const chartConfig = {
-  discount: { label: "Desconto que empata", color: "var(--chart-1)" },
+  discount: { label: "Desconto que empata", color: "var(--foreground)" },
 } satisfies ChartConfig;
 
 const axisPercent = new Intl.NumberFormat("pt-BR", {
@@ -25,6 +25,7 @@ interface BreakEvenChartProps {
   discount: DecimalString | null;
 }
 
+/** A curva do desconto que empata por número de parcelas, com o ponto da compra. */
 export function BreakEvenChart({ simulation, installments, discount }: BreakEvenChartProps) {
   const data = simulation.curve.map((point) => ({
     installments: point.installments,
@@ -33,11 +34,14 @@ export function BreakEvenChart({ simulation, installments, discount }: BreakEven
   }));
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
-      <LineChart data={data} margin={{ left: 4, right: 16, top: 16 }}>
+    <ChartContainer config={chartConfig} className="aspect-auto h-52 w-full">
+      <LineChart data={data} margin={{ left: 4, right: 24, top: 16, bottom: 4 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="installments"
+          type="number"
+          domain={["dataMin", "dataMax"]}
+          ticks={[1, 6, 12, 18, 24].filter((tick) => tick <= data.length)}
           tickLine={false}
           axisLine={false}
           tickFormatter={(value: number) => `${value}x`}
@@ -67,20 +71,6 @@ export function BreakEvenChart({ simulation, installments, discount }: BreakEven
             />
           }
         />
-        <ReferenceLine x={installments} stroke="var(--border)" strokeDasharray="4 4" />
-        {discount && (
-          <ReferenceLine
-            y={toChartNumber(discount) / 100}
-            stroke="var(--chart-2)"
-            strokeDasharray="4 4"
-            label={{
-              value: "Seu desconto",
-              position: "insideTopLeft",
-              fill: "var(--muted-foreground)",
-              fontSize: 12,
-            }}
-          />
-        )}
         <Line
           dataKey="discount"
           type="monotone"
@@ -89,6 +79,23 @@ export function BreakEvenChart({ simulation, installments, discount }: BreakEven
           dot={false}
           isAnimationActive={false}
         />
+        {discount && (
+          <ReferenceDot
+            x={installments}
+            y={toChartNumber(discount) / 100}
+            r={5}
+            ifOverflow="extendDomain"
+            fill={simulation.winner === "cash" ? "var(--gain)" : "var(--muted-foreground)"}
+            stroke="var(--card)"
+            strokeWidth={2}
+            label={{
+              value: `Você: ${formatQuantity(discount)}% em ${installments}x`,
+              position: "right",
+              fill: "var(--ink-2)",
+              fontSize: 12,
+            }}
+          />
+        )}
       </LineChart>
     </ChartContainer>
   );
