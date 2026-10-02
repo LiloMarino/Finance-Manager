@@ -1,0 +1,75 @@
+import {
+  Anchor,
+  Baby,
+  Banknote,
+  Briefcase,
+  Car,
+  Gift,
+  Globe,
+  GraduationCap,
+  Heart,
+  Hourglass,
+  House,
+  Leaf,
+  type LucideIcon,
+  Mountain,
+  PiggyBank,
+  Plane,
+  Rocket,
+  Shield,
+  Sprout,
+  Star,
+  Target,
+  TrendingUp,
+  Trophy,
+  Umbrella,
+  Zap,
+} from "lucide-react";
+
+import type { components } from "@/types/openapi.generated";
+
+export type SubportfolioIcon = components["schemas"]["SubportfolioIcon"];
+export type SubportfolioColor = components["schemas"]["SubportfolioColor"];
+
+// A ordem é a da grade do passo de identidade
+export const subportfolioIcons: Record<SubportfolioIcon, { label: string; icon: LucideIcon }> = {
+  banknote: { label: "Dinheiro", icon: Banknote },
+  sprout: { label: "Broto", icon: Sprout },
+  shield: { label: "Escudo", icon: Shield },
+  globe: { label: "Globo", icon: Globe },
+  house: { label: "Casa", icon: House },
+  "graduation-cap": { label: "Estudos", icon: GraduationCap },
+  plane: { label: "Viagem", icon: Plane },
+  heart: { label: "Coração", icon: Heart },
+  car: { label: "Carro", icon: Car },
+  baby: { label: "Bebê", icon: Baby },
+  gift: { label: "Presente", icon: Gift },
+  umbrella: { label: "Guarda-chuva", icon: Umbrella },
+  target: { label: "Alvo", icon: Target },
+  rocket: { label: "Foguete", icon: Rocket },
+  "piggy-bank": { label: "Cofrinho", icon: PiggyBank },
+  briefcase: { label: "Maleta", icon: Briefcase },
+  "trending-up": { label: "Alta", icon: TrendingUp },
+  mountain: { label: "Montanha", icon: Mountain },
+  star: { label: "Estrela", icon: Star },
+  hourglass: { label: "Ampulheta", icon: Hourglass },
+  zap: { label: "Raio", icon: Zap },
+  leaf: { label: "Folha", icon: Leaf },
+  anchor: { label: "Âncora", icon: Anchor },
+  trophy: { label: "Troféu", icon: Trophy },
+};
+
+export const subportfolioColors: Record<SubportfolioColor, { label: string; color: string }> = {
+  green: { label: "Verde", color: "var(--subportfolio-green)" },
+  purple: { label: "Roxo", color: "var(--subportfolio-purple)" },
+  "slate-blue": { label: "Azul acinzentado", color: "var(--subportfolio-slate-blue)" },
+  pink: { label: "Rosa", color: "var(--subportfolio-pink)" },
+  gold: { label: "Dourado", color: "var(--subportfolio-gold)" },
+  graphite: { label: "Grafite", color: "var(--subportfolio-graphite)" },
+  teal: { label: "Petróleo", color: "var(--subportfolio-teal)" },
+  wine: { label: "Vinho", color: "var(--subportfolio-wine)" },
+  terracotta: { label: "Terracota", color: "var(--subportfolio-terracotta)" },
+  olive: { label: "Oliva", color: "var(--subportfolio-olive)" },
+  indigo: { label: "Índigo", color: "var(--subportfolio-indigo)" },
+  brown: { label: "Marrom", color: "var(--subportfolio-brown)" },
+};

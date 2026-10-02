@@ -26,40 +26,47 @@ import { RiskCorrelationPage } from "@/pages/risk-correlation";
 import { SectorsPage } from "@/pages/sectors";
 import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
+import { PortfolioScopeProvider } from "@/shared/components/portfolio-scope-provider";
+import { PrivacyProvider } from "@/shared/components/privacy-provider";
 import { queryClient } from "@/shared/lib/query-client";
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="evolution" element={<EvolutionPage />} />
-            <Route path="performance" element={<PerformancePage />} />
-            <Route path="monthly-returns" element={<MonthlyReturnsPage />} />
-            <Route path="risk-correlation" element={<RiskCorrelationPage />} />
-            <Route path="rebalance" element={<RebalancePage />} />
-            <Route path="operations" element={<OperationsPage />} />
-            <Route path="import" element={<ImportPage />} />
-            <Route path="assets" element={<AssetsPage />} />
-            <Route path="cash" element={<CashPage />} />
-            <Route path="assets/:assetId" element={<AssetDetailPage />} />
-            <Route path="sectors" element={<SectorsPage />} />
-            <Route path="subportfolios" element={<SubportfoliosPage />} />
-            <Route path="fixed-income" element={<FixedIncomePage />} />
-            <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
-            <Route path="market" element={<MarketPage />} />
-            <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
-            <Route path="installments" element={<InstallmentsPage />} />
-            <Route path="correlation" element={<CorrelationPage />} />
-            <Route path="income" element={<IncomePage />} />
-            <Route path="tax" element={<TaxPage />} />
-            <Route path="data-health" element={<DataHealthPage />} />
-            <Route path="*" element={<ErrorPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <PortfolioScopeProvider>
+        <PrivacyProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="evolution" element={<EvolutionPage />} />
+                <Route path="performance" element={<PerformancePage />} />
+                <Route path="monthly-returns" element={<MonthlyReturnsPage />} />
+                <Route path="risk-return" element={<RiskCorrelationPage />} />
+                <Route path="rebalance" element={<RebalancePage />} />
+                <Route path="operations" element={<OperationsPage />} />
+                <Route path="import" element={<ImportPage />} />
+                <Route path="assets" element={<AssetsPage />} />
+                <Route path="cash" element={<CashPage />} />
+                <Route path="assets/:assetId" element={<AssetDetailPage />} />
+                <Route path="sectors" element={<SectorsPage />} />
+                <Route path="subportfolios" element={<SubportfoliosPage />} />
+                <Route path="fixed-income" element={<FixedIncomePage />} />
+                <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
+                <Route path="market" element={<MarketPage />} />
+                <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
+                <Route path="installments" element={<InstallmentsPage />} />
+                <Route path="correlation" element={<RiskCorrelationPage />} />
+                <Route path="asset-correlation" element={<CorrelationPage />} />
+                <Route path="income" element={<IncomePage />} />
+                <Route path="tax" element={<TaxPage />} />
+                <Route path="data" element={<DataHealthPage />} />
+                <Route path="*" element={<ErrorPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </PrivacyProvider>
+      </PortfolioScopeProvider>
       <ReactQueryDevtools buttonPosition="bottom-left" />
     </QueryClientProvider>
   );

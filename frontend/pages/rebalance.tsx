@@ -18,12 +18,12 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { formatBRL, formatPercent, formatPoints } from "@/types/decimal";
 
 export function RebalancePage() {
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = useRebalance(subportfolioId);
   const cash = useCash();
 

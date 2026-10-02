@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Label } from "@/shared/components/ui/label";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Switch } from "@/shared/components/ui/switch";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import { type PeriodChoice, periodRange } from "@/shared/lib/period";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
@@ -20,7 +20,7 @@ export function EvolutionPage() {
   const [category, setCategory] = useState<PortfolioCategory>();
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "all" });
   const [composition, setComposition] = useState(false);
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = useEvolution({
     category,
     subportfolio_id: subportfolioId,

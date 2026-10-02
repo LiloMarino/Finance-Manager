@@ -6,11 +6,11 @@ import { SectorDistribution } from "@/features/portfolio/sector-distribution";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
 
 export function HomePage() {
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = usePortfolio({ subportfolio_id: subportfolioId });
 
   return (

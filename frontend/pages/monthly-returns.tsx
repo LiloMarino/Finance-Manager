@@ -15,7 +15,7 @@ import { PeriodSelect } from "@/shared/components/period-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
 import type { Benchmark } from "@/shared/lib/benchmark";
 import { type PeriodChoice, periodRange } from "@/shared/lib/period";
@@ -32,7 +32,7 @@ export function MonthlyReturnsPage() {
   const [benchmark, setBenchmark] = useState<Benchmark>();
   const [granularity, setGranularity] = useState<Granularity>("month");
   const [period, setPeriod] = useState<PeriodChoice>({ preset: "12m" });
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = useMonthlyReturns({
     category,
     subportfolio_id: subportfolioId,

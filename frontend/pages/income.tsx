@@ -8,10 +8,10 @@ import { IncomePerformancePanel } from "@/features/income/income-performance";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 
 export function IncomePage() {
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
 
   return (
     <div className="flex flex-col gap-6">

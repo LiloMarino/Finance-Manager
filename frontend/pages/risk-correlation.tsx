@@ -7,12 +7,12 @@ import { RiskReturnPanel } from "@/features/risk-return/risk-return-panel";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { CategorySelect } from "@/shared/components/category-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { useSubportfolioParam } from "@/shared/hooks/use-subportfolio-param";
+import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
 
 export function RiskCorrelationPage() {
   const [category, setCategory] = useState<PortfolioCategory>();
-  const [subportfolioId] = useSubportfolioParam();
+  const [subportfolioId] = usePortfolioScope();
 
   return (
     <div className="flex flex-col gap-6">
