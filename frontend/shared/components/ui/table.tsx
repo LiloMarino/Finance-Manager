@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "cn"
+import { cn } from "@/shared/lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
@@ -63,6 +63,8 @@ const tableRowVariants = cva(
         default: "border-b border-border-subtle",
         // A linha que fecha um bloco, como a referência acima dos anos
         divider: "border-b-2 border-border",
+        // O cabeçalho de um grupo de linhas, que não reage ao mouse
+        group: "border-b border-border-subtle bg-muted hover:bg-muted",
         // A linha de total, que soma as de cima
         total: "border-t border-border font-semibold hover:bg-transparent",
       },

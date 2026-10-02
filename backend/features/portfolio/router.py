@@ -59,11 +59,11 @@ class FixedIncomeHoldingDTO(BaseDTO):
     as_of: date
 
 
-class CategoryAllocationDTO(BaseDTO):
-    """`cost` é o custo da renda variável e o principal da renda fixa. A variação
-    do dia é nula quando nenhum item da categoria tem uma."""
+class SubtotalDTO(BaseDTO):
+    """A soma de um grupo de itens. `cost` é o custo da renda variável e o
+    principal da renda fixa. A variação do dia é nula quando nenhum item do grupo
+    tem uma."""
 
-    category: PortfolioCategory
     asset_count: int
     value: DecimalStr
     share: DecimalStr
@@ -72,6 +72,10 @@ class CategoryAllocationDTO(BaseDTO):
     unrealized_return: DecimalStr | None
     day_change: DecimalStr | None
     day_return: DecimalStr | None
+
+
+class CategoryAllocationDTO(SubtotalDTO):
+    category: PortfolioCategory
 
 
 class SectorAllocationDTO(BaseDTO):
@@ -116,7 +120,8 @@ class PortfolioDTO(BaseDTO):
     a marcação de hoje contra a do dia útil anterior.
 
     `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura. O
-    resultado não realizado é o das categorias investidas, sem o saldo."""
+    resultado não realizado é o das categorias investidas, sem o saldo. `equity`
+    soma a renda variável inteira."""
 
     total: DecimalStr
     cash: DecimalStr | None
@@ -127,6 +132,7 @@ class PortfolioDTO(BaseDTO):
     price_date: date | None
     previous_price_date: date | None
     categories: list[CategoryAllocationDTO]
+    equity: SubtotalDTO | None
     positions: list[PositionDTO]
     fixed_income: list[FixedIncomeHoldingDTO]
     sectors: list[SectorAllocationDTO]

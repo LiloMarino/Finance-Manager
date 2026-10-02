@@ -1,67 +1,56 @@
-import { AllocationChart } from "@/features/portfolio/allocation-chart";
-import { CategorySections } from "@/features/portfolio/category-sections";
-import { IndicatorCards } from "@/features/portfolio/indicator-cards";
-import { LiquidityCard } from "@/features/portfolio/liquidity-card";
-import { SectorDistribution } from "@/features/portfolio/sector-distribution";
+import { PendingAlerts } from "@/features/data-health/pending-alerts";
+import { CompositionCard } from "@/features/portfolio/composition-card";
+import { PortfolioEmpty } from "@/features/portfolio/portfolio-empty";
+import { PortfolioMetrics } from "@/features/portfolio/portfolio-metrics";
+import { EquityCard, FixedIncomeCard } from "@/features/portfolio/positions-tables";
+import { SectorCard } from "@/features/portfolio/sector-card";
 import { usePortfolio } from "@/features/portfolio/use-portfolio";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/page-header";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { formatDate } from "@/shared/lib/format";
 
 export function HomePage() {
   const [subportfolioId] = usePortfolioScope();
   const { data, isPending, error } = usePortfolio({ subportfolio_id: subportfolioId });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Carteira</h1>
-        <p className="text-muted-foreground">
-          Renda variável pelo último fechamento e renda fixa pelo valor bruto marcado.
-        </p>
-      </div>
+    <>
+      <PageHeader
+        title="Carteira"
+        description={
+          data?.price_date
+            ? `Renda variável pelo fechamento de ${formatDate(data.price_date)} e renda fixa pelo valor bruto marcado hoje.`
+            : "Renda variável pelo último fechamento e renda fixa pelo valor bruto marcado."
+        }
+      />
 
       {isPending ? (
         <Skeleton className="h-64 w-full" />
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
+      ) : data.categories.length === 0 ? (
+        <PortfolioEmpty />
       ) : (
         <>
+          {/* Pendências */}
+          <PendingAlerts />
+
           {/* Indicadores */}
-          <IndicatorCards portfolio={data} />
+          <PortfolioMetrics portfolio={data} />
 
-          {/* Composição por categoria */}
-          {data.categories.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Composição</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AllocationChart categories={data.categories} />
-              </CardContent>
-            </Card>
-          )}
+          {/* Composição e setores */}
+          <div className="grid gap-4 xl:grid-cols-2">
+            <CompositionCard portfolio={data} />
+            {data.segments.length > 0 && <SectorCard portfolio={data} />}
+          </div>
 
-          {/* Liquidez */}
-          <LiquidityCard portfolio={data} />
-
-          {/* Posições por categoria */}
-          <CategorySections portfolio={data} />
-
-          {/* Renda variável por setor e segmento */}
-          {data.sectors.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Renda variável por setor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SectorDistribution sectors={data.sectors} segments={data.segments} />
-              </CardContent>
-            </Card>
-          )}
+          {/* Posições */}
+          <EquityCard portfolio={data} />
+          <FixedIncomeCard portfolio={data} />
         </>
       )}
-    </div>
+    </>
   );
 }

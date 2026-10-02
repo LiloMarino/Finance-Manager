@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "cn"
+import { cn } from "@/shared/lib/utils"
 
 const alertVariants = cva(
   "group/alert relative grid w-full items-center gap-0.5 rounded-lg border py-2.5 pr-3 pl-3.5 text-left text-body has-data-[slot=alert-action]:grid-cols-[auto_1fr_auto] has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:text-muted-foreground *:[svg:not([class*='size-'])]:size-4",

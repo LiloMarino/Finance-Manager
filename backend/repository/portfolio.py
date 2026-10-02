@@ -72,11 +72,10 @@ class FixedIncomeHolding:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class CategoryAllocation:
-    """A soma dos itens da categoria. `cost` é o custo da renda variável e o
+class Subtotal:
+    """A soma de um grupo de itens. `cost` é o custo da renda variável e o
     principal da renda fixa; a variação do dia soma só os itens que têm uma."""
 
-    category: PortfolioCategory
     asset_count: int
     value: Decimal
     share: Decimal
@@ -85,6 +84,13 @@ class CategoryAllocation:
     unrealized_return: Decimal | None
     day_change: Decimal | None
     day_return: Decimal | None
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CategoryAllocation(Subtotal):
+    """A soma dos itens de uma categoria."""
+
+    category: PortfolioCategory
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -134,7 +140,8 @@ class Portfolio:
     abertura dele; ele entra no total e na categoria própria.
 
     O resultado não realizado é o das categorias investidas, sobre o custo delas:
-    o saldo não tem resultado e fica fora da base."""
+    o saldo não tem resultado e fica fora da base. `equity` soma a renda variável
+    inteira, nula sem nenhum ativo em carteira."""
 
     total: Decimal
     cash: Decimal | None
@@ -145,6 +152,7 @@ class Portfolio:
     price_date: date | None
     previous_price_date: date | None
     categories: list[CategoryAllocation]
+    equity: Subtotal | None
     positions: list[AssetPosition]
     fixed_income: list[FixedIncomeHolding]
     sectors: list[SectorAllocation]
@@ -183,12 +191,9 @@ class _Totals:
             self.day_change = (self.day_change or ZERO) + day_change
             self.day_value += value
 
-    def allocation(
-        self, category: PortfolioCategory, total: Decimal
-    ) -> CategoryAllocation:
+    def subtotal(self, total: Decimal) -> Subtotal:
         result = self.value - self.cost
-        return CategoryAllocation(
-            category=category,
+        return Subtotal(
             asset_count=self.count,
             value=self.value,
             share=_share(self.value, total),
@@ -201,6 +206,22 @@ class _Totals:
                 if self.day_change is None
                 else _day_return(self.day_change, self.day_value)
             ),
+        )
+
+    def allocation(
+        self, category: PortfolioCategory, total: Decimal
+    ) -> CategoryAllocation:
+        found = self.subtotal(total)
+        return CategoryAllocation(
+            category=category,
+            asset_count=found.asset_count,
+            value=found.value,
+            share=found.share,
+            cost=found.cost,
+            unrealized_result=found.unrealized_result,
+            unrealized_return=found.unrealized_return,
+            day_change=found.day_change,
+            day_return=found.day_return,
         )
 
 
@@ -406,10 +427,13 @@ def portfolio(
     )
 
     by_category: defaultdict[PortfolioCategory, _Totals] = defaultdict(_Totals)
+    equity = _Totals()
     for item in valued:
+        day_change = item.day_change(session_date)
         by_category[PortfolioCategory(item.asset.asset_class)].add(
-            item.market_value, item.position.total_cost, item.day_change(session_date)
+            item.market_value, item.position.total_cost, day_change
         )
+        equity.add(item.market_value, item.position.total_cost, day_change)
     for investment in investments:
         by_category[PortfolioCategory.FIXED_INCOME].add(
             investment.gross_value, investment.invested, investment.day_change
@@ -456,6 +480,7 @@ def portfolio(
             for category in PortfolioCategory
             if by_category[category].value > 0
         ],
+        equity=equity.subtotal(total) if equity.count else None,
         positions=[_asset_position(item, total, session_date) for item in valued],
         fixed_income=[
             _fixed_income_holding(investment, total) for investment in investments

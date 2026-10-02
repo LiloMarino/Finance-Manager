@@ -1316,13 +1316,8 @@ export interface components {
              */
             amount: DecimalString;
         };
-        /**
-         * CategoryAllocationDTO
-         * @description `cost` é o custo da renda variável e o principal da renda fixa. A variação
-         *     do dia é nula quando nenhum item da categoria tem uma.
-         */
+        /** CategoryAllocationDTO */
         CategoryAllocationDTO: {
-            category: components["schemas"]["PortfolioCategory"];
             /** Asset Count */
             asset_count: number;
             /**
@@ -1351,6 +1346,7 @@ export interface components {
             day_change: DecimalString | null;
             /** Day Return */
             day_return: DecimalString | null;
+            category: components["schemas"]["PortfolioCategory"];
         };
         /**
          * CategoryAmountDTO
@@ -3069,7 +3065,8 @@ export interface components {
          *     a marcação de hoje contra a do dia útil anterior.
          *
          *     `cash` é o saldo de investimento, nulo na subcarteira e antes da abertura. O
-         *     resultado não realizado é o das categorias investidas, sem o saldo.
+         *     resultado não realizado é o das categorias investidas, sem o saldo. `equity`
+         *     soma a renda variável inteira.
          */
         PortfolioDTO: {
             /**
@@ -3096,6 +3093,7 @@ export interface components {
             previous_price_date: string | null;
             /** Categories */
             categories: components["schemas"]["CategoryAllocationDTO"][];
+            equity: components["schemas"]["SubtotalDTO"] | null;
             /** Positions */
             positions: components["schemas"]["PositionDTO"][];
             /** Fixed Income */
@@ -3492,6 +3490,42 @@ export interface components {
             name: string;
             icon: components["schemas"]["SubportfolioIcon"];
             color: components["schemas"]["SubportfolioColor"];
+        };
+        /**
+         * SubtotalDTO
+         * @description A soma de um grupo de itens. `cost` é o custo da renda variável e o
+         *     principal da renda fixa. A variação do dia é nula quando nenhum item do grupo
+         *     tem uma.
+         */
+        SubtotalDTO: {
+            /** Asset Count */
+            asset_count: number;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+            /**
+             * Cost
+             * Format: decimal
+             */
+            cost: DecimalString;
+            /**
+             * Unrealized Result
+             * Format: decimal
+             */
+            unrealized_result: DecimalString;
+            /** Unrealized Return */
+            unrealized_return: DecimalString | null;
+            /** Day Change */
+            day_change: DecimalString | null;
+            /** Day Return */
+            day_return: DecimalString | null;
         };
         /** SuggestionDTO */
         SuggestionDTO: {

@@ -50,8 +50,10 @@ export function Metric({
 export function MetricStrip({ children }: { children: ReactNode }) {
   return (
     <Card className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-0 py-0">
-      {Children.map(children, (child) => (
-        <div className="border-border border-l px-5 py-4 first:border-l-0">{child}</div>
+      {Children.toArray(children).map((child, index) => (
+        <div key={index} className="border-border border-l px-5 py-4 first:border-l-0">
+          {child}
+        </div>
       ))}
     </Card>
   );

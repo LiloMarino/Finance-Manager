@@ -101,6 +101,24 @@ def test_total_adds_market_value_and_fixed_income(
     assert Decimal(body["fixed_income"][0]["share"]) == Decimal("0.35")
 
 
+def test_equity_subtotal_adds_only_variable_income(
+    api: TestClient, session: Session
+) -> None:
+    """O subtotal da renda variável soma as ações e os FIIs, sem a renda fixa: o
+    valor, o custo, o resultado e a fração no total."""
+    _asset(session, "ABCD3", AssetClass.STOCK, "10", "20", close="30")
+    _asset(session, "ABCD11", AssetClass.FII, "10", "100", close="100")
+    _fixed_income(session, "700")
+
+    equity = api.get("/api/portfolio").json()["equity"]
+
+    assert equity["asset_count"] == 2
+    assert Decimal(equity["value"]) == Decimal(1300)
+    assert Decimal(equity["cost"]) == Decimal(1200)
+    assert Decimal(equity["unrealized_result"]) == Decimal(100)
+    assert Decimal(equity["share"]) == Decimal("0.65")
+
+
 def test_portfolio_result_adds_the_categories(
     api: TestClient, session: Session
 ) -> None:
