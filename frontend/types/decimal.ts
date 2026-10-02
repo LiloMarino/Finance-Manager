@@ -80,6 +80,11 @@ export function decimalSign(value: DecimalString): -1 | 0 | 1 {
   return value.startsWith("-") ? -1 : 1;
 }
 
+/** O módulo: o mesmo valor sem o sinal de menos. */
+export function decimalAbs(value: DecimalString): DecimalString {
+  return value.startsWith("-") ? toDecimalString(value.slice(1)) : value;
+}
+
 /** Número para geometria de gráfico, onde a precisão acaba no pixel. */
 export function toChartNumber(value: DecimalString): number {
   return Number(value);

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from backend.core.dto import BaseDTO, NameInDTO
+from backend.core.dto import BaseDTO, DecimalStr, NameInDTO
 from backend.core.enum import SubportfolioColor, SubportfolioIcon
 
 
@@ -38,3 +38,20 @@ class MembersInDTO(BaseDTO):
 
     asset_ids: list[int]
     investment_ids: list[int]
+
+
+class DivisionSliceDTO(BaseDTO):
+    """Uma fatia da carteira: `subportfolio_id` nulo é o que está fora de qualquer
+    subcarteira, o saldo incluído. `share` é a fração de 0 a 1 da carteira."""
+
+    subportfolio_id: int | None
+    value: DecimalStr
+    share: DecimalStr
+
+
+class DivisionDTO(BaseDTO):
+    """Como a carteira se divide: as subcarteiras em ordem de nome e, por último, o
+    que ficou fora delas."""
+
+    total: DecimalStr
+    slices: list[DivisionSliceDTO]

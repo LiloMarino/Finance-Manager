@@ -460,6 +460,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/subportfolios/division": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Division
+         * @description Como a carteira se divide entre as subcarteiras e o que está fora delas.
+         */
+        get: operations["get_division_api_subportfolios_division_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subportfolios/{subportfolio_id}": {
         parameters: {
             query?: never;
@@ -1663,6 +1683,39 @@ export interface components {
          * @enum {string}
          */
         DataIssueKind: "darf_due" | "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash" | "rebalance_breach";
+        /**
+         * DivisionDTO
+         * @description Como a carteira se divide: as subcarteiras em ordem de nome e, por último, o
+         *     que ficou fora delas.
+         */
+        DivisionDTO: {
+            /**
+             * Total
+             * Format: decimal
+             */
+            total: DecimalString;
+            /** Slices */
+            slices: components["schemas"]["DivisionSliceDTO"][];
+        };
+        /**
+         * DivisionSliceDTO
+         * @description Uma fatia da carteira: `subportfolio_id` nulo é o que está fora de qualquer
+         *     subcarteira, o saldo incluído. `share` é a fração de 0 a 1 da carteira.
+         */
+        DivisionSliceDTO: {
+            /** Subportfolio Id */
+            subportfolio_id: number | null;
+            /**
+             * Value
+             * Format: decimal
+             */
+            value: DecimalString;
+            /**
+             * Share
+             * Format: decimal
+             */
+            share: DecimalString;
+        };
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -3069,12 +3122,30 @@ export interface components {
         /**
          * PlanDTO
          * @description A sugestão para o aporte. `leftover` é o que sobra do arredondamento em
-         *     cotas, e fica no saldo; `sells_equity` avisa que alguma venda de renda variável
-         *     pode gerar DARF.
+         *     cotas, e fica no saldo; `used` é o que a sugestão usa do aporte. `total_before`
+         *     e `total_after` são o patrimônio da subcarteira antes e depois; `sells_equity`
+         *     avisa que alguma venda de renda variável pode gerar DARF.
          */
         PlanDTO: {
             /** Orders */
             orders: components["schemas"]["OrderDTO"][];
+            /** Lines */
+            lines: components["schemas"]["PlanLineDTO"][];
+            /**
+             * Total Before
+             * Format: decimal
+             */
+            total_before: DecimalString;
+            /**
+             * Total After
+             * Format: decimal
+             */
+            total_after: DecimalString;
+            /**
+             * Used
+             * Format: decimal
+             */
+            used: DecimalString;
             /**
              * Leftover
              * Format: decimal
@@ -3111,6 +3182,58 @@ export interface components {
              * @default false
              */
             allow_sales: boolean;
+        };
+        /**
+         * PlanLineDTO
+         * @description Um item antes e depois da sugestão. As frações são de 0 a 1 sobre o total da
+         *     subcarteira de cada momento, e o desvio é a fração menos a meta. `quantity_*` é
+         *     o número de cotas, nulo na renda fixa.
+         */
+        PlanLineDTO: {
+            /** Asset Id */
+            asset_id: number | null;
+            /** Label */
+            label: string;
+            category: components["schemas"]["PortfolioCategory"];
+            /** Quantity Before */
+            quantity_before: DecimalString | null;
+            /** Quantity After */
+            quantity_after: DecimalString | null;
+            /**
+             * Value Before
+             * Format: decimal
+             */
+            value_before: DecimalString;
+            /**
+             * Value After
+             * Format: decimal
+             */
+            value_after: DecimalString;
+            /**
+             * Share Before
+             * Format: decimal
+             */
+            share_before: DecimalString;
+            /**
+             * Share After
+             * Format: decimal
+             */
+            share_after: DecimalString;
+            /**
+             * Target
+             * Format: decimal
+             */
+            target: DecimalString;
+            /**
+             * Deviation Before
+             * Format: decimal
+             */
+            deviation_before: DecimalString;
+            /**
+             * Deviation After
+             * Format: decimal
+             */
+            deviation_after: DecimalString;
         };
         /**
          * PoolResultDTO
@@ -5240,6 +5363,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubportfolioDTO"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_division_api_subportfolios_division_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DivisionDTO"];
                 };
             };
             /** @description Unprocessable Content */

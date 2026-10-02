@@ -27,12 +27,43 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
   });
 }
 
+type SubportfolioInput = components["schemas"]["SubportfolioInDTO"];
+type TargetsInput = components["schemas"]["TargetsInDTO"];
+
+interface NewSubportfolio {
+  identity: SubportfolioInput;
+  members: MembersInput;
+  /** Sem metas, a subcarteira nasce sem desvio nem divisão de aporte. */
+  targets: TargetsInput | null;
+}
+
+/** Cria a subcarteira e, em seguida, a filiação e as metas: os dois passos finais precisam
+do id que a criação devolve. */
 export function useCreateSubportfolio() {
-  return useWrite(
-    (name: string) =>
-      post("/api/subportfolios", { body: { name, icon: "briefcase", color: "graphite" } }),
-    "Subcarteira criada.",
-  );
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ identity, members, targets }: NewSubportfolio) => {
+      const created = await post("/api/subportfolios", { body: identity });
+      const path = { subportfolio_id: created.id };
+      await put("/api/subportfolios/{subportfolio_id}/members", { path, body: members });
+      if (targets) await put("/api/rebalance/{subportfolio_id}/targets", { path, body: targets });
+      return created;
+    },
+    onSuccess: (created) => {
+      toast.success(`${created.name} criada.`);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+    // A criação pode ter ido até o meio: as telas se atualizam com o que ficou gravado
+    onSettled: () =>
+      invalidateKeys(queryClient, [
+        queryKeys.subportfolios,
+        queryKeys.assets,
+        queryKeys.fixedIncome,
+        queryKeys.portfolio,
+        queryKeys.dataHealth,
+      ]),
+  });
 }
 
 export function useRenameSubportfolio(subportfolio: Subportfolio) {

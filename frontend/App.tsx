@@ -21,8 +21,8 @@ import { IncomePage } from "@/pages/income";
 import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
-import { RebalancePage } from "@/pages/rebalance";
 import { RiskReturnPage } from "@/pages/risk-return";
+import { SubportfolioDetailPage } from "@/pages/subportfolio-detail";
 import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
 import { PortfolioScopeProvider } from "@/shared/components/portfolio-scope-provider";
@@ -41,13 +41,13 @@ export default function App() {
                 <Route path="evolution" element={<EvolutionPage />} />
                 <Route path="performance" element={<PerformancePage />} />
                 <Route path="risk-return" element={<RiskReturnPage />} />
-                <Route path="rebalance" element={<RebalancePage />} />
                 <Route path="operations" element={<OperationsPage />} />
                 <Route path="import" element={<ImportPage />} />
                 <Route path="assets" element={<AssetsPage />} />
                 <Route path="cash" element={<CashPage />} />
                 <Route path="assets/:assetId" element={<AssetDetailPage />} />
                 <Route path="subportfolios" element={<SubportfoliosPage />} />
+                <Route path="subportfolios/:subportfolioId" element={<SubportfolioDetailPage />} />
                 <Route path="fixed-income" element={<FixedIncomePage />} />
                 <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
                 <Route path="market" element={<MarketPage />} />

@@ -284,3 +284,47 @@ def test_deleting_the_subportfolio_deletes_its_targets(
     api.delete(f"/api/subportfolios/{found.id}")
 
     assert session.scalar(select(func.count()).select_from(AssetTarget)) == 0
+
+
+def test_plan_lists_each_item_before_and_after(
+    api: TestClient, session: Session
+) -> None:
+    """Cada linha do plano traz as cotas e o valor antes e depois, e o desvio contra a
+    meta; a compra soma cotas e o que o plano usa do aporte é o aporte menos a sobra."""
+    found, first, second = _setup(session)
+    _targets(api, found, first, second)
+
+    body = api.post(
+        "/api/rebalance/plan",
+        json={"subportfolio_id": found.id, "amount": "300"},
+    ).json()
+    lines = {line["label"]: line for line in body["lines"]}
+
+    assert Decimal(lines["EFGH11"]["quantity_before"]) == Decimal(10)
+    assert Decimal(lines["EFGH11"]["quantity_after"]) == Decimal(17)
+    assert lines["Renda fixa"]["quantity_before"] is None
+    assert Decimal(lines["Renda fixa"]["value_after"]) == Decimal(350)
+    assert Decimal(lines["Renda fixa"]["share_before"]) == Decimal("0.2")
+    assert Decimal(body["total_before"]) == Decimal(1000)
+    assert Decimal(body["total_after"]) == Decimal(1290)
+    assert Decimal(body["used"]) == Decimal(290)
+    assert abs(Decimal(lines["EFGH11"]["deviation_after"])) < abs(
+        Decimal(lines["EFGH11"]["deviation_before"])
+    )
+
+
+def test_division_splits_the_portfolio_between_subportfolios_and_the_rest(
+    api: TestClient, session: Session
+) -> None:
+    """A subcarteira pesa o que tem de membros e o que está fora dela fecha o total."""
+    _setup(session)
+    _asset(session, "IJKL11", "1", "1000", None)
+
+    body = api.get("/api/subportfolios/division").json()
+    slices = body["slices"]
+
+    assert Decimal(body["total"]) == Decimal(2000)
+    assert Decimal(slices[0]["value"]) == Decimal(1000)
+    assert Decimal(slices[0]["share"]) == Decimal("0.5")
+    assert slices[-1]["subportfolio_id"] is None
+    assert Decimal(slices[-1]["value"]) == Decimal(1000)

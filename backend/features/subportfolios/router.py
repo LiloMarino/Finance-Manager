@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter, status
 
 from backend.core.database.session import SessionDep
 from backend.features.subportfolios.dto import (
+    DivisionDTO,
     MembersInDTO,
     SubportfolioDTO,
     SubportfolioInDTO,
@@ -11,6 +14,7 @@ from backend.features.subportfolios.dto import (
 from backend.features.subportfolios.service import (
     create_subportfolio,
     delete_subportfolio,
+    division,
     list_subportfolios,
     set_members,
     update_subportfolio,
@@ -22,6 +26,12 @@ router = APIRouter(prefix="/api/subportfolios", tags=["subportfolios"])
 @router.get("")
 def list_all(session: SessionDep) -> list[SubportfolioDTO]:
     return list_subportfolios(session)
+
+
+@router.get("/division")
+def get_division(session: SessionDep) -> DivisionDTO:
+    """Como a carteira se divide entre as subcarteiras e o que está fora delas."""
+    return division(session, date.today())
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

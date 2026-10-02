@@ -25,9 +25,9 @@ export function MembersDialog({ subportfolio }: { subportfolio: Subportfolio }) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+      <DialogTrigger render={<Button variant="outline" />}>
         <ListChecks />
-        Escolher ativos
+        Itens
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

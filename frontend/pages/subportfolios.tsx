@@ -1,8 +1,10 @@
 import { Plus } from "lucide-react";
 
-import { SubportfolioCard } from "@/features/subportfolios/subportfolio-card";
-import { useCreateSubportfolio } from "@/features/subportfolios/use-subportfolio-mutations";
-import { NameDialog } from "@/shared/components/name-dialog";
+import { DivisionCard } from "@/features/subportfolios/division-card";
+import { SubportfolioOverviewCard } from "@/features/subportfolios/subportfolio-overview-card";
+import { SubportfolioWizard } from "@/features/subportfolios/subportfolio-wizard";
+import { useDivision } from "@/features/subportfolios/use-division";
+import { PageHeader } from "@/shared/components/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useSubportfolios } from "@/shared/hooks/use-subportfolios";
@@ -10,30 +12,24 @@ import { getApiErrorMessage } from "@/shared/lib/api";
 
 export function SubportfoliosPage() {
   const { data, isPending, error } = useSubportfolios();
-  const create = useCreateSubportfolio();
+  const division = useDivision();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Subcarteiras</h1>
-          <p className="text-muted-foreground">
-            Grupos de ativos e títulos dentro da carteira, cada item em uma só. O seletor no topo da
-            Carteira, da Evolução, da Rentabilidade, do Ano a ano e dos Proventos mostra uma
-            subcarteira no lugar da carteira geral, com o histórico dos membros de hoje.
-          </p>
-        </div>
-        <NameDialog
-          title="Nova subcarteira"
-          save={create}
-          trigger={
-            <Button>
-              <Plus />
-              Nova subcarteira
-            </Button>
-          }
-        />
-      </div>
+    <>
+      <PageHeader
+        title="Subcarteiras"
+        description="Grupos que você cria dentro da carteira, cada um com a sua meta de distribuição. Cada ativo ou título fica em uma subcarteira só."
+        actions={
+          <SubportfolioWizard
+            trigger={
+              <Button>
+                <Plus />
+                Nova subcarteira
+              </Button>
+            }
+          />
+        }
+      />
 
       {isPending ? (
         <Skeleton className="h-40 w-full" />
@@ -45,12 +41,38 @@ export function SubportfoliosPage() {
           subcarteira no Editar de cada ativo e de cada título.
         </p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {data.map((subportfolio) => (
-            <SubportfolioCard key={subportfolio.id} subportfolio={subportfolio} />
-          ))}
-        </div>
+        <>
+          <DivisionCard subportfolios={data} />
+
+          {/* Um card por subcarteira */}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {data.map((subportfolio) => (
+              <SubportfolioOverviewCard
+                key={subportfolio.id}
+                subportfolio={subportfolio}
+                slice={division.data?.slices.find(
+                  (slice) => slice.subportfolio_id === subportfolio.id,
+                )}
+              />
+            ))}
+            <SubportfolioWizard
+              trigger={
+                <button
+                  type="button"
+                  className="border-border-strong text-ink-2 hover:bg-muted grid min-h-48 place-items-center rounded-xl border border-dashed font-medium"
+                >
+                  Nova subcarteira
+                </button>
+              }
+            />
+          </div>
+
+          <p className="text-caption text-muted-foreground">
+            Para ver Carteira, Evolução, Rentabilidade, Proventos, Risco e Correlação de uma
+            subcarteira só, troque a carteira no topo da sidebar.
+          </p>
+        </>
       )}
-    </div>
+    </>
   );
 }

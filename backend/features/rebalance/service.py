@@ -16,6 +16,7 @@ from backend.features.rebalance.dto import (
     OrderDTO,
     PlanDTO,
     PlanInDTO,
+    PlanLineDTO,
     RebalanceDTO,
     RebalanceLineDTO,
     TargetsDTO,
@@ -271,6 +272,7 @@ def plan(session: Session, today: date, payload: PlanInDTO) -> PlanDTO:
     def share(value: Decimal) -> Decimal:
         return value / after_total if after_total else ZERO
 
+    leftover = payload.amount - sum((order.amount for order in orders), ZERO)
     return PlanDTO(
         orders=[
             OrderDTO(
@@ -284,7 +286,27 @@ def plan(session: Session, today: date, payload: PlanInDTO) -> PlanDTO:
             )
             for line, order, value in zip(scope.lines, orders, after, strict=True)
         ],
-        leftover=payload.amount - sum((order.amount for order in orders), ZERO),
+        lines=[
+            PlanLineDTO(
+                asset_id=line.asset_id,
+                label=line.label,
+                category=line.category,
+                quantity_before=line.quantity,
+                quantity_after=_quantity_after(line.quantity, order.quantity),
+                value_before=line.value,
+                value_after=value,
+                share_before=scope.share(line),
+                share_after=share(value),
+                target=line.target,
+                deviation_before=scope.deviation(line),
+                deviation_after=share(value) - line.target,
+            )
+            for line, order, value in zip(scope.lines, orders, after, strict=True)
+        ],
+        total_before=scope.total,
+        total_after=after_total,
+        used=payload.amount - leftover,
+        leftover=leftover,
         imbalance_before=scope.imbalance,
         imbalance_after=imbalance(
             share(value) - line.target
@@ -295,3 +317,11 @@ def plan(session: Session, today: date, payload: PlanInDTO) -> PlanDTO:
             for line, order in zip(scope.lines, orders, strict=True)
         ),
     )
+
+
+def _quantity_after(before: Decimal | None, moved: Decimal | None) -> Decimal | None:
+    """As cotas depois da ordem, que vem com sinal: a compra soma e a venda tira. A
+    renda fixa não tem cotas."""
+    if before is None:
+        return None
+    return before if moved is None else before + moved

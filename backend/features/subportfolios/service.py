@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import date
+from decimal import Decimal
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -8,12 +10,16 @@ from sqlalchemy.orm import Session
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, FixedIncomeInvestment, Subportfolio
 from backend.features.subportfolios.dto import (
+    DivisionDTO,
+    DivisionSliceDTO,
     MemberAssetDTO,
     MemberInvestmentDTO,
     MembersInDTO,
     SubportfolioDTO,
     SubportfolioInDTO,
 )
+from backend.repository.portfolio import portfolio
+from backend.repository.rebalance import target_scopes
 from backend.repository.subportfolios import subportfolio
 
 
@@ -135,3 +141,29 @@ def set_members(session: Session, subportfolio_id: int, payload: MembersInDTO) -
             subportfolio_id if investment.id in investment_ids else None
         )
     session.commit()
+
+
+def division(session: Session, today: date) -> DivisionDTO:
+    """O valor de cada subcarteira e a fração dela na carteira; o que sobra do total
+    é o que está fora de subcarteira, com o saldo."""
+    total = portfolio(session, today).total
+    scopes = target_scopes(session, today)
+
+    def share(value: Decimal) -> Decimal:
+        return value / total if total else Decimal(0)
+
+    outside = total - sum((scope.total for scope in scopes), Decimal(0))
+    return DivisionDTO(
+        total=total,
+        slices=[
+            *(
+                DivisionSliceDTO(
+                    subportfolio_id=scope.found.id,
+                    value=scope.total,
+                    share=share(scope.total),
+                )
+                for scope in scopes
+            ),
+            DivisionSliceDTO(subportfolio_id=None, value=outside, share=share(outside)),
+        ],
+    )

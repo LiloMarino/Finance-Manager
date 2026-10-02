@@ -26,7 +26,8 @@ FIXED_INCOME_LABEL = "Renda fixa"
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TargetLine:
     """Um item da subcarteira: o valor de hoje, a meta em fração, o piso do que só
-    vira dinheiro no vencimento e o preço da cota, nulo na renda fixa."""
+    vira dinheiro no vencimento, o preço da cota e quantas cotas há hoje, os dois
+    nulos na renda fixa."""
 
     asset_id: int | None
     label: str
@@ -35,6 +36,7 @@ class TargetLine:
     target: Decimal
     locked: Decimal
     price: Decimal | None
+    quantity: Decimal | None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -128,6 +130,7 @@ def target_scope(session: Session, today: date, found: Subportfolio) -> TargetSc
                 target=targets.get(asset.id, ZERO),
                 locked=ZERO,
                 price=position.price if position else prices.get(asset.id),
+                quantity=position.quantity if position else ZERO,
             )
         )
     fixed_income = sum((holding.gross_value for holding in view.fixed_income), ZERO)
@@ -141,6 +144,7 @@ def target_scope(session: Session, today: date, found: Subportfolio) -> TargetSc
                 target=found.fixed_income_target,
                 locked=_locked(view),
                 price=None,
+                quantity=None,
             )
         )
     return TargetScope(found=found, total=view.total, lines=lines)

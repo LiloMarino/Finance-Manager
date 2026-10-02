@@ -115,12 +115,36 @@ class OrderDTO(BaseDTO):
     share_after: DecimalStr
 
 
+class PlanLineDTO(BaseDTO):
+    """Um item antes e depois da sugestão. As frações são de 0 a 1 sobre o total da
+    subcarteira de cada momento, e o desvio é a fração menos a meta. `quantity_*` é
+    o número de cotas, nulo na renda fixa."""
+
+    asset_id: int | None
+    label: str
+    category: PortfolioCategory
+    quantity_before: DecimalStr | None
+    quantity_after: DecimalStr | None
+    value_before: DecimalStr
+    value_after: DecimalStr
+    share_before: DecimalStr
+    share_after: DecimalStr
+    target: DecimalStr
+    deviation_before: DecimalStr
+    deviation_after: DecimalStr
+
+
 class PlanDTO(BaseDTO):
     """A sugestão para o aporte. `leftover` é o que sobra do arredondamento em
-    cotas, e fica no saldo; `sells_equity` avisa que alguma venda de renda variável
-    pode gerar DARF."""
+    cotas, e fica no saldo; `used` é o que a sugestão usa do aporte. `total_before`
+    e `total_after` são o patrimônio da subcarteira antes e depois; `sells_equity`
+    avisa que alguma venda de renda variável pode gerar DARF."""
 
     orders: list[OrderDTO]
+    lines: list[PlanLineDTO]
+    total_before: DecimalStr
+    total_after: DecimalStr
+    used: DecimalStr
     leftover: DecimalStr
     imbalance_before: DecimalStr
     imbalance_after: DecimalStr
