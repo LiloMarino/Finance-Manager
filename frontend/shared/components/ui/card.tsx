@@ -1,17 +1,41 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/shared/lib/utils"
+
+const cardVariants = cva(
+  "group/card flex min-w-0 flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-body text-card-foreground transition-colors data-interactive:hover:bg-muted [--card-px:--spacing(5)] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+  {
+    variants: {
+      variant: {
+        default:
+          "border border-border shadow-card",
+        // Área de soltar arquivos com borda tracejada que muda na hover
+        dropzone:
+          "border-2 border-dashed border-border-subtle data-[dragging=true]:border-primary data-[dragging=true]:bg-muted",
+        // Barra fixa no topo da conferência sem borda, com sombra
+        sticky:
+          "shadow-lg",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & VariantProps<typeof cardVariants> & { size?: "default" | "sm" }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/card flex min-w-0 flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-border bg-card py-(--card-spacing) text-body text-card-foreground shadow-card transition-colors data-interactive:hover:bg-muted [--card-px:--spacing(5)] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        cardVariants({ variant }),
         className
       )}
       {...props}

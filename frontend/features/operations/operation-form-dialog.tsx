@@ -16,13 +16,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import {
   type OperationType,
   isOperationType,
@@ -144,62 +138,58 @@ function OperationForm({ operation, onSaved }: OperationFormProps) {
           <FieldError errors={[errors.asset_id]} />
         </Field>
         <Field>
-          <FieldLabel htmlFor="operation-type">Tipo</FieldLabel>
+          <FieldLabel>Tipo</FieldLabel>
           <Controller
             control={form.control}
             name="operation_type"
             render={({ field }) => (
-              <Select
-                items={operationTypeLabels}
-                value={field.value}
-                onValueChange={(next) => {
-                  if (next !== null && isOperationType(next)) field.onChange(next);
-                }}
+              <ToggleGroup
+                variant="segmented"
+                size="sm"
+                value={[field.value]}
+                onValueChange={([next]) => next !== undefined && field.onChange(next)}
               >
-                <SelectTrigger id="operation-type" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {operationTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {operationTypeLabels[type]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {operationTypes.map((type) => (
+                  <ToggleGroupItem key={type} value={type}>
+                    {operationTypeLabels[type]}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             )}
           />
         </Field>
-        <Field data-invalid={Boolean(errors.operation_date)}>
-          <FieldLabel htmlFor="operation-date">Data</FieldLabel>
-          <Input id="operation-date" type="date" {...form.register("operation_date")} />
-          <FieldError errors={[errors.operation_date]} />
-        </Field>
-        <Field data-invalid={Boolean(errors.quantity)}>
-          <FieldLabel htmlFor="operation-quantity">
-            {quantityLabels[operationType] ?? "Quantidade"}
-          </FieldLabel>
-          <Input
-            id="operation-quantity"
-            inputMode="decimal"
-            {...withMask(
-              form.register("quantity"),
-              fractionalTypes.includes(operationType) ? maskDecimal : maskInteger,
-            )}
-          />
-          <FieldError errors={[errors.quantity]} />
-        </Field>
-        {pricedTypes.includes(operationType) && (
-          <Field data-invalid={Boolean(errors.unit_price)}>
-            <FieldLabel htmlFor="operation-price">Preço unitário</FieldLabel>
-            <Input
-              id="operation-price"
-              inputMode="decimal"
-              {...withMask(form.register("unit_price"), maskDecimal)}
-            />
-            <FieldError errors={[errors.unit_price]} />
+        <div className="grid gap-3 grid-cols-3">
+          <Field data-invalid={Boolean(errors.operation_date)}>
+            <FieldLabel htmlFor="operation-date">Data</FieldLabel>
+            <Input id="operation-date" type="date" {...form.register("operation_date")} />
+            <FieldError errors={[errors.operation_date]} />
           </Field>
-        )}
+          <Field data-invalid={Boolean(errors.quantity)}>
+            <FieldLabel htmlFor="operation-quantity">
+              {quantityLabels[operationType] ?? "Quantidade"}
+            </FieldLabel>
+            <Input
+              id="operation-quantity"
+              inputMode="decimal"
+              {...withMask(
+                form.register("quantity"),
+                fractionalTypes.includes(operationType) ? maskDecimal : maskInteger,
+              )}
+            />
+            <FieldError errors={[errors.quantity]} />
+          </Field>
+          {pricedTypes.includes(operationType) && (
+            <Field data-invalid={Boolean(errors.unit_price)}>
+              <FieldLabel htmlFor="operation-price">Preço unitário</FieldLabel>
+              <Input
+                id="operation-price"
+                inputMode="decimal"
+                {...withMask(form.register("unit_price"), maskDecimal)}
+              />
+              <FieldError errors={[errors.unit_price]} />
+            </Field>
+          )}
+        </div>
       </FieldGroup>
       <DialogFooter className="mt-6">
         <Button type="submit" disabled={save.isPending}>

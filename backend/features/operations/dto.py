@@ -11,6 +11,8 @@ from backend.domain.position import check_quantity_and_price
 
 
 class OperationDTO(BaseDTO):
+    """`total` é a quantidade vezes o preço unitário; zero nos eventos corporativos."""
+
     id: int
     asset_id: int
     ticker: str
@@ -19,6 +21,7 @@ class OperationDTO(BaseDTO):
     operation_type: OperationType
     quantity: DecimalStr
     unit_price: DecimalStr
+    total: DecimalStr
 
 
 class OperationInDTO(BaseDTO):

@@ -1,13 +1,13 @@
-import { type ReactNode, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 import {
   type ImportPreview as Preview,
   type ImportStatus,
-  type IncomePreviewRow,
-  type PreviewRow,
   useConfirmImport,
 } from "@/features/imports/use-import";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
+import { Quantity } from "@/shared/components/money";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -20,9 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert";
 import { formatDate } from "@/shared/lib/format";
 import { type AssetClass, incomeTypeLabels, operationTypeLabels } from "@/shared/lib/labels";
-import { formatBRL, formatQuantity } from "@/types/decimal";
+import { Money } from "@/shared/components/money";
 
 const statusLabels: Record<ImportStatus, string> = {
   new: "Nova",
@@ -31,10 +32,10 @@ const statusLabels: Record<ImportStatus, string> = {
   repeated_in_batch: "Repetida no lote",
 };
 
-const statusVariants: Record<ImportStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  new: "default",
-  existing: "secondary",
-  possible_duplicate: "destructive",
+const statusVariants: Record<ImportStatus, "buy" | "outline" | "warning"> = {
+  new: "buy",
+  existing: "outline",
+  possible_duplicate: "warning",
   repeated_in_batch: "outline",
 };
 
@@ -57,66 +58,6 @@ function useSelection(rows: { status: ImportStatus }[]) {
   return { selected, toggle };
 }
 
-interface SelectableTableProps<Row extends { status: ImportStatus; file: string }> {
-  rows: Row[];
-  selected: Set<number>;
-  onToggle: (index: number, checked: boolean) => void;
-  headers: ReactNode;
-  cells: (row: Row) => ReactNode;
-}
-
-function SelectableTable<Row extends { status: ImportStatus; file: string }>({
-  rows,
-  selected,
-  onToggle,
-  headers,
-  cells,
-}: SelectableTableProps<Row>) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-8" />
-          <TableHead>Arquivo</TableHead>
-          {headers}
-          <TableHead>Situação</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row, index) => (
-          <TableRow key={index}>
-            <TableCell>
-              <Checkbox
-                aria-label="Importar esta linha"
-                checked={selected.has(index)}
-                disabled={!selectable.includes(row.status)}
-                onCheckedChange={(checked) => onToggle(index, checked === true)}
-              />
-            </TableCell>
-            <TableCell className="max-w-48 truncate">{row.file}</TableCell>
-            {cells(row)}
-            <TableCell>
-              <Badge variant={statusVariants[row.status]}>{statusLabels[row.status]}</Badge>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
-function StatusCounts({ rows }: { rows: { status: ImportStatus }[] }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {Object.entries(statusLabels).map(([status, label]) => (
-        <Badge key={status} variant="outline">
-          {label}: {rows.filter((row) => row.status === status).length}
-        </Badge>
-      ))}
-    </div>
-  );
-}
-
 interface ImportPreviewProps {
   preview: Preview;
   onCancel: () => void;
@@ -131,11 +72,23 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
   const [classes, setClasses] = useState<Record<string, AssetClass>>(() =>
     Object.fromEntries(preview.new_assets.map((asset) => [asset.ticker, asset.asset_class])),
   );
+  const [showIgnored, setShowIgnored] = useState(true);
+  const [showRepeatedIncome, setShowRepeatedIncome] = useState(false);
 
   const chosen = preview.rows.filter((_, index) => operations.selected.has(index));
   const chosenIncome = preview.income_rows.filter((_, index) => income.selected.has(index));
   const chosenTickers = new Set([...chosen, ...chosenIncome].map((row) => row.ticker));
   const total = chosen.length + chosenIncome.length;
+
+  const errorsCount = preview.files.filter((file) => file.error).length;
+  const newOpsCount = preview.rows.filter((r) => r.status === "new").length;
+  const dupOpsCount = preview.rows.filter((r) => r.status === "possible_duplicate").length;
+  const existingOpsCount = preview.rows.filter((r) => r.status === "existing").length;
+  const batchOpsCount = preview.rows.filter((r) => r.status === "repeated_in_batch").length;
+  const newIncomeCount = preview.income_rows.filter((r) => r.status === "new").length;
+  const repeatedIncomeCount = preview.income_rows.filter((r) =>
+    ["existing", "repeated_in_batch"].includes(r.status),
+  ).length;
 
   const submit = () =>
     confirm.mutate(
@@ -167,157 +120,299 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
     );
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Arquivos com erro */}
-      {preview.files.some((file) => file.error) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Arquivos não lidos</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1 text-sm">
-            {preview.files
-              .filter((file) => file.error)
-              .map((file) => (
-                <p key={file.name}>
-                  <span className="font-medium">{file.name}</span>: {file.error}
-                </p>
-              ))}
-          </CardContent>
-        </Card>
-      )}
+    <>
+      {/* Barra de confirmação sticky */}
+      <Card variant="sticky" className="sticky top-2 z-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+          <div className="flex-1 min-w-64">
+            <div className="font-semibold">{total} linhas marcadas para gravar</div>
+            <p className="text-sm text-ink-2">
+              {chosen.length} {chosen.length === 1 ? "operação" : "operações"} e{" "}
+              {chosenIncome.length} {chosenIncome.length === 1 ? "provento" : "proventos"}, de{" "}
+              {preview.files.length} {preview.files.length === 1 ? "arquivo" : "arquivos"}.
+              {preview.new_assets.length > 0 && (
+                <>
+                  {" "}
+                  {preview.new_assets.length}{" "}
+                  {preview.new_assets.length === 1 ? "ativo novo" : "ativos novos"} entram junto.
+                </>
+              )}
+            </p>
+          </div>
+          <Button variant="ghost" onClick={onCancel} disabled={confirm.isPending}>
+            Cancelar
+          </Button>
+          <Button onClick={submit} disabled={total === 0 || confirm.isPending}>
+            Confirmar {total} {total === 1 ? "linha" : "linhas"}
+          </Button>
+        </div>
+      </Card>
 
-      {/* Ativos novos */}
-      {preview.new_assets.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Ativos novos</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {preview.new_assets.map(({ ticker }) => (
-              <div key={ticker} className="flex items-center gap-3">
-                <span className="w-20 font-medium">{ticker}</span>
-                <AssetClassSelect
-                  value={classes[ticker] ?? "stock"}
-                  onChange={(assetClass) =>
-                    setClasses((current) => ({ ...current, [ticker]: assetClass }))
-                  }
-                />
+      <div className="flex flex-col gap-6">
+        {/* Arquivos com erro */}
+        {errorsCount > 0 && (
+          <Alert variant="warning">
+            <AlertTitle>
+              {errorsCount}{" "}
+              {errorsCount === 1 ? "arquivo não foi lido" : "arquivos não foram lidos"}
+            </AlertTitle>
+            <AlertDescription className="flex flex-col gap-1 text-sm mt-2">
+              {preview.files
+                .filter((file) => file.error)
+                .map((file) => (
+                  <div key={file.name}>
+                    <span className="font-medium">{file.name}</span>: {file.error}
+                  </div>
+                ))}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Ativos novos */}
+        {preview.new_assets.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Ativos novos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {preview.new_assets.map(({ ticker }) => (
+                  <div key={ticker} className="flex flex-col gap-1">
+                    <label className="text-ticker text-label font-mono">{ticker}</label>
+                    <AssetClassSelect
+                      value={classes[ticker] ?? "stock"}
+                      onChange={(assetClass) =>
+                        setClasses((current) => ({ ...current, [ticker]: assetClass }))
+                      }
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Operações */}
-      {preview.rows.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Operações</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <StatusCounts rows={preview.rows} />
-            <SelectableTable<PreviewRow>
-              rows={preview.rows}
-              selected={operations.selected}
-              onToggle={operations.toggle}
-              headers={
-                <>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Ativo</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead className="text-right">Quantidade</TableHead>
-                  <TableHead className="text-right">Preço</TableHead>
-                </>
-              }
-              cells={(row) => (
-                <>
-                  <TableCell className="tabular-nums">{formatDate(row.operation_date)}</TableCell>
-                  <TableCell className="font-medium">{row.ticker}</TableCell>
-                  <TableCell>{operationTypeLabels[row.operation_type]}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatQuantity(row.quantity)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatBRL(row.unit_price)}
-                  </TableCell>
-                </>
-              )}
-            />
-          </CardContent>
-        </Card>
-      )}
+        {/* Operações */}
+        {preview.rows.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Operações</CardTitle>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {newOpsCount > 0 && (
+                  <Badge variant="buy">
+                    {newOpsCount} nova{newOpsCount === 1 ? "" : "s"}
+                  </Badge>
+                )}
+                {dupOpsCount > 0 && (
+                  <Badge variant="warning">
+                    {dupOpsCount} possível{dupOpsCount === 1 ? " " : "s "}duplicata
+                    {dupOpsCount === 1 ? "" : "s"}
+                  </Badge>
+                )}
+                {existingOpsCount > 0 && (
+                  <Badge variant="outline">
+                    {existingOpsCount} já exist{existingOpsCount === 1 ? "e" : "em"}
+                  </Badge>
+                )}
+                {batchOpsCount > 0 && (
+                  <Badge variant="outline">
+                    {batchOpsCount} repetida{batchOpsCount === 1 ? "" : "s"} no lote
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent data-flush="true">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-9" />
+                      <TableHead>Situação</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Ativo</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead className="text-right">Quantidade</TableHead>
+                      <TableHead className="text-right">Preço</TableHead>
+                      <TableHead>Arquivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.rows.map((row, index) => (
+                      <TableRow
+                        key={index}
+                        variant={!selectable.includes(row.status) ? "divider" : undefined}
+                      >
+                        <TableCell className="w-9">
+                          <Checkbox
+                            aria-label={`Gravar ${row.ticker} de ${formatDate(row.operation_date)}`}
+                            checked={operations.selected.has(index)}
+                            disabled={!selectable.includes(row.status)}
+                            onCheckedChange={(checked) =>
+                              operations.toggle(index, checked === true)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusVariants[row.status]}>
+                            {statusLabels[row.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-table">
+                          {formatDate(row.operation_date)}
+                        </TableCell>
+                        <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
+                        <TableCell>{operationTypeLabels[row.operation_type]}</TableCell>
+                        <TableCell className="text-right text-table">
+                          <Quantity value={row.quantity} />
+                        </TableCell>
+                        <TableCell className="text-right text-table">
+                          <Money value={row.unit_price} />
+                        </TableCell>
+                        <TableCell variant="muted" className="text-table max-w-48 truncate">
+                          {row.file}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Proventos */}
-      {preview.income_rows.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Proventos</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <StatusCounts rows={preview.income_rows} />
-            <SelectableTable<IncomePreviewRow>
-              rows={preview.income_rows}
-              selected={income.selected}
-              onToggle={income.toggle}
-              headers={
-                <>
-                  <TableHead>Pagamento</TableHead>
-                  <TableHead>Ativo</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead className="text-right">Quantidade</TableHead>
-                  <TableHead className="text-right">Bruto por unidade</TableHead>
-                  <TableHead className="text-right">Líquido</TableHead>
-                </>
-              }
-              cells={(row) => (
-                <>
-                  <TableCell className="tabular-nums">{formatDate(row.payment_date)}</TableCell>
-                  <TableCell className="font-medium">{row.ticker}</TableCell>
-                  <TableCell>{incomeTypeLabels[row.income_type]}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatQuantity(row.quantity)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatBRL(row.unit_price)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{formatBRL(row.amount)}</TableCell>
-                </>
-              )}
-            />
-          </CardContent>
-        </Card>
-      )}
+        {/* Proventos */}
+        {preview.income_rows.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Proventos</CardTitle>
+                <label className="flex items-center gap-2 text-sm font-normal text-ink-2">
+                  <Checkbox
+                    checked={showRepeatedIncome}
+                    onCheckedChange={(checked) => setShowRepeatedIncome(checked === true)}
+                  />
+                  Mostrar repetidos
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {newIncomeCount > 0 && (
+                  <Badge variant="buy">
+                    {newIncomeCount} novo{newIncomeCount === 1 ? "" : "s"}
+                  </Badge>
+                )}
+                {repeatedIncomeCount > 0 && (
+                  <Badge variant="outline">
+                    {repeatedIncomeCount} repetido{repeatedIncomeCount === 1 ? "" : "s"} no lote
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent data-flush="true">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-9" />
+                      <TableHead>Situação</TableHead>
+                      <TableHead>Pagamento</TableHead>
+                      <TableHead>Ativo</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead className="text-right">Quantidade</TableHead>
+                      <TableHead className="text-right">Bruto por unidade</TableHead>
+                      <TableHead className="text-right">Líquido</TableHead>
+                      <TableHead>Arquivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.income_rows
+                      .filter(
+                        (row) =>
+                          row.status === "new" ||
+                          (showRepeatedIncome &&
+                            ["existing", "repeated_in_batch"].includes(row.status)),
+                      )
+                      .map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="w-9">
+                            <Checkbox
+                              aria-label={`Gravar provento de ${row.ticker}`}
+                              checked={income.selected.has(preview.income_rows.indexOf(row))}
+                              disabled={!selectable.includes(row.status)}
+                              onCheckedChange={(checked) =>
+                                income.toggle(preview.income_rows.indexOf(row), checked === true)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={statusVariants[row.status]}>
+                              {statusLabels[row.status]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-table">
+                            {formatDate(row.payment_date)}
+                          </TableCell>
+                          <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
+                          <TableCell>{incomeTypeLabels[row.income_type]}</TableCell>
+                          <TableCell className="text-right text-table">
+                            <Quantity value={row.quantity} />
+                          </TableCell>
+                          <TableCell className="text-right text-table">
+                            <Money value={row.unit_price} />
+                          </TableCell>
+                          <TableCell className="text-right text-table">
+                            <Money value={row.amount} />
+                          </TableCell>
+                          <TableCell variant="muted" className="text-table max-w-48 truncate">
+                            {row.file}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Ignoradas */}
-      {preview.ignored.length > 0 && (
-        <details>
-          <summary className="cursor-pointer text-muted-foreground">
-            {preview.ignored.length} movimentações ignoradas
-          </summary>
-          <Table>
-            <TableBody>
-              {preview.ignored.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell className="tabular-nums">{item.movement_date}</TableCell>
-                  <TableCell className="font-medium">{item.ticker}</TableCell>
-                  <TableCell>{item.movement}</TableCell>
-                  <TableCell variant="muted">{item.reason}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </details>
-      )}
-
-      {/* Ações */}
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel} disabled={confirm.isPending}>
-          Cancelar
-        </Button>
-        <Button onClick={submit} disabled={total === 0 || confirm.isPending}>
-          Confirmar {total} linhas
-        </Button>
+        {/* Ignoradas */}
+        {preview.ignored.length > 0 && (
+          <Card>
+            <details open={showIgnored} onToggle={(e) => setShowIgnored(e.currentTarget.open)}>
+              <summary className="flex cursor-pointer items-center justify-between p-4 hover:bg-muted">
+                <span className="font-semibold">
+                  {preview.ignored.length} movimentações ignoradas
+                </span>
+                <span className="text-ink-2 text-sm">não mudam posição nem saldo</span>
+                <ChevronDown
+                  className={`size-5 text-muted-foreground transition-transform ${!showIgnored ? "-rotate-90" : ""}`}
+                />
+              </summary>
+              <div className="border-t overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Ativo</TableHead>
+                      <TableHead>Movimento</TableHead>
+                      <TableHead>Por que ficou de fora</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.ignored.map((item, index) => (
+                      <TableRow key={index} variant="divider">
+                        <TableCell className="text-table">{item.movement_date}</TableCell>
+                        <TableCell className="text-ticker font-mono">{item.ticker}</TableCell>
+                        <TableCell>{item.movement}</TableCell>
+                        <TableCell variant="muted">{item.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </details>
+          </Card>
+        )}
       </div>
-    </div>
+    </>
   );
 }

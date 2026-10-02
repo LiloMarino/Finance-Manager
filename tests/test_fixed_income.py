@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -175,3 +176,31 @@ def test_amount_and_rate_must_be_positive_strings(api: TestClient) -> None:
     assert zero.status_code == 422
     assert as_float.status_code == 422
     assert no_rate.status_code == 422
+
+
+def test_summary_adds_titles_by_type(api: TestClient) -> None:
+    """O resumo soma os títulos no total, por tipo e por liquidez: dois CDBs e uma
+    LCI dão um grupo de cada, e o CDB de liquidez diária fica na fatia diária."""
+    _create(api)
+    _create(api, label="CDB ABC 2031", daily_liquidity=True)
+    _create(api, label="LCI ABC", product_type="lci")
+
+    body = api.get("/api/fixed-income/summary").json()
+    listed = api.get("/api/fixed-income").json()
+
+    assert [(group["product_type"], group["count"]) for group in body["by_type"]] == [
+        ("cdb", 2),
+        ("lci", 1),
+    ]
+    assert body["total"]["count"] == 3
+    assert Decimal(body["total"]["invested"]) == Decimal(3000)
+    assert Decimal(body["total"]["net_value"]) == sum(
+        Decimal(item["net_value"]) for item in listed
+    )
+    assert (
+        body["daily_liquidity"]["count"],
+        body["at_maturity"]["count"],
+    ) == (1, 2)
+    assert Decimal(body["daily_share"]) == Decimal(
+        body["daily_liquidity"]["gross_value"]
+    ) / Decimal(body["total"]["gross_value"])

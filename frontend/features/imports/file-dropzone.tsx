@@ -2,6 +2,7 @@ import { FileUp } from "lucide-react";
 import { type DragEvent, useRef, useState } from "react";
 
 import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
 
 const ACCEPTED = [".pdf", ".xlsx"];
 
@@ -26,7 +27,8 @@ export function FileDropzone({ onFiles }: FileDropzoneProps) {
   };
 
   return (
-    <div
+    <Card
+      variant="dropzone"
       data-dragging={dragging}
       onDragOver={(event) => {
         event.preventDefault();
@@ -34,13 +36,18 @@ export function FileDropzone({ onFiles }: FileDropzoneProps) {
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={drop}
-      className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center data-[dragging=true]:border-primary data-[dragging=true]:bg-muted"
+      className="flex flex-col items-center gap-4 px-6 py-14 text-center"
     >
-      <FileUp className="size-8 text-muted-foreground" />
-      <p>
-        Solte aqui as notas de corretagem (PDF) e os relatórios da B3 (xlsx): o de movimentação, que
-        traz eventos e proventos, e o de proventos recebidos. Quantos quiser de uma vez.
-      </p>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <FileUp className="size-6 text-muted-foreground" />
+      </div>
+      <div>
+        <h2 className="text-section-title">Solte os arquivos aqui</h2>
+        <p className="text-ink-2 mt-1">
+          Notas de corretagem em PDF e os relatórios da B3 em xlsx: o de movimentação, que traz
+          eventos e proventos, e o de proventos recebidos. Quantos quiser de uma vez.
+        </p>
+      </div>
       <Button variant="outline" onClick={() => input.current?.click()}>
         Escolher arquivos
       </Button>
@@ -55,6 +62,6 @@ export function FileDropzone({ onFiles }: FileDropzoneProps) {
           event.target.value = "";
         }}
       />
-    </div>
+    </Card>
   );
 }

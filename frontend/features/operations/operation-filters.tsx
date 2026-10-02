@@ -1,9 +1,8 @@
 import { hasFilters } from "@/features/operations/filter-params";
 import type { OperationFilters as Filters } from "@/features/operations/use-operations";
 import { AssetCombobox } from "@/shared/components/asset-combobox";
+import { DateRangeFilter } from "@/shared/components/date-range-filter";
 import { Button } from "@/shared/components/ui/button";
-import { Field, FieldLabel } from "@/shared/components/ui/field";
-import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,10 +11,11 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { operationTypeLabels, operationTypes } from "@/shared/lib/labels";
+import type { DayRange } from "@/shared/lib/period";
 
 // Nulo é todos os tipos
 const typeItems = [
-  { value: null, label: "Todos" },
+  { value: null, label: "Todos os tipos" },
   ...operationTypes.map((type) => ({ value: type, label: operationTypeLabels[type] })),
 ];
 
@@ -25,63 +25,44 @@ interface OperationFiltersProps {
 }
 
 export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
+  const dateRange: DayRange = {
+    start: filters.start ?? undefined,
+    end: filters.end ?? undefined,
+  };
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end">
-      <Field>
-        <FieldLabel htmlFor="filter-asset">Ativo</FieldLabel>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="w-56">
         <AssetCombobox
-          id="filter-asset"
-          allLabel="Todos"
+          allLabel="Todos os ativos"
           value={filters.asset_id ? String(filters.asset_id) : ""}
           onChange={(value) =>
             onChange({ ...filters, asset_id: value ? Number(value) : undefined })
           }
         />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="filter-type">Tipo</FieldLabel>
-        <Select
-          items={typeItems}
-          value={filters.operation_type ?? null}
-          onValueChange={(value) => onChange({ ...filters, operation_type: value ?? undefined })}
-        >
-          <SelectTrigger id="filter-type" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {typeItems.map((item) => (
-              <SelectItem key={item.label} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="filter-start">De</FieldLabel>
-        <Input
-          id="filter-start"
-          type="date"
-          value={filters.start ?? ""}
-          onChange={(event) => onChange({ ...filters, start: event.target.value || undefined })}
-        />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="filter-end">Até</FieldLabel>
-        <Input
-          id="filter-end"
-          type="date"
-          value={filters.end ?? ""}
-          onChange={(event) => onChange({ ...filters, end: event.target.value || undefined })}
-        />
-      </Field>
+      </div>
+      <Select
+        items={typeItems}
+        value={filters.operation_type ?? null}
+        onValueChange={(value) => onChange({ ...filters, operation_type: value ?? undefined })}
+      >
+        <SelectTrigger size="sm" className="w-48" aria-label="Tipo">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {typeItems.map((item) => (
+            <SelectItem key={item.label} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <DateRangeFilter
+        value={dateRange}
+        onChange={(range) => onChange({ ...filters, start: range.start, end: range.end })}
+      />
       {hasFilters(filters) && (
-        <Button
-          variant="link"
-          size="sm"
-          className="justify-self-start"
-          onClick={() => onChange({})}
-        >
+        <Button variant="ghost" size="sm" onClick={() => onChange({})}>
           Limpar filtros
         </Button>
       )}

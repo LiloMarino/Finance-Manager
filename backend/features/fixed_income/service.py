@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
+from decimal import Decimal
 
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import FixedIncomeMovementType
+from backend.core.enum import FixedIncomeMovementType, FixedIncomeType
 from backend.core.errors import FinanceError
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
 from backend.features.fixed_income.dto import (
@@ -13,11 +15,16 @@ from backend.features.fixed_income.dto import (
     FixedIncomeDetailDTO,
     FixedIncomeDTO,
     FixedIncomeInDTO,
+    FixedIncomeSummaryDTO,
+    FixedIncomeTotalsDTO,
+    FixedIncomeTypeTotalsDTO,
     MovementDTO,
     MovementInDTO,
 )
-from backend.repository.fixed_income import marked_investments
+from backend.repository.fixed_income import MarkedInvestment, marked_investments
 from backend.repository.subportfolios import check_subportfolio
+
+ZERO = Decimal(0)
 
 
 class InvestmentNotFoundError(FinanceError):
@@ -94,6 +101,56 @@ def list_investments(session: Session, today: date) -> list[FixedIncomeDTO]:
         FixedIncomeDTO.model_validate(investment)
         for investment in marked_investments(session, today)
     ]
+
+
+def _totals(investments: Sequence[MarkedInvestment]) -> FixedIncomeTotalsDTO:
+    invested = sum((item.invested for item in investments), ZERO)
+    gross = sum((item.gross_value for item in investments), ZERO)
+    return FixedIncomeTotalsDTO(
+        count=len(investments),
+        invested=invested,
+        gross_value=gross,
+        estimated_tax=sum((item.estimated_tax for item in investments), ZERO),
+        net_value=sum((item.net_value for item in investments), ZERO),
+        gross_result=gross - invested,
+        gross_return=(gross - invested) / invested if invested else None,
+    )
+
+
+def summarize_investments(session: Session, today: date) -> FixedIncomeSummaryDTO:
+    active = [item for item in marked_investments(session, today) if not item.matured]
+    by_type: list[FixedIncomeTypeTotalsDTO] = []
+    for product_type in FixedIncomeType:
+        group = [item for item in active if item.product_type is product_type]
+        if group:
+            totals = _totals(group)
+            by_type.append(
+                FixedIncomeTypeTotalsDTO(
+                    product_type=product_type,
+                    count=totals.count,
+                    invested=totals.invested,
+                    gross_value=totals.gross_value,
+                    estimated_tax=totals.estimated_tax,
+                    net_value=totals.net_value,
+                    gross_result=totals.gross_result,
+                    gross_return=totals.gross_return,
+                )
+            )
+    total = _totals(active)
+    daily = _totals([item for item in active if item.daily_liquidity])
+    locked = _totals([item for item in active if not item.daily_liquidity])
+    return FixedIncomeSummaryDTO(
+        total=total,
+        by_type=by_type,
+        daily_liquidity=daily,
+        at_maturity=locked,
+        daily_share=(
+            daily.gross_value / total.gross_value if total.gross_value else None
+        ),
+        at_maturity_share=(
+            locked.gross_value / total.gross_value if total.gross_value else None
+        ),
+    )
 
 
 def get_investment(

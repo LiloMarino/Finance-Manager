@@ -80,6 +80,7 @@ def _to_dto(operation: Operation, asset: Asset, history: TickerHistory) -> Opera
         operation_type=operation.operation_type,
         quantity=operation.quantity,
         unit_price=operation.unit_price,
+        total=operation.quantity * operation.unit_price,
     )
 
 

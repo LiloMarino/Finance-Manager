@@ -21,6 +21,16 @@ export function useFixedIncome(investmentId: number) {
   });
 }
 
+export type FixedIncomeSummary = components["schemas"]["FixedIncomeSummaryDTO"];
+
+/** Os títulos que não venceram, somados no total, por tipo e por liquidez. */
+export function useFixedIncomeSummary() {
+  return useQuery({
+    queryKey: [...queryKeys.fixedIncome, "summary"],
+    queryFn: () => get("/api/fixed-income/summary"),
+  });
+}
+
 function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
   const queryClient = useQueryClient();
 

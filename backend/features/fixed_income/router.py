@@ -10,6 +10,7 @@ from backend.features.fixed_income.dto import (
     FixedIncomeDetailDTO,
     FixedIncomeDTO,
     FixedIncomeInDTO,
+    FixedIncomeSummaryDTO,
     MovementDTO,
     MovementInDTO,
 )
@@ -20,6 +21,7 @@ from backend.features.fixed_income.service import (
     delete_movement,
     get_investment,
     list_investments,
+    summarize_investments,
     update_investment,
 )
 
@@ -29,6 +31,11 @@ router = APIRouter(prefix="/api/fixed-income", tags=["fixed-income"])
 @router.get("")
 def list_all(session: SessionDep) -> list[FixedIncomeDTO]:
     return list_investments(session, date.today())
+
+
+@router.get("/summary")
+def summary(session: SessionDep) -> FixedIncomeSummaryDTO:
+    return summarize_investments(session, date.today())
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

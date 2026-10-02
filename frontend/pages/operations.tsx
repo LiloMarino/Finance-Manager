@@ -6,7 +6,15 @@ import { OperationFilters } from "@/features/operations/operation-filters";
 import { OperationFormDialog } from "@/features/operations/operation-form-dialog";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
+import { PageHeader } from "@/shared/components/page-header";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { getApiErrorMessage } from "@/shared/lib/api";
 
@@ -16,29 +24,27 @@ export function OperationsPage() {
   const { data, isPending, error } = useOperations(filters);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Operações</h1>
-          <p className="text-muted-foreground">
-            A fonte de tudo: posição e preço médio são recalculados daqui.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" nativeButton={false} render={<Link to="/import" />}>
-            <FileUp />
-            Importar
-          </Button>
-          <OperationFormDialog
-            trigger={
-              <Button>
-                <Plus />
-                Nova operação
-              </Button>
-            }
-          />
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Operações"
+        description="A fonte de tudo: posição e preço médio são recalculados daqui."
+        actions={
+          <>
+            <Button variant="outline" nativeButton={false} render={<Link to="/import" />}>
+              <FileUp />
+              Importar
+            </Button>
+            <OperationFormDialog
+              trigger={
+                <Button>
+                  <Plus />
+                  Nova operação
+                </Button>
+              }
+            />
+          </>
+        }
+      />
 
       <OperationFilters
         filters={filters}
@@ -50,8 +56,18 @@ export function OperationsPage() {
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : (
-        <OperationsTable operations={data} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Histórico</CardTitle>
+            <CardDescription>
+              {data.length} operação{data.length !== 1 ? "s" : ""} · as mais recentes primeiro
+            </CardDescription>
+          </CardHeader>
+          <CardContent data-flush>
+            <OperationsTable operations={data} />
+          </CardContent>
+        </Card>
       )}
-    </div>
+    </>
   );
 }

@@ -62,6 +62,38 @@ class FixedIncomeDTO(BaseDTO):
     series_date: date | None
 
 
+class FixedIncomeTotalsDTO(BaseDTO):
+    """A soma de um grupo de títulos, na marcação de hoje. `gross_result` é o bruto
+    menos o aplicado, e `gross_return` a fração dele sobre o aplicado."""
+
+    count: int
+    invested: DecimalStr
+    gross_value: DecimalStr
+    estimated_tax: DecimalStr
+    net_value: DecimalStr
+    gross_result: DecimalStr
+    gross_return: DecimalStr | None
+
+
+class FixedIncomeTypeTotalsDTO(FixedIncomeTotalsDTO):
+    product_type: FixedIncomeType
+
+
+class FixedIncomeSummaryDTO(BaseDTO):
+    """Os títulos que ainda não venceram, somados no total, por tipo (na ordem dos
+    tipos) e por liquidez: os de liquidez diária e os que só viram dinheiro no
+    vencimento. `daily_share` e `at_maturity_share` são as frações do bruto, nulas sem
+    nenhum título. O vencido já
+    foi resgatado para o saldo e fica fora da soma."""
+
+    total: FixedIncomeTotalsDTO
+    by_type: list[FixedIncomeTypeTotalsDTO]
+    daily_liquidity: FixedIncomeTotalsDTO
+    at_maturity: FixedIncomeTotalsDTO
+    daily_share: DecimalStr | None
+    at_maturity_share: DecimalStr | None
+
+
 class ApplicationInDTO(BaseDTO):
     """Uma aplicação, pelo valor bruto."""
 

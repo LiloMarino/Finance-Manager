@@ -1,10 +1,10 @@
 import { Pencil } from "lucide-react";
-import { Link } from "react-router-dom";
 
 import { DeleteOperationDialog } from "@/features/operations/delete-operation-dialog";
 import { OperationFormDialog } from "@/features/operations/operation-form-dialog";
 import type { Operation } from "@/features/operations/use-operations";
-import { AssetClassBadge } from "@/shared/components/asset-class-badge";
+import { Money, Quantity } from "@/shared/components/money";
+import { TickerLabel } from "@/shared/components/ticker-label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -17,16 +17,15 @@ import {
 } from "@/shared/components/ui/table";
 import { formatDate } from "@/shared/lib/format";
 import { type OperationType, operationTypeLabels } from "@/shared/lib/labels";
-import { formatBRL, formatQuantity } from "@/types/decimal";
 
 // Compra e venda com cor própria; os eventos corporativos ficam neutros
 const operationTypeVariants = {
   buy: "buy",
   sell: "sell",
-  bonus: "secondary",
-  split: "secondary",
-  reverse_split: "secondary",
-} as const satisfies Record<OperationType, "buy" | "sell" | "secondary">;
+  bonus: "outline",
+  split: "outline",
+  reverse_split: "outline",
+} as const satisfies Record<OperationType, "buy" | "sell" | "outline">;
 
 export function OperationsTable({ operations }: { operations: Operation[] }) {
   if (operations.length === 0) {
@@ -39,37 +38,47 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
         <TableRow>
           <TableHead>Data</TableHead>
           <TableHead>Ativo</TableHead>
-          <TableHead>Classe</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead className="text-right">Quantidade</TableHead>
           <TableHead className="text-right">Preço unitário</TableHead>
-          <TableHead className="w-24" />
+          <TableHead className="text-right">Total</TableHead>
+          <TableHead className="w-20" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {operations.map((operation) => (
           <TableRow key={operation.id}>
             <TableCell className="tabular-nums">{formatDate(operation.operation_date)}</TableCell>
-            <TableCell className="font-medium">
-              <Link to={`/assets/${operation.asset_id}`} className="hover:underline">
-                {operation.ticker}
-              </Link>
-            </TableCell>
             <TableCell>
-              <AssetClassBadge assetClass={operation.asset_class} />
+              <TickerLabel
+                ticker={operation.ticker}
+                category={operation.asset_class}
+                to={`/assets/${operation.asset_id}`}
+              />
             </TableCell>
             <TableCell>
               <Badge variant={operationTypeVariants[operation.operation_type]}>
                 {operationTypeLabels[operation.operation_type]}
               </Badge>
             </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatQuantity(operation.quantity)}
-            </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatBRL(operation.unit_price)}
+            <TableCell className="text-right">
+              <Quantity value={operation.quantity} />
             </TableCell>
             <TableCell className="text-right">
+              {operation.operation_type === "buy" || operation.operation_type === "sell" ? (
+                <Money value={operation.unit_price} />
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="text-right">
+              {operation.operation_type === "buy" || operation.operation_type === "sell" ? (
+                <Money value={operation.total} />
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="text-right whitespace-nowrap">
               <OperationFormDialog
                 operation={operation}
                 trigger={

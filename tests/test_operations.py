@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -44,9 +45,11 @@ def _positions(api: TestClient) -> list[tuple[str, str, str, str]]:
 
 
 def test_operation_crud_moves_the_position(api: TestClient) -> None:
-    """Criar, editar e apagar operação mexe na posição recalculada."""
+    """Criar, editar e apagar operação mexe na posição recalculada, e cada operação
+    traz o total, quantidade vezes preço."""
     asset_id = _asset(api)
     first = _operation(api, asset_id, "buy", "10", "10")
+    assert Decimal(first["total"]) == Decimal(100)
     _operation(api, asset_id, "buy", "10", "20", day="2024-02-06")
 
     assert _positions(api) == [("ABCD11", "20", "15", "300")]
