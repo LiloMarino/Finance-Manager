@@ -68,6 +68,16 @@ class CashLedger:
     def balance(self) -> Decimal:
         return self.entries[-1].balance
 
+    def above_since(self, threshold: Decimal) -> date | None:
+        """O dia em que o saldo passou do limite e não voltou mais para baixo dele;
+        nulo com o saldo de hoje dentro do limite."""
+        since: date | None = None
+        for entry in reversed(self.entries):
+            if entry.balance <= threshold:
+                break
+            since = entry.entry_date
+        return since
+
 
 def _entry(event: CashEvent, balance: Decimal) -> CashEntry:
     return CashEntry(

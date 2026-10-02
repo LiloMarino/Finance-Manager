@@ -1,8 +1,8 @@
 """O alerta diário, rodado pelo Agendador de Tarefas sem subir o servidor.
 
-Atualiza as cotações e as séries, lê Saúde dos dados e, se alguma subcarteira passou
-do limite ou o saldo está parado, abre uma janela com o aviso. Sem nada a avisar,
-termina sem mostrar nada.
+Atualiza as cotações e as séries, lê as pendências e, se há DARF a pagar, alguma
+subcarteira passou do limite ou o saldo está parado, abre uma janela com o aviso.
+Sem nada a avisar, termina sem mostrar nada.
 """
 
 from __future__ import annotations
@@ -31,8 +31,10 @@ from backend.features.market.service import refresh_prices
 TITLE = "Finance Manager"
 LOG_FILE = Path("logs/alert.log")
 
-# O alerta é o recorte de Saúde dos dados que pede ação, e não correção de dado
-ALERT_KINDS = frozenset({DataIssueKind.REBALANCE_BREACH, DataIssueKind.IDLE_CASH})
+# O alerta é o recorte das pendências que pede ação, e não correção de dado
+ALERT_KINDS = frozenset(
+    {DataIssueKind.DARF_DUE, DataIssueKind.REBALANCE_BREACH, DataIssueKind.IDLE_CASH}
+)
 
 logger = logging.getLogger("alert")
 

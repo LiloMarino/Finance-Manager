@@ -24,12 +24,13 @@ class CashEntryDTO(BaseDTO):
 class CashDTO(BaseDTO):
     """`balance` e `opened_on` são nulos antes da primeira conferência. O extrato
     vem do mais recente para o mais antigo. `above_threshold` é o saldo parado que
-    aparece em Saúde dos dados."""
+    aparece nas pendências, e `above_since` o dia em que ele passou do limite."""
 
     opened_on: date | None
     balance: DecimalStr | None
     alert_threshold: DecimalStr
     above_threshold: bool
+    above_since: date | None
     entries: list[CashEntryDTO]
 
 

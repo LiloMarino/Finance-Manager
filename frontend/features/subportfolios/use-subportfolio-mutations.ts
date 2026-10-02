@@ -29,7 +29,8 @@ function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
 
 export function useCreateSubportfolio() {
   return useWrite(
-    (name: string) => post("/api/subportfolios", { body: { name } }),
+    (name: string) =>
+      post("/api/subportfolios", { body: { name, icon: "briefcase", color: "graphite" } }),
     "Subcarteira criada.",
   );
 }
@@ -39,7 +40,7 @@ export function useRenameSubportfolio(subportfolio: Subportfolio) {
     (name: string) =>
       put("/api/subportfolios/{subportfolio_id}", {
         path: { subportfolio_id: subportfolio.id },
-        body: { name },
+        body: { name, icon: subportfolio.icon, color: subportfolio.color },
       }),
     "Subcarteira renomeada.",
   );

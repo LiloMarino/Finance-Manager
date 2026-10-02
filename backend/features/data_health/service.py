@@ -1,4 +1,5 @@
-"""Os problemas de dado que afetam algum número, derivados a cada consulta."""
+"""As pendências do app, derivadas a cada consulta: o DARF a pagar e os problemas
+de dado que afetam algum número."""
 
 from __future__ import annotations
 
@@ -9,7 +10,7 @@ from decimal import Decimal
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import DataIssueKind, IndexSeries
+from backend.core.enum import DarfStatus, DataIssueKind, IndexSeries, Severity
 from backend.core.models.models import (
     Asset,
     FixedIncomeInvestment,
@@ -17,8 +18,10 @@ from backend.core.models.models import (
 )
 from backend.domain.coverage import DateRange, expected_close, index_overdue, price_gaps
 from backend.domain.irpf import declared_years
+from backend.domain.tax import darf_status
 from backend.features.brazilian import brazilian, brl
 from backend.features.data_health.dto import DataIssueDTO
+from backend.features.tax.service import assessments, payments
 from backend.repository.cash import cash_ledger, cash_settings
 from backend.repository.market import (
     business_calendar,
@@ -29,6 +32,32 @@ from backend.repository.market import (
 from backend.repository.operations import operation_records
 from backend.repository.rebalance import breaches
 from backend.repository.sectors import unclassified_held_assets
+
+SEVERITY = {
+    DataIssueKind.DARF_DUE: Severity.CRITICAL,
+    DataIssueKind.MISSING_PRICES: Severity.WARNING,
+    DataIssueKind.LATE_SERIES: Severity.WARNING,
+    DataIssueKind.FIXED_INCOME_WITHOUT_APPLICATION: Severity.WARNING,
+    DataIssueKind.IDLE_CASH: Severity.WARNING,
+    DataIssueKind.REBALANCE_BREACH: Severity.WARNING,
+    DataIssueKind.MISSING_CNPJ: Severity.INFO,
+    DataIssueKind.UNCLASSIFIED_ASSET: Severity.INFO,
+}
+MONTHS = (
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
+)
+LATE_PAYMENT = "multa de 0,33% ao dia, até 20%, e juros pela Selic"
 
 SERIES_LABELS = {
     IndexSeries.CDI: "CDI",
@@ -90,6 +119,7 @@ def _price_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
         issues.append(
             DataIssueDTO(
                 kind=DataIssueKind.MISSING_PRICES,
+                severity=SEVERITY[DataIssueKind.MISSING_PRICES],
                 subject=held.ticker,
                 missing=f"Cotação {_enumerate([_range(gap) for gap in gaps])}.",
                 affects=affects,
@@ -116,10 +146,11 @@ def _series_issues(session: Session, today: date) -> list[DataIssueDTO]:
         issues.append(
             DataIssueDTO(
                 kind=DataIssueKind.LATE_SERIES,
+                severity=SEVERITY[DataIssueKind.LATE_SERIES],
                 subject=SERIES_LABELS[series],
                 missing=missing,
                 affects=SERIES_AFFECTS[series],
-                path="/market",
+                path="/data?tab=market",
             )
         )
     return issues
@@ -129,6 +160,7 @@ def _fixed_income_issues(session: Session) -> list[DataIssueDTO]:
     return [
         DataIssueDTO(
             kind=DataIssueKind.FIXED_INCOME_WITHOUT_APPLICATION,
+            severity=SEVERITY[DataIssueKind.FIXED_INCOME_WITHOUT_APPLICATION],
             subject=investment.label,
             missing="Aplicação inicial.",
             affects="Patrimônio: o título entra na Carteira com valor zero.",
@@ -152,6 +184,7 @@ def _cnpj_issues(session: Session, today: date) -> list[DataIssueDTO]:
     return [
         DataIssueDTO(
             kind=DataIssueKind.MISSING_CNPJ,
+            severity=SEVERITY[DataIssueKind.MISSING_CNPJ],
             subject=asset.ticker,
             missing="CNPJ do ativo.",
             affects=(
@@ -172,6 +205,7 @@ def _segment_issues(session: Session) -> list[DataIssueDTO]:
     return [
         DataIssueDTO(
             kind=DataIssueKind.UNCLASSIFIED_ASSET,
+            severity=SEVERITY[DataIssueKind.UNCLASSIFIED_ASSET],
             subject=asset.ticker,
             missing="Setor e segmento.",
             affects=(
@@ -188,17 +222,20 @@ def _cash_issues(session: Session, today: date) -> list[DataIssueDTO]:
     """Saldo acima do limite: dinheiro de investimento esperando reinvestimento."""
     found = cash_ledger(session, today)
     threshold = cash_settings(session).alert_threshold
-    if found is None or found.balance <= threshold:
+    since = found.above_since(threshold) if found is not None else None
+    if found is None or since is None:
         return []
+    days = (today - since).days
+    idle = "desde hoje" if days == 0 else "há 1 dia" if days == 1 else f"há {days} dias"
     return [
         DataIssueDTO(
             kind=DataIssueKind.IDLE_CASH,
+            severity=SEVERITY[DataIssueKind.IDLE_CASH],
             subject="Saldo",
-            missing=(
-                f"Reinvestir {brl(found.balance)} parados no saldo, acima do limite "
-                f"de {brl(threshold)}."
+            missing=f"{brl(found.balance)} de saldo parado {idle}.",
+            affects=(
+                f"Acima do limite de {brl(threshold)}. Fora do mercado, ele não rende."
             ),
-            affects="Rendimento: o saldo não rende enquanto espera.",
             path="/cash",
         )
     ]
@@ -224,10 +261,48 @@ def _rebalance_issues(session: Session, today: date) -> list[DataIssueDTO]:
         issues.append(
             DataIssueDTO(
                 kind=DataIssueKind.REBALANCE_BREACH,
+                severity=SEVERITY[DataIssueKind.REBALANCE_BREACH],
                 subject=breach.name,
                 missing=f"Rebalancear: {'; '.join(parts)}.",
                 affects="Distância da subcarteira até a meta dela.",
-                path=f"/rebalance?subportfolio={breach.subportfolio_id}",
+                path=f"/subportfolios/{breach.subportfolio_id}?tab=rebalance",
+            )
+        )
+    return issues
+
+
+def _darf_issues(session: Session, today: date) -> list[DataIssueDTO]:
+    """O DARF de cada mês ainda sem pagamento registrado, a vencer ou vencido."""
+    paid = payments(session)
+    issues: list[DataIssueDTO] = []
+    for assessment in assessments(session, today):
+        status = darf_status(
+            assessment, (assessment.year, assessment.month) in paid, today
+        )
+        due = assessment.due_date
+        amount = assessment.darf_amount
+        if status not in (DarfStatus.DUE, DarfStatus.OVERDUE):
+            continue
+        if due is None or amount is None:
+            continue
+        name = f"DARF de {MONTHS[assessment.month - 1]}"
+        if status is DarfStatus.OVERDUE:
+            missing = f"{name} venceu em {_day(due)}: {brl(amount)}."
+            affects = f"Pago agora, leva {LATE_PAYMENT} desde o vencimento."
+        else:
+            when = "vence hoje" if due == today else f"vence em {_day(due)}"
+            missing = f"{name} {when}: {brl(amount)}."
+            affects = f"Pago depois de {due:%d/%m}, leva {LATE_PAYMENT}."
+        issues.append(
+            DataIssueDTO(
+                kind=DataIssueKind.DARF_DUE,
+                severity=SEVERITY[DataIssueKind.DARF_DUE],
+                subject=f"{name} de {assessment.year}",
+                missing=missing,
+                affects=affects,
+                path=(
+                    f"/tax?tab=monthly&year={assessment.year}&month={assessment.month}"
+                ),
             )
         )
     return issues
@@ -235,6 +310,7 @@ def _rebalance_issues(session: Session, today: date) -> list[DataIssueDTO]:
 
 def data_issues(session: Session, now: datetime) -> list[DataIssueDTO]:
     return [
+        *_darf_issues(session, now.date()),
         *_price_issues(session, now),
         *_series_issues(session, now.date()),
         *_fixed_income_issues(session),

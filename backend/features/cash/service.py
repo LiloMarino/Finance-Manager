@@ -43,6 +43,7 @@ def get_cash(session: Session, today: date) -> CashDTO:
             balance=None,
             alert_threshold=threshold,
             above_threshold=False,
+            above_since=None,
             entries=[],
         )
     return CashDTO(
@@ -50,6 +51,7 @@ def get_cash(session: Session, today: date) -> CashDTO:
         balance=found.balance,
         alert_threshold=threshold,
         above_threshold=found.balance > threshold,
+        above_since=found.above_since(threshold),
         entries=[
             CashEntryDTO(
                 entry_date=entry.entry_date,

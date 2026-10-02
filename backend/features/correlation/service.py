@@ -280,10 +280,19 @@ def portfolio_matrix(
     window: CorrelationWindow,
     category: PortfolioCategory | None,
     subportfolio_id: int | None,
+    benchmarks: Sequence[str] = (),
     now: datetime,
 ) -> PortfolioMatrix:
     """A matriz dos ativos em carteira hoje, da carteira geral ou de uma
-    subcarteira. A renda fixa não tem cotação diária e fica de fora."""
+    subcarteira, com as referências pedidas no fim. A renda fixa não tem cotação
+    diária e fica de fora; os pares são só entre os ativos."""
+    references = list(dict.fromkeys(normalize_symbol(name) for name in benchmarks))
+    unknown = [name for name in references if name not in BENCHMARKS]
+    if unknown:
+        raise CorrelationError(
+            f"Referência desconhecida: {', '.join(unknown)}. Use "
+            f"{' ou '.join(BENCHMARKS)}."
+        )
     scope = members(session, subportfolio_id)
     positions = current_positions(operation_records(session))
     tickers = [
@@ -303,9 +312,13 @@ def portfolio_matrix(
         except (TickerNotFoundError, SourceUnavailableError):
             series.append({})
             missing.append(ticker)
+    series.extend(
+        benchmark_closes(session, BENCHMARKS[name], start) for name in references
+    )
     cells = correlation_matrix(series)
+    held = [row[: len(tickers)] for row in cells[: len(tickers)]]
     return PortfolioMatrix(
-        matrix=SymbolMatrix(symbols=tickers, cells=cells),
-        pairs=strongest_pairs(tickers, cells, STRONGEST_PAIRS),
+        matrix=SymbolMatrix(symbols=[*tickers, *references], cells=cells),
+        pairs=strongest_pairs(tickers, held, STRONGEST_PAIRS),
         missing=missing,
     )

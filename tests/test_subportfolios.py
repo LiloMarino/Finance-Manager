@@ -28,8 +28,12 @@ TODAY = date.today()
 START = TODAY - timedelta(days=60)
 
 
+def _identity(name: str) -> dict[str, str]:
+    return {"name": name, "icon": "banknote", "color": "green"}
+
+
 def _subportfolio(api: TestClient, name: str = "Dividendos") -> dict[str, Any]:
-    response = api.post("/api/subportfolios", json={"name": name})
+    response = api.post("/api/subportfolios", json=_identity(name))
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -96,14 +100,43 @@ def test_subportfolio_name_is_unique(api: TestClient) -> None:
     first = _subportfolio(api, "  Dividendos ")
     _subportfolio(api, "Crescimento")
 
-    clash = api.post("/api/subportfolios", json={"name": "Dividendos"})
+    clash = api.post("/api/subportfolios", json=_identity("Dividendos"))
     rename_clash = api.put(
-        f"/api/subportfolios/{first['id']}", json={"name": "Crescimento"}
+        f"/api/subportfolios/{first['id']}", json=_identity("Crescimento")
     )
 
     assert first["name"] == "Dividendos"
     assert clash.status_code == 409
     assert rename_clash.status_code == 409
+
+
+def test_subportfolio_keeps_icon_and_color(api: TestClient) -> None:
+    """O ícone e a cor escolhidos na criação voltam na lista, e a edição troca os
+    dois junto com o nome."""
+    created = _subportfolio(api, "Dividendos")
+
+    updated = api.put(
+        f"/api/subportfolios/{created['id']}",
+        json={"name": "Renda", "icon": "sprout", "color": "purple"},
+    )
+    listed = api.get("/api/subportfolios").json()
+
+    assert (created["icon"], created["color"]) == ("banknote", "green")
+    assert updated.status_code == 204, updated.text
+    assert [(item["name"], item["icon"], item["color"]) for item in listed] == [
+        ("Renda", "sprout", "purple")
+    ]
+
+
+def test_subportfolio_rejects_unknown_icon(api: TestClient) -> None:
+    """Ícone fora da lista volta 422 e não cria nada."""
+    response = api.post(
+        "/api/subportfolios",
+        json={"name": "Dividendos", "icon": "abcd", "color": "green"},
+    )
+
+    assert response.status_code == 422
+    assert api.get("/api/subportfolios").json() == []
 
 
 def test_setting_members_moves_asset_from_other_subportfolio(

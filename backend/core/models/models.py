@@ -26,6 +26,8 @@ from backend.core.enum import (
     Indexer,
     IndexSeries,
     OperationType,
+    SubportfolioColor,
+    SubportfolioIcon,
 )
 
 # Toda constraint nasce com nome. É o nome que o batch do Alembic usa para recriar a
@@ -128,6 +130,16 @@ class Subportfolio(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     name: Mapped[str] = mapped_column(String, unique=True)
+    icon: Mapped[SubportfolioIcon] = mapped_column(
+        _enum_column(SubportfolioIcon, "subportfolio_icon"),
+        default=SubportfolioIcon.BRIEFCASE,
+        server_default=SubportfolioIcon.BRIEFCASE.value,
+    )
+    color: Mapped[SubportfolioColor] = mapped_column(
+        _enum_column(SubportfolioColor, "subportfolio_color"),
+        default=SubportfolioColor.GRAPHITE,
+        server_default=SubportfolioColor.GRAPHITE.value,
+    )
     fixed_income_target: Mapped[Decimal] = mapped_column(
         DecimalText, default=Decimal(0), server_default="0"
     )

@@ -25,7 +25,7 @@ from backend.core.models.models import (
     Segment,
 )
 from backend.features.data_health.dto import DataIssueDTO
-from backend.features.data_health.service import data_issues
+from backend.features.data_health.service import SEVERITY, data_issues
 
 # Sexta-feira, depois do fechamento do pregão
 NOW = datetime(2024, 2, 9, 20, 0)
@@ -71,6 +71,11 @@ def _prices(session: Session, asset: Asset, start: date, end: date) -> None:
 
 def _issues(session: Session, kind: DataIssueKind) -> list[DataIssueDTO]:
     return [issue for issue in data_issues(session, NOW) if issue.kind is kind]
+
+
+def test_every_pending_kind_has_a_severity() -> None:
+    """Todo tipo de pendência tem gravidade: é ela que decide se conta na sidebar."""
+    assert set(SEVERITY) == set(DataIssueKind)
 
 
 def test_held_asset_without_prices_is_listed(session: Session) -> None:

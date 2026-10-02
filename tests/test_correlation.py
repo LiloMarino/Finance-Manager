@@ -557,3 +557,48 @@ def test_portfolio_endpoint_returns_matrix_and_pairs(
     assert body["matrix"]["symbols"] == ["ABCD11", "EFGH3"]
     assert body["pairs"][0]["value"] == pytest.approx(1)
     assert body["missing"] == []
+
+
+def test_portfolio_matrix_appends_benchmarks_outside_the_pairs(
+    session: Session,
+) -> None:
+    """As referências pedidas entram no fim da matriz, com correlação contra cada
+    ativo, mas os pares mais correlacionados são só entre os ativos."""
+    provider = _provider("AAAA3", "BBBB3")
+    _hold(session, "AAAA3")
+    _hold(session, "BBBB3")
+    session.add_all(
+        IndexHistory(
+            series=IndexSeries.IBOV, rate_date=day, value=Decimal(close) * 1000
+        )
+        for day, close in provider.closes["AAAA3"].items()
+    )
+    session.commit()
+
+    result = portfolio_matrix(
+        session,
+        provider,
+        window=CorrelationWindow.ONE_YEAR,
+        category=None,
+        subportfolio_id=None,
+        benchmarks=["ibov"],
+        now=NOW,
+    )
+
+    assert result.matrix.symbols == ["AAAA3", "BBBB3", "IBOV"]
+    assert result.matrix.cells[0][2].value is not None
+    assert [(pair.first, pair.second) for pair in result.pairs] == [("AAAA3", "BBBB3")]
+
+
+def test_portfolio_matrix_refuses_unknown_benchmark(session: Session) -> None:
+    """Referência fora de IBOV e CDI é recusada."""
+    with pytest.raises(CorrelationError):
+        portfolio_matrix(
+            session,
+            _provider(),
+            window=CorrelationWindow.ONE_YEAR,
+            category=None,
+            subportfolio_id=None,
+            benchmarks=["SELIC"],
+            now=NOW,
+        )

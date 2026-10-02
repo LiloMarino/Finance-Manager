@@ -136,13 +136,17 @@ def portfolio_correlation(
     window: CorrelationWindow = CorrelationWindow.ONE_YEAR,
     category: PortfolioCategory | None = None,
     subportfolio_id: int | None = None,
+    benchmarks: Annotated[list[str] | None, Query()] = None,
 ) -> PortfolioCorrelationDTO:
+    """A matriz dos ativos em carteira, com IBOV e CDI no fim quando pedidos em
+    `benchmarks`."""
     result = portfolio_matrix(
         session,
         provider,
         window=window,
         category=category,
         subportfolio_id=subportfolio_id,
+        benchmarks=benchmarks or [],
         now=datetime.now(),
     )
     return PortfolioCorrelationDTO(

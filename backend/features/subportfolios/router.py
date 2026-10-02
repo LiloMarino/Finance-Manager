@@ -3,14 +3,17 @@ from __future__ import annotations
 from fastapi import APIRouter, status
 
 from backend.core.database.session import SessionDep
-from backend.core.dto import NameInDTO
-from backend.features.subportfolios.dto import MembersInDTO, SubportfolioDTO
+from backend.features.subportfolios.dto import (
+    MembersInDTO,
+    SubportfolioDTO,
+    SubportfolioInDTO,
+)
 from backend.features.subportfolios.service import (
     create_subportfolio,
     delete_subportfolio,
     list_subportfolios,
-    rename_subportfolio,
     set_members,
+    update_subportfolio,
 )
 
 router = APIRouter(prefix="/api/subportfolios", tags=["subportfolios"])
@@ -22,13 +25,15 @@ def list_all(session: SessionDep) -> list[SubportfolioDTO]:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create(session: SessionDep, payload: NameInDTO) -> SubportfolioDTO:
+def create(session: SessionDep, payload: SubportfolioInDTO) -> SubportfolioDTO:
     return create_subportfolio(session, payload)
 
 
 @router.put("/{subportfolio_id}", status_code=status.HTTP_204_NO_CONTENT)
-def rename(session: SessionDep, subportfolio_id: int, payload: NameInDTO) -> None:
-    rename_subportfolio(session, subportfolio_id, payload)
+def update(
+    session: SessionDep, subportfolio_id: int, payload: SubportfolioInDTO
+) -> None:
+    update_subportfolio(session, subportfolio_id, payload)
 
 
 @router.delete("/{subportfolio_id}", status_code=status.HTTP_204_NO_CONTENT)

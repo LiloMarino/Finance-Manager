@@ -67,6 +67,23 @@ def test_sale_and_income_raise_the_balance() -> None:
     assert found.balance == Decimal(160)
 
 
+def test_balance_is_above_threshold_since_the_last_crossing() -> None:
+    """O saldo conta como parado desde a última vez que passou do limite: a venda
+    que o leva de volta para baixo zera a contagem, e a seguinte a recomeça."""
+    found = ledger(
+        [_opening("600")],
+        [
+            _event(date(2024, 3, 4), CashEntryKind.PURCHASE, "-300"),
+            _event(date(2024, 3, 8), CashEntryKind.SALE, "400"),
+            _event(date(2024, 3, 12), CashEntryKind.INCOME, "10"),
+        ],
+    )
+
+    assert found is not None
+    assert found.above_since(Decimal(500)) == date(2024, 3, 8)
+    assert found.above_since(Decimal(1000)) is None
+
+
 def test_purchase_beyond_the_balance_is_money_from_outside() -> None:
     """A compra consome o saldo, e o que passa dele é aporte de fora: o saldo de
     nenhuma linha fica negativo."""

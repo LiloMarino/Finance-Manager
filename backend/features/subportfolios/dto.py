@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from backend.core.dto import BaseDTO
+from backend.core.dto import BaseDTO, NameInDTO
+from backend.core.enum import SubportfolioColor, SubportfolioIcon
 
 
 class MemberAssetDTO(BaseDTO):
@@ -18,8 +19,17 @@ class SubportfolioDTO(BaseDTO):
 
     id: int
     name: str
+    icon: SubportfolioIcon
+    color: SubportfolioColor
     assets: list[MemberAssetDTO]
     fixed_income: list[MemberInvestmentDTO]
+
+
+class SubportfolioInDTO(NameInDTO):
+    """O nome, o ícone e a cor: a identidade que aparece na sidebar e nos cards."""
+
+    icon: SubportfolioIcon
+    color: SubportfolioColor
 
 
 class MembersInDTO(BaseDTO):

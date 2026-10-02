@@ -76,6 +76,32 @@ def test_payment_is_recorded_updated_and_deleted(
     assert _month(api, 2024, 2)["status"] == "overdue"
 
 
+def test_unpaid_darf_is_a_critical_pending_item(
+    api: TestClient, session: Session
+) -> None:
+    """O DARF vencido sem pagamento aparece nas pendências como crítico, com o
+    valor, o vencimento e o mês no Fiscal; registrado o pagamento, sai."""
+    _etf_with_gain(session)
+
+    def darfs() -> list[dict[str, str]]:
+        return [
+            issue
+            for issue in api.get("/api/data-health").json()
+            if issue["kind"] == "darf_due"
+        ]
+
+    [darf] = darfs()
+    assert darf["severity"] == "critical"
+    assert darf["missing"] == "DARF de fevereiro venceu em 29/03/2024: R$ 750,00."
+    assert darf["path"] == "/tax?tab=monthly&year=2024&month=2"
+
+    api.put(
+        "/api/tax/darf/2024/2/payment",
+        json={"paid_on": "2024-03-20", "amount": "750.00"},
+    )
+    assert darfs() == []
+
+
 def test_payment_outside_assessed_months_is_refused(
     api: TestClient, session: Session
 ) -> None:

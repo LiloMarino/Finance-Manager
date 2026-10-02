@@ -5,7 +5,6 @@ from collections import defaultdict
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from backend.core.dto import NameInDTO
 from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, FixedIncomeInvestment, Subportfolio
 from backend.features.subportfolios.dto import (
@@ -13,6 +12,7 @@ from backend.features.subportfolios.dto import (
     MemberInvestmentDTO,
     MembersInDTO,
     SubportfolioDTO,
+    SubportfolioInDTO,
 )
 from backend.repository.subportfolios import subportfolio
 
@@ -57,6 +57,8 @@ def list_subportfolios(session: Session) -> list[SubportfolioDTO]:
         SubportfolioDTO(
             id=found.id,
             name=found.name,
+            icon=found.icon,
+            color=found.color,
             assets=assets[found.id],
             fixed_income=investments[found.id],
         )
@@ -64,20 +66,31 @@ def list_subportfolios(session: Session) -> list[SubportfolioDTO]:
     ]
 
 
-def create_subportfolio(session: Session, payload: NameInDTO) -> SubportfolioDTO:
+def create_subportfolio(
+    session: Session, payload: SubportfolioInDTO
+) -> SubportfolioDTO:
     _ensure_unique_name(session, payload.name)
-    created = Subportfolio(name=payload.name)
+    created = Subportfolio(name=payload.name, icon=payload.icon, color=payload.color)
     session.add(created)
     session.commit()
-    return SubportfolioDTO(id=created.id, name=created.name, assets=[], fixed_income=[])
+    return SubportfolioDTO(
+        id=created.id,
+        name=created.name,
+        icon=created.icon,
+        color=created.color,
+        assets=[],
+        fixed_income=[],
+    )
 
 
-def rename_subportfolio(
-    session: Session, subportfolio_id: int, payload: NameInDTO
+def update_subportfolio(
+    session: Session, subportfolio_id: int, payload: SubportfolioInDTO
 ) -> None:
     found = subportfolio(session, subportfolio_id)
     _ensure_unique_name(session, payload.name, subportfolio_id)
     found.name = payload.name
+    found.icon = payload.icon
+    found.color = payload.color
     session.commit()
 
 

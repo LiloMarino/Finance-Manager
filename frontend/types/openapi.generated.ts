@@ -468,8 +468,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Rename */
-        put: operations["rename_api_subportfolios__subportfolio_id__put"];
+        /** Update */
+        put: operations["update_api_subportfolios__subportfolio_id__put"];
         post?: never;
         /** Delete */
         delete: operations["delete_api_subportfolios__subportfolio_id__delete"];
@@ -1047,7 +1047,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Portfolio Correlation */
+        /**
+         * Portfolio Correlation
+         * @description A matriz dos ativos em carteira, com IBOV e CDI no fim quando pedidos em
+         *     `benchmarks`.
+         */
         get: operations["portfolio_correlation_api_correlation_portfolio_get"];
         put?: never;
         post?: never;
@@ -1237,7 +1241,7 @@ export interface components {
          * CashDTO
          * @description `balance` e `opened_on` são nulos antes da primeira conferência. O extrato
          *     vem do mais recente para o mais antigo. `above_threshold` é o saldo parado que
-         *     aparece em Saúde dos dados.
+         *     aparece nas pendências, e `above_since` o dia em que ele passou do limite.
          */
         CashDTO: {
             /** Opened On */
@@ -1251,6 +1255,8 @@ export interface components {
             alert_threshold: DecimalString;
             /** Above Threshold */
             above_threshold: boolean;
+            /** Above Since */
+            above_since: string | null;
             /** Entries */
             entries: components["schemas"]["CashEntryDTO"][];
         };
@@ -1622,11 +1628,12 @@ export interface components {
         DarfStatus: "paid" | "due" | "overdue" | "carried" | "exempt" | "compensated" | "none";
         /**
          * DataIssueDTO
-         * @description Um problema de dado que afeta algum número: o que falta, o que fica errado
-         *     por causa disso e a tela (`path`) onde ele se corrige.
+         * @description Uma pendência: o que falta, o que fica errado por causa disso e a tela
+         *     (`path`) onde ela se resolve. A gravidade vem do tipo.
          */
         DataIssueDTO: {
             kind: components["schemas"]["DataIssueKind"];
+            severity: components["schemas"]["Severity"];
             /** Subject */
             subject: string;
             /** Missing */
@@ -1638,10 +1645,11 @@ export interface components {
         };
         /**
          * DataIssueKind
-         * @description Os tipos de problema de dado que afetam algum número do app.
+         * @description As pendências do app: o DARF a pagar e os problemas de dado que afetam algum
+         *     número.
          * @enum {string}
          */
-        DataIssueKind: "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash" | "rebalance_breach";
+        DataIssueKind: "darf_due" | "missing_prices" | "late_series" | "fixed_income_without_application" | "missing_cnpj" | "unclassified_asset" | "idle_cash" | "rebalance_breach";
         /**
          * ErrorResponse
          * @description O envelope único de erro: todo 4xx/5xx sai assim, com `detail` sempre string.
@@ -3438,6 +3446,21 @@ export interface components {
             asset_count: number;
         };
         /**
+         * Severity
+         * @description A gravidade de uma pendência. Crítica pede ação com prazo; atenção deixa um
+         *     número errado ou longe da meta; informativa melhora o app sem mudar número de
+         *     hoje. O contador da sidebar soma só as duas primeiras.
+         * @enum {string}
+         */
+        Severity: "critical" | "warning" | "info";
+        /**
+         * SubportfolioColor
+         * @description A cor de fundo do ícone da subcarteira. O tom de cada tema mora nos tokens
+         *     `--subportfolio-*` do front.
+         * @enum {string}
+         */
+        SubportfolioColor: "green" | "purple" | "slate-blue" | "pink" | "gold" | "graphite" | "teal" | "wine" | "terracotta" | "olive" | "indigo" | "brown";
+        /**
          * SubportfolioDTO
          * @description A subcarteira com os ativos e os títulos de hoje, em ordem de nome.
          */
@@ -3446,10 +3469,29 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+            icon: components["schemas"]["SubportfolioIcon"];
+            color: components["schemas"]["SubportfolioColor"];
             /** Assets */
             assets: components["schemas"]["MemberAssetDTO"][];
             /** Fixed Income */
             fixed_income: components["schemas"]["MemberInvestmentDTO"][];
+        };
+        /**
+         * SubportfolioIcon
+         * @description O ícone que identifica a subcarteira na sidebar e nos cards. Cada valor é o
+         *     nome de um ícone do Lucide.
+         * @enum {string}
+         */
+        SubportfolioIcon: "banknote" | "sprout" | "shield" | "globe" | "house" | "graduation-cap" | "plane" | "heart" | "car" | "baby" | "gift" | "umbrella" | "target" | "rocket" | "piggy-bank" | "briefcase" | "trending-up" | "mountain" | "star" | "hourglass" | "zap" | "leaf" | "anchor" | "trophy";
+        /**
+         * SubportfolioInDTO
+         * @description O nome, o ícone e a cor: a identidade que aparece na sidebar e nos cards.
+         */
+        SubportfolioInDTO: {
+            /** Name */
+            name: string;
+            icon: components["schemas"]["SubportfolioIcon"];
+            color: components["schemas"]["SubportfolioColor"];
         };
         /** SuggestionDTO */
         SuggestionDTO: {
@@ -5031,7 +5073,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NameInDTO"];
+                "application/json": components["schemas"]["SubportfolioInDTO"];
             };
         };
         responses: {
@@ -5064,7 +5106,7 @@ export interface operations {
             };
         };
     };
-    rename_api_subportfolios__subportfolio_id__put: {
+    update_api_subportfolios__subportfolio_id__put: {
         parameters: {
             query?: never;
             header?: never;
@@ -5075,7 +5117,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NameInDTO"];
+                "application/json": components["schemas"]["SubportfolioInDTO"];
             };
         };
         responses: {
@@ -6684,6 +6726,7 @@ export interface operations {
                 window?: components["schemas"]["CorrelationWindow"];
                 category?: components["schemas"]["PortfolioCategory"] | null;
                 subportfolio_id?: number | null;
+                benchmarks?: string[] | null;
             };
             header?: never;
             path?: never;

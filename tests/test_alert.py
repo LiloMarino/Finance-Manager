@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from alert import alert_lines
 from backend.app import create_app
-from backend.core.enum import DataIssueKind
+from backend.core.enum import DataIssueKind, Severity
 from backend.domain.task_schedule import TaskCommand, scheduled_time, task_xml
 from backend.features.data_health.dto import DataIssueDTO
 from backend.features.data_health.service import data_issues
@@ -50,22 +50,32 @@ def alert_client(scheduler: FakeScheduler) -> TestClient:
 
 def _issue(kind: DataIssueKind, subject: str) -> DataIssueDTO:
     return DataIssueDTO(
-        kind=kind, subject=subject, missing="Algo.", affects="Algo.", path="/"
+        kind=kind,
+        severity=Severity.WARNING,
+        subject=subject,
+        missing="Algo.",
+        affects="Algo.",
+        path="/",
     )
 
 
-def test_alert_keeps_only_rebalance_and_idle_cash() -> None:
-    """O alerta avisa da subcarteira fora do limite e do saldo parado; os buracos de
-    dado ficam só no painel."""
+def test_alert_keeps_darf_rebalance_and_idle_cash() -> None:
+    """O alerta avisa do DARF a pagar, da subcarteira fora do limite e do saldo
+    parado; os buracos de dado ficam só no painel."""
     lines = alert_lines(
         [
+            _issue(DataIssueKind.DARF_DUE, "DARF de fevereiro de 2024"),
             _issue(DataIssueKind.REBALANCE_BREACH, "Renda"),
             _issue(DataIssueKind.MISSING_CNPJ, "ABCD11"),
             _issue(DataIssueKind.IDLE_CASH, "Saldo"),
         ]
     )
 
-    assert lines == ["Renda: Algo.", "Saldo: Algo."]
+    assert lines == [
+        "DARF de fevereiro de 2024: Algo.",
+        "Renda: Algo.",
+        "Saldo: Algo.",
+    ]
 
 
 def test_alert_reads_the_same_issues_as_the_panel(
