@@ -1,128 +1,124 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 
-import { CorrelationMatrix } from "@/features/correlation/correlation-matrix";
+import { MatrixCard } from "@/features/correlation/correlation-matrix";
 import {
+  type Benchmark,
   type CorrelationWindow,
+  benchmarks,
+  isBenchmark,
   isCorrelationWindow,
   windowLabels,
-  writePair,
-  writeSymbols,
 } from "@/features/correlation/correlation-params";
-import { describeCorrelation, strongestPairsHint } from "@/features/correlation/hints";
+import { portfolioMatrixHint } from "@/features/correlation/hints";
+import { PairDetail } from "@/features/correlation/pair-detail";
+import { PairsCard } from "@/features/correlation/pairs-card";
 import { usePortfolioCorrelation } from "@/features/correlation/use-correlation";
-import { MetricHint } from "@/shared/components/metric-hint";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import type { PortfolioCategory } from "@/shared/lib/portfolio-category";
-
-const correlationFormatter = new Intl.NumberFormat("pt-BR", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-/** O endereço da ferramenta Correlação com o par aberto. */
-function pairLink(pair: [string, string], window: CorrelationWindow): string {
-  const params = writePair(writeSymbols(new URLSearchParams(), pair, window), pair);
-  return `/correlation?${params.toString()}`;
-}
 
 interface PortfolioCorrelationProps {
-  category?: PortfolioCategory;
   subportfolioId?: number;
 }
 
-export function PortfolioCorrelation({ category, subportfolioId }: PortfolioCorrelationProps) {
+/** A correlação dos ativos da carteira (ou da subcarteira): janela e referências, a
+matriz, os pares que mais andam juntos e o par escolhido. */
+export function PortfolioCorrelation({ subportfolioId }: PortfolioCorrelationProps) {
   const [window, setWindow] = useState<CorrelationWindow>("1y");
-  const navigate = useNavigate();
+  const [references, setReferences] = useState<Benchmark[]>(["IBOV"]);
+  const [picked, setPicked] = useState<[string, string] | null>(null);
   const { data, error } = usePortfolioCorrelation({
     window,
-    category,
     subportfolio_id: subportfolioId,
+    benchmarks: references,
   });
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Janela */}
-      <ToggleGroup
-        variant="outline"
-        spacing={0}
-        className="self-start"
-        value={[window]}
-        onValueChange={([next]) => {
-          if (next && isCorrelationWindow(next)) setWindow(next);
-        }}
-      >
-        {Object.entries(windowLabels).map(([value, label]) => (
-          <ToggleGroupItem key={value} value={value}>
-            {label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+  // O par escolhido vale enquanto os dois ainda estão na matriz; sem ele, o mais correlacionado
+  const symbols = data?.matrix.symbols ?? [];
+  const top = data?.pairs[0];
+  const pair: [string, string] | null =
+    picked && symbols.includes(picked[0]) && symbols.includes(picked[1])
+      ? picked
+      : top
+        ? [top.first, top.second]
+        : null;
+  const assets = symbols.filter((symbol) => !isBenchmark(symbol));
 
-      {category === "fixed_income" ? (
-        <p className="text-muted-foreground">
-          A correlação cobre só a renda variável: a renda fixa não tem cotação diária.
-        </p>
-      ) : error ? (
+  return (
+    <>
+      {/* Janela e referências */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-caption text-muted-foreground">Janela</span>
+        <ToggleGroup
+          variant="segmented"
+          size="sm"
+          aria-label="Janela"
+          value={[window]}
+          onValueChange={([next]) => {
+            if (next && isCorrelationWindow(next)) setWindow(next);
+          }}
+        >
+          {Object.entries(windowLabels).map(([value, label]) => (
+            <ToggleGroupItem key={value} value={value}>
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        <span className="text-caption text-muted-foreground ml-4">Comparar com</span>
+        <ToggleGroup
+          multiple
+          variant="segmented"
+          size="sm"
+          aria-label="Referências"
+          value={references}
+          onValueChange={(values) => setReferences(values.filter(isBenchmark))}
+        >
+          {benchmarks.map((benchmark) => (
+            <ToggleGroupItem key={benchmark} value={benchmark}>
+              {benchmark}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        <span className="text-caption text-muted-foreground ml-auto">
+          Renda fixa fica de fora: não tem cotação diária.
+        </span>
+      </div>
+
+      {error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : !data ? (
-        <Skeleton className="h-48 w-full" />
-      ) : data.matrix.symbols.length < 2 ? (
+        <Skeleton className="h-96 w-full" />
+      ) : assets.length < 2 ? (
         <p className="text-muted-foreground">
-          A correlação precisa de pelo menos dois ativos em carteira neste filtro.
+          A correlação precisa de pelo menos dois ativos em carteira.
         </p>
       ) : (
         <>
-          {/* Matriz da carteira */}
-          <div className="flex flex-col gap-2">
-            <CorrelationMatrix
+          {/* Matriz e pares */}
+          <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
+            <MatrixCard
+              hint={portfolioMatrixHint}
               matrix={data.matrix}
-              selected={null}
-              onSelect={(pair) => void navigate(pairLink(pair, window))}
+              selected={pair}
+              onSelect={setPicked}
+              note={
+                references.length > 0
+                  ? `A linha ${references.join(" e ")} mostra o quanto cada ativo segue a referência.`
+                  : undefined
+              }
             />
-            {data.missing.length > 0 && (
-              <p className="text-muted-foreground text-sm">
-                Sem cotação na janela, e por isso sem correlação: {data.missing.join(", ")}.
-              </p>
-            )}
+            <PairsCard pairs={data.pairs} selected={pair} onSelect={setPicked} />
           </div>
+          {data.missing.length > 0 && (
+            <p className="text-caption text-muted-foreground">
+              Sem cotação na janela, e por isso sem correlação: {data.missing.join(", ")}.
+            </p>
+          )}
 
-          {/* Pares mais correlacionados */}
-          <div className="flex flex-col gap-2">
-            <h3 className="font-medium">
-              <MetricHint hint={strongestPairsHint}>Pares mais correlacionados</MetricHint>
-            </h3>
-            {data.pairs.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                Nenhum par com retornos em comum suficientes na janela.
-              </p>
-            ) : (
-              <ul className="divide-border flex flex-col divide-y">
-                {data.pairs.map((pair) => (
-                  <li key={`${pair.first}-${pair.second}`}>
-                    <Link
-                      to={pairLink([pair.first, pair.second], window)}
-                      className="hover:bg-muted/50 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md px-2 py-2"
-                    >
-                      <span className="font-medium">
-                        {pair.first} × {pair.second}
-                      </span>
-                      <span className="tabular-nums">
-                        {correlationFormatter.format(pair.value)}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {describeCorrelation(pair.value)} {pair.returns} pregões.
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          {/* Par escolhido */}
+          {pair && <PairDetail pair={pair} window={window} />}
         </>
       )}
-    </div>
+    </>
   );
 }

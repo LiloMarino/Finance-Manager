@@ -1,3 +1,5 @@
+import { benchmarkConfig } from "@/shared/lib/benchmark";
+import type { CorrelatedPair, CorrelationMatrix } from "@/features/correlation/use-correlation";
 import type { components } from "@/types/openapi.generated";
 
 export type CorrelationWindow = components["schemas"]["CorrelationWindow"];
@@ -70,4 +72,31 @@ export function writeSymbols(
 export function writePair(params: URLSearchParams, pair: [string, string]): URLSearchParams {
   params.set("pair", pair.join(","));
   return params;
+}
+
+// A referência tem a cor própria nos gráficos; os tickers seguem a paleta
+const referenceColors: Record<Benchmark, string> = {
+  IBOV: benchmarkConfig.ibov.color,
+  CDI: benchmarkConfig.cdi.color,
+};
+
+/** A cor de cada lado do par. */
+export function pairColors(first: string, second: string): [string, string] {
+  return [
+    isBenchmark(first) ? referenceColors[first] : "var(--chart-3)",
+    isBenchmark(second) ? referenceColors[second] : "var(--chart-1)",
+  ];
+}
+
+/** Os pares de ativos da matriz do maior valor para o menor; as referências ficam de fora. */
+export function pairsFromMatrix(matrix: CorrelationMatrix): CorrelatedPair[] {
+  return matrix.symbols
+    .flatMap((first, row) =>
+      matrix.symbols.slice(0, row).flatMap((second, column) => {
+        const cell = matrix.cells[row]?.[column];
+        if (!cell || cell.value === null || isBenchmark(first) || isBenchmark(second)) return [];
+        return [{ first, second, value: cell.value, returns: cell.returns }];
+      }),
+    )
+    .toSorted((a, b) => b.value - a.value);
 }

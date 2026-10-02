@@ -1,35 +1,36 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
+import { pairColors } from "@/features/correlation/correlation-params";
+import { formatMonth } from "@/features/correlation/format";
 import type { Correlation } from "@/features/correlation/use-correlation";
+import { ColorSwatch } from "@/shared/components/color-swatch";
 import {
   type ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/components/ui/chart";
-import { ColorSwatch } from "@/shared/components/color-swatch";
 import { formatDate } from "@/shared/lib/format";
 
 const levelFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 
 export function NormalizedChart({ correlation }: { correlation: Correlation }) {
+  const [firstColor, secondColor] = pairColors(correlation.first, correlation.second);
   const config = {
-    first: { label: correlation.first, color: "var(--chart-1)" },
-    second: { label: correlation.second, color: "var(--chart-2)" },
+    first: { label: correlation.first, color: firstColor },
+    second: { label: correlation.second, color: secondColor },
   } satisfies ChartConfig;
 
   return (
-    <ChartContainer config={config} className="aspect-auto h-72 w-full">
+    <ChartContainer config={config} className="aspect-auto h-56 w-full">
       <LineChart data={correlation.points} margin={{ left: 4, right: 4 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="day"
           tickLine={false}
           axisLine={false}
-          minTickGap={32}
-          tickFormatter={(day: string) => formatDate(day).slice(3)}
+          minTickGap={48}
+          tickFormatter={formatMonth}
         />
         <YAxis
           tickLine={false}
@@ -62,7 +63,6 @@ export function NormalizedChart({ correlation }: { correlation: Correlation }) {
             />
           }
         />
-        <ChartLegend content={<ChartLegendContent />} />
         {(["first", "second"] as const).map((key) => (
           <Line
             key={key}

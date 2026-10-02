@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { MainLayout } from "@/layouts/main-layout";
+import { AssetCorrelationPage } from "@/pages/asset-correlation";
 import { AssetDetailPage } from "@/pages/asset-detail";
 import { AssetsPage } from "@/pages/assets";
 import { CashPage } from "@/pages/cash";
@@ -21,7 +22,7 @@ import { MarketPage } from "@/pages/market";
 import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
 import { RebalancePage } from "@/pages/rebalance";
-import { RiskCorrelationPage } from "@/pages/risk-correlation";
+import { RiskReturnPage } from "@/pages/risk-return";
 import { SectorsPage } from "@/pages/sectors";
 import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
@@ -40,7 +41,7 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="evolution" element={<EvolutionPage />} />
                 <Route path="performance" element={<PerformancePage />} />
-                <Route path="risk-return" element={<RiskCorrelationPage />} />
+                <Route path="risk-return" element={<RiskReturnPage />} />
                 <Route path="rebalance" element={<RebalancePage />} />
                 <Route path="operations" element={<OperationsPage />} />
                 <Route path="import" element={<ImportPage />} />
@@ -54,8 +55,8 @@ export default function App() {
                 <Route path="market" element={<MarketPage />} />
                 <Route path="fixed-income-comparator" element={<FixedIncomeComparatorPage />} />
                 <Route path="installments" element={<InstallmentsPage />} />
-                <Route path="correlation" element={<RiskCorrelationPage />} />
-                <Route path="asset-correlation" element={<CorrelationPage />} />
+                <Route path="correlation" element={<CorrelationPage />} />
+                <Route path="asset-correlation" element={<AssetCorrelationPage />} />
                 <Route path="income" element={<IncomePage />} />
                 <Route path="tax" element={<TaxPage />} />
                 <Route path="data" element={<DataHealthPage />} />

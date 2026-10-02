@@ -119,15 +119,14 @@ export function CorrelationForm({ state, onSubmit }: CorrelationFormProps) {
         <FieldError errors={[errors.tickers]} />
       </Field>
       <Field className="w-auto">
-        <FieldLabel>Referências</FieldLabel>
+        <FieldLabel>Comparar com</FieldLabel>
         <Controller
           control={form.control}
           name="benchmarks"
           render={({ field }) => (
             <ToggleGroup
               multiple
-              variant="outline"
-              spacing={0}
+              variant="segmented"
               value={field.value}
               onValueChange={(next) => field.onChange(next.filter(isBenchmark))}
             >

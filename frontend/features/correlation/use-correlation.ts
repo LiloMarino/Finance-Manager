@@ -7,6 +7,7 @@ import type { components, paths } from "@/types/openapi.generated";
 
 export type Correlation = components["schemas"]["CorrelationDTO"];
 export type CorrelationMatrix = components["schemas"]["CorrelationMatrixDTO"];
+export type CorrelatedPair = components["schemas"]["CorrelatedPairDTO"];
 export type PortfolioCorrelation = components["schemas"]["PortfolioCorrelationDTO"];
 export type PortfolioCorrelationFilters = NonNullable<
   paths["/api/correlation/portfolio"]["get"]["parameters"]["query"]
