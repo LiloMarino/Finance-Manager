@@ -52,3 +52,31 @@ export function useChangeTicker(assetId: number) {
     onError: (error) => toast.error(getApiErrorMessage(error)),
   });
 }
+
+/** Grava o segmento escolhido em cada ativo; o resto do cadastro segue como está. */
+export function useAssignSegments() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (choices: { asset: Asset; segmentId: number }[]) =>
+      Promise.all(
+        choices.map(({ asset, segmentId }) =>
+          put("/api/assets/{asset_id}", {
+            path: { asset_id: asset.id },
+            body: {
+              ticker: asset.ticker,
+              asset_class: asset.asset_class,
+              cnpj: asset.cnpj,
+              segment_id: segmentId,
+              subportfolio_id: asset.subportfolio_id,
+            },
+          }),
+        ),
+      ),
+    onSuccess: (saved) => {
+      toast.success(saved.length === 1 ? "Segmento salvo." : `${saved.length} segmentos salvos.`);
+      return invalidatePortfolioData(queryClient);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+  });
+}

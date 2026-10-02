@@ -12,6 +12,9 @@ const cardVariants = cva(
         // Área de soltar arquivos com borda tracejada que muda na hover
         dropzone:
           "border-2 border-dashed border-border-subtle data-[dragging=true]:border-primary data-[dragging=true]:bg-muted",
+        // Pendência que pede ação: a borda ganha o tom de atenção
+        warning:
+          "border border-warning/40 shadow-card",
         // Barra fixa no topo da conferência sem borda, com sombra
         sticky:
           "shadow-lg",

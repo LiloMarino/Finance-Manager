@@ -27,7 +27,13 @@ const operationTypeVariants = {
   reverse_split: "outline",
 } as const satisfies Record<OperationType, "buy" | "sell" | "outline">;
 
-export function OperationsTable({ operations }: { operations: Operation[] }) {
+interface OperationsTableProps {
+  operations: Operation[];
+  /** Na tela de um ativo só, a coluna dele sai. */
+  showAsset?: boolean;
+}
+
+export function OperationsTable({ operations, showAsset = true }: OperationsTableProps) {
   if (operations.length === 0) {
     return <p className="text-muted-foreground">Nenhuma operação encontrada.</p>;
   }
@@ -37,7 +43,7 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
       <TableHeader>
         <TableRow>
           <TableHead>Data</TableHead>
-          <TableHead>Ativo</TableHead>
+          {showAsset && <TableHead>Ativo</TableHead>}
           <TableHead>Tipo</TableHead>
           <TableHead className="text-right">Quantidade</TableHead>
           <TableHead className="text-right">Preço unitário</TableHead>
@@ -49,13 +55,15 @@ export function OperationsTable({ operations }: { operations: Operation[] }) {
         {operations.map((operation) => (
           <TableRow key={operation.id}>
             <TableCell className="tabular-nums">{formatDate(operation.operation_date)}</TableCell>
-            <TableCell>
-              <TickerLabel
-                ticker={operation.ticker}
-                category={operation.asset_class}
-                to={`/assets/${operation.asset_id}`}
-              />
-            </TableCell>
+            {showAsset && (
+              <TableCell>
+                <TickerLabel
+                  ticker={operation.ticker}
+                  category={operation.asset_class}
+                  to={`/assets/${operation.asset_id}`}
+                />
+              </TableCell>
+            )}
             <TableCell>
               <Badge variant={operationTypeVariants[operation.operation_type]}>
                 {operationTypeLabels[operation.operation_type]}

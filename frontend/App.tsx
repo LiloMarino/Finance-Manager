@@ -23,7 +23,6 @@ import { OperationsPage } from "@/pages/operations";
 import { PerformancePage } from "@/pages/performance";
 import { RebalancePage } from "@/pages/rebalance";
 import { RiskReturnPage } from "@/pages/risk-return";
-import { SectorsPage } from "@/pages/sectors";
 import { SubportfoliosPage } from "@/pages/subportfolios";
 import { TaxPage } from "@/pages/tax";
 import { PortfolioScopeProvider } from "@/shared/components/portfolio-scope-provider";
@@ -48,7 +47,6 @@ export default function App() {
                 <Route path="assets" element={<AssetsPage />} />
                 <Route path="cash" element={<CashPage />} />
                 <Route path="assets/:assetId" element={<AssetDetailPage />} />
-                <Route path="sectors" element={<SectorsPage />} />
                 <Route path="subportfolios" element={<SubportfoliosPage />} />
                 <Route path="fixed-income" element={<FixedIncomePage />} />
                 <Route path="fixed-income/:investmentId" element={<FixedIncomeDetailPage />} />
