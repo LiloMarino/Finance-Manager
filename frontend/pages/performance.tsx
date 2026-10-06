@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { RequireHistory } from "@/features/evolution/require-history";
 import { MonthlyReturnsPanel } from "@/features/monthly-returns/monthly-returns-panel";
 import { PerformancePanel } from "@/features/performance/performance-panel";
 import { CategorySelect } from "@/shared/components/category-select";
@@ -34,16 +35,18 @@ export function PerformancePage() {
         </TabsList>
       </PageHeader>
 
-      <TabsContent value="accumulated" className="flex flex-col gap-6">
-        <PerformancePanel category={category} subportfolioId={subportfolioId} filters={filters} />
-      </TabsContent>
-      <TabsContent value="years" className="flex flex-col gap-6">
-        <MonthlyReturnsPanel
-          category={category}
-          subportfolioId={subportfolioId}
-          filters={filters}
-        />
-      </TabsContent>
+      <RequireHistory subportfolioId={subportfolioId}>
+        <TabsContent value="accumulated" className="flex flex-col gap-6">
+          <PerformancePanel category={category} subportfolioId={subportfolioId} filters={filters} />
+        </TabsContent>
+        <TabsContent value="years" className="flex flex-col gap-6">
+          <MonthlyReturnsPanel
+            category={category}
+            subportfolioId={subportfolioId}
+            filters={filters}
+          />
+        </TabsContent>
+      </RequireHistory>
     </Tabs>
   );
 }

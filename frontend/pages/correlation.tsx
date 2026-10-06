@@ -1,3 +1,4 @@
+import { RequireHistory } from "@/features/evolution/require-history";
 import { PortfolioCorrelation } from "@/features/correlation/portfolio-correlation";
 import { PageHeader } from "@/shared/components/page-header";
 import { usePortfolioScope } from "@/shared/hooks/use-portfolio-scope";
@@ -18,7 +19,9 @@ export function CorrelationPage() {
             : "O quanto os ativos da carteira andam juntos. Para ver uma subcarteira, troque no topo da sidebar."
         }
       />
-      <PortfolioCorrelation subportfolioId={subportfolioId} />
+      <RequireHistory subportfolioId={subportfolioId}>
+        <PortfolioCorrelation subportfolioId={subportfolioId} />
+      </RequireHistory>
     </>
   );
 }

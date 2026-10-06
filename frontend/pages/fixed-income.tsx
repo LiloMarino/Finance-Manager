@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Landmark, Plus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import { FixedIncomeFormDialog } from "@/features/fixed-income/fixed-income-form-dialog";
@@ -12,6 +12,14 @@ import { Metric, MetricStrip } from "@/shared/components/metric";
 import { Money } from "@/shared/components/money";
 import { PageHeader } from "@/shared/components/page-header";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/shared/components/ui/empty";
 import {
   Select,
   SelectContent,
@@ -94,9 +102,28 @@ export function FixedIncomePage() {
       ) : !list.data || !summary.data ? (
         <Skeleton className="h-40 w-full" />
       ) : list.data.length === 0 ? (
-        <p className="text-muted-foreground">
-          Nenhum título cadastrado. Cadastre o título com a primeira aplicação.
-        </p>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Landmark />
+            </EmptyMedia>
+            <EmptyTitle>Nenhum título cadastrado</EmptyTitle>
+            <EmptyDescription>
+              CDB, LCI, Tesouro: cadastre o título com a primeira aplicação. O valor sai da curva do
+              indexador, sem precisar de cotação.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <FixedIncomeFormDialog
+              trigger={
+                <Button>
+                  <Plus />
+                  Novo título
+                </Button>
+              }
+            />
+          </EmptyContent>
+        </Empty>
       ) : (
         <FixedIncomeContent
           investments={list.data.filter(

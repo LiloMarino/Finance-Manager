@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 
+import { RequireHistory } from "@/features/evolution/require-history";
 import { OperationsTable } from "@/features/operations/operations-table";
 import { useOperations } from "@/features/operations/use-operations";
 import { CategoryResultCard, DarfCard, PoolsCard } from "@/features/tax/darf-card";
@@ -61,13 +62,15 @@ export function TaxPage() {
         </TabsList>
       </PageHeader>
 
-      {isPending ? (
-        <Skeleton className="h-40 w-full" />
-      ) : error ? (
-        <span className="text-destructive">{getApiErrorMessage(error)}</span>
-      ) : (
-        <TaxContent months={data} current={current} go={go} today={today} />
-      )}
+      <RequireHistory>
+        {isPending ? (
+          <Skeleton className="h-40 w-full" />
+        ) : error ? (
+          <span className="text-destructive">{getApiErrorMessage(error)}</span>
+        ) : (
+          <TaxContent months={data} current={current} go={go} today={today} />
+        )}
+      </RequireHistory>
     </Tabs>
   );
 }

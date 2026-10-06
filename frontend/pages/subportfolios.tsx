@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { FolderTree, Plus } from "lucide-react";
 
 import { DivisionCard } from "@/features/subportfolios/division-card";
 import { SubportfolioOverviewCard } from "@/features/subportfolios/subportfolio-overview-card";
@@ -6,6 +6,14 @@ import { SubportfolioWizard } from "@/features/subportfolios/subportfolio-wizard
 import { useDivision } from "@/features/subportfolios/use-division";
 import { PageHeader } from "@/shared/components/page-header";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/shared/components/ui/empty";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useSubportfolios } from "@/shared/hooks/use-subportfolios";
 import { getApiErrorMessage } from "@/shared/lib/api";
@@ -36,10 +44,28 @@ export function SubportfoliosPage() {
       ) : error ? (
         <span className="text-destructive">{getApiErrorMessage(error)}</span>
       ) : data.length === 0 ? (
-        <p className="text-muted-foreground">
-          Nenhuma subcarteira. Crie uma e escolha os ativos e os títulos dela, ou escolha a
-          subcarteira no Editar de cada ativo e de cada título.
-        </p>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FolderTree />
+            </EmptyMedia>
+            <EmptyTitle>Nenhuma subcarteira</EmptyTitle>
+            <EmptyDescription>
+              Crie uma e escolha os ativos e os títulos dela, ou escolha a subcarteira no Editar de
+              cada ativo e de cada título.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <SubportfolioWizard
+              trigger={
+                <Button>
+                  <Plus />
+                  Nova subcarteira
+                </Button>
+              }
+            />
+          </EmptyContent>
+        </Empty>
       ) : (
         <>
           <DivisionCard subportfolios={data} />

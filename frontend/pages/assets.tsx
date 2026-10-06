@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Boxes, FileUp, Plus, Shapes } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { AssetFormDialog } from "@/features/assets/asset-form-dialog";
@@ -11,6 +11,14 @@ import { NameDialog } from "@/shared/components/name-dialog";
 import { PageHeader } from "@/shared/components/page-header";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/shared/components/ui/empty";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { useAssets } from "@/shared/hooks/use-assets";
@@ -88,6 +96,33 @@ export function AssetsPage() {
           <Skeleton className="h-40 w-full" />
         ) : assets.error ? (
           <span className="text-destructive">{getApiErrorMessage(assets.error)}</span>
+        ) : assets.data.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Boxes />
+              </EmptyMedia>
+              <EmptyTitle>Nenhum ativo cadastrado</EmptyTitle>
+              <EmptyDescription>
+                A importação das notas e do extrato cria os ativos que ainda não existem. À mão,
+                basta o ticker e a categoria.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button variant="outline" nativeButton={false} render={<Link to="/import" />}>
+                <FileUp />
+                Importar notas e extrato
+              </Button>
+              <AssetFormDialog
+                trigger={
+                  <Button>
+                    <Plus />
+                    Novo ativo
+                  </Button>
+                }
+              />
+            </EmptyContent>
+          </Empty>
         ) : (
           <AssetsTable assets={assets.data} />
         )}
@@ -100,14 +135,30 @@ export function AssetsPage() {
         ) : sectors.error ? (
           <span className="text-destructive">{getApiErrorMessage(sectors.error)}</span>
         ) : sectors.data.length === 0 ? (
-          <p className="text-muted-foreground">
-            Nenhum setor cadastrado. Crie um setor e os segmentos dele, e classifique os ativos pelo
-            Editar de cada um ou pela lista acima. A{" "}
-            <Link to="/" className="underline">
-              Carteira
-            </Link>{" "}
-            mostra a renda variável dividida por eles.
-          </p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Shapes />
+              </EmptyMedia>
+              <EmptyTitle>Nenhum setor cadastrado</EmptyTitle>
+              <EmptyDescription>
+                Crie um setor e os segmentos dele, e classifique os ativos pelo Editar de cada um ou
+                pela lista acima. A Carteira mostra a renda variável dividida por eles.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <NameDialog
+                title="Novo setor"
+                save={createSector}
+                trigger={
+                  <Button>
+                    <Plus />
+                    Novo setor
+                  </Button>
+                }
+              />
+            </EmptyContent>
+          </Empty>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {sectors.data.map((sector) => (

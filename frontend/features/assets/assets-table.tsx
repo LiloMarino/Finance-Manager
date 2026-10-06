@@ -43,10 +43,6 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
   const portfolio = usePortfolio({});
   const { data: subportfolios = [] } = useSubportfolios();
 
-  if (assets.length === 0) {
-    return <p className="text-muted-foreground">Nenhum ativo cadastrado ainda.</p>;
-  }
-
   const held = new Set(portfolio.data?.positions.map((position) => position.asset_id));
   const shown = assets.filter(
     (asset) =>
