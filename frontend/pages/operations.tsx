@@ -63,7 +63,7 @@ export function OperationsPage() {
               {data.length} operação{data.length !== 1 ? "s" : ""} · as mais recentes primeiro
             </CardDescription>
           </CardHeader>
-          <CardContent data-flush>
+          <CardContent>
             <OperationsTable operations={data} />
           </CardContent>
         </Card>

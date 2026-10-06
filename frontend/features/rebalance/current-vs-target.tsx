@@ -172,7 +172,7 @@ export function CurrentVsTarget({
           </div>
         </CardContent>
         <div className="border-border border-t pt-2">
-          <CardContent data-flush>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>

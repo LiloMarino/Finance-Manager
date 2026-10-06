@@ -140,7 +140,7 @@ function BreakEvenRates({
           menos, pagar à vista vence.
         </p>
       </CardContent>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>

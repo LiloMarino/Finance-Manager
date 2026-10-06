@@ -130,7 +130,7 @@ function Breakdown({ result }: { result: CashOrAdvance }) {
         <PathBars result={result} />
       </CardContent>
       <div className="border-border border-t">
-        <CardContent data-flush>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>

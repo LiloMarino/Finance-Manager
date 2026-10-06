@@ -99,7 +99,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
             </span>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>

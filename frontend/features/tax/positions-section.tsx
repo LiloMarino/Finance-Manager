@@ -53,9 +53,9 @@ export function PositionsSection({ report, period }: PositionsSectionProps) {
           </ToggleGroup>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         {groups.length === 0 ? (
-          <p className="text-caption text-muted-foreground px-5">Nenhuma posição.</p>
+          <p className="text-caption text-muted-foreground">Nenhuma posição.</p>
         ) : (
           <Table>
             <TableHeader>

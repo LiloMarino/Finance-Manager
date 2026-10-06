@@ -221,61 +221,55 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
                 )}
               </div>
             </CardHeader>
-            <CardContent data-flush="true">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-9" />
-                      <TableHead>Situação</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Ativo</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead className="text-right">Quantidade</TableHead>
-                      <TableHead className="text-right">Preço</TableHead>
-                      <TableHead>Arquivo</TableHead>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-9" />
+                    <TableHead>Situação</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Ativo</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead className="text-right">Quantidade</TableHead>
+                    <TableHead className="text-right">Preço</TableHead>
+                    <TableHead>Arquivo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {preview.rows.map((row, index) => (
+                    <TableRow
+                      key={index}
+                      variant={!selectable.includes(row.status) ? "divider" : undefined}
+                    >
+                      <TableCell className="w-9">
+                        <Checkbox
+                          aria-label={`Gravar ${row.ticker} de ${formatDate(row.operation_date)}`}
+                          checked={operations.selected.has(index)}
+                          disabled={!selectable.includes(row.status)}
+                          onCheckedChange={(checked) => operations.toggle(index, checked === true)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariants[row.status]}>
+                          {statusLabels[row.status]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-table">{formatDate(row.operation_date)}</TableCell>
+                      <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
+                      <TableCell>{operationTypeLabels[row.operation_type]}</TableCell>
+                      <TableCell className="text-right text-table">
+                        <Quantity value={row.quantity} />
+                      </TableCell>
+                      <TableCell className="text-right text-table">
+                        <Money value={row.unit_price} />
+                      </TableCell>
+                      <TableCell variant="muted" className="text-table max-w-48 truncate">
+                        {row.file}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {preview.rows.map((row, index) => (
-                      <TableRow
-                        key={index}
-                        variant={!selectable.includes(row.status) ? "divider" : undefined}
-                      >
-                        <TableCell className="w-9">
-                          <Checkbox
-                            aria-label={`Gravar ${row.ticker} de ${formatDate(row.operation_date)}`}
-                            checked={operations.selected.has(index)}
-                            disabled={!selectable.includes(row.status)}
-                            onCheckedChange={(checked) =>
-                              operations.toggle(index, checked === true)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={statusVariants[row.status]}>
-                            {statusLabels[row.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-table">
-                          {formatDate(row.operation_date)}
-                        </TableCell>
-                        <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
-                        <TableCell>{operationTypeLabels[row.operation_type]}</TableCell>
-                        <TableCell className="text-right text-table">
-                          <Quantity value={row.quantity} />
-                        </TableCell>
-                        <TableCell className="text-right text-table">
-                          <Money value={row.unit_price} />
-                        </TableCell>
-                        <TableCell variant="muted" className="text-table max-w-48 truncate">
-                          {row.file}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         )}
@@ -307,69 +301,65 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
                 )}
               </div>
             </CardHeader>
-            <CardContent data-flush="true">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-9" />
-                      <TableHead>Situação</TableHead>
-                      <TableHead>Pagamento</TableHead>
-                      <TableHead>Ativo</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead className="text-right">Quantidade</TableHead>
-                      <TableHead className="text-right">Bruto por unidade</TableHead>
-                      <TableHead className="text-right">Líquido</TableHead>
-                      <TableHead>Arquivo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {preview.income_rows
-                      .filter(
-                        (row) =>
-                          row.status === "new" ||
-                          (showRepeatedIncome &&
-                            ["existing", "repeated_in_batch"].includes(row.status)),
-                      )
-                      .map((row, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="w-9">
-                            <Checkbox
-                              aria-label={`Gravar provento de ${row.ticker}`}
-                              checked={income.selected.has(preview.income_rows.indexOf(row))}
-                              disabled={!selectable.includes(row.status)}
-                              onCheckedChange={(checked) =>
-                                income.toggle(preview.income_rows.indexOf(row), checked === true)
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={statusVariants[row.status]}>
-                              {statusLabels[row.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-table">
-                            {formatDate(row.payment_date)}
-                          </TableCell>
-                          <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
-                          <TableCell>{incomeTypeLabels[row.income_type]}</TableCell>
-                          <TableCell className="text-right text-table">
-                            <Quantity value={row.quantity} />
-                          </TableCell>
-                          <TableCell className="text-right text-table">
-                            <Money value={row.unit_price} />
-                          </TableCell>
-                          <TableCell className="text-right text-table">
-                            <Money value={row.amount} />
-                          </TableCell>
-                          <TableCell variant="muted" className="text-table max-w-48 truncate">
-                            {row.file}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </div>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-9" />
+                    <TableHead>Situação</TableHead>
+                    <TableHead>Pagamento</TableHead>
+                    <TableHead>Ativo</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead className="text-right">Quantidade</TableHead>
+                    <TableHead className="text-right">Bruto por unidade</TableHead>
+                    <TableHead className="text-right">Líquido</TableHead>
+                    <TableHead>Arquivo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {preview.income_rows
+                    .filter(
+                      (row) =>
+                        row.status === "new" ||
+                        (showRepeatedIncome &&
+                          ["existing", "repeated_in_batch"].includes(row.status)),
+                    )
+                    .map((row, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="w-9">
+                          <Checkbox
+                            aria-label={`Gravar provento de ${row.ticker}`}
+                            checked={income.selected.has(preview.income_rows.indexOf(row))}
+                            disabled={!selectable.includes(row.status)}
+                            onCheckedChange={(checked) =>
+                              income.toggle(preview.income_rows.indexOf(row), checked === true)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusVariants[row.status]}>
+                            {statusLabels[row.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-table">{formatDate(row.payment_date)}</TableCell>
+                        <TableCell className="text-ticker font-mono">{row.ticker}</TableCell>
+                        <TableCell>{incomeTypeLabels[row.income_type]}</TableCell>
+                        <TableCell className="text-right text-table">
+                          <Quantity value={row.quantity} />
+                        </TableCell>
+                        <TableCell className="text-right text-table">
+                          <Money value={row.unit_price} />
+                        </TableCell>
+                        <TableCell className="text-right text-table">
+                          <Money value={row.amount} />
+                        </TableCell>
+                        <TableCell variant="muted" className="text-table max-w-48 truncate">
+                          {row.file}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         )}

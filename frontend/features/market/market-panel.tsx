@@ -87,15 +87,13 @@ export function MarketPanel() {
             </span>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {prices.isPending ? (
             <Skeleton className="h-40 w-full" />
           ) : prices.error ? (
-            <span className="text-destructive px-5">{getApiErrorMessage(prices.error)}</span>
+            <span className="text-destructive">{getApiErrorMessage(prices.error)}</span>
           ) : prices.data.length === 0 ? (
-            <p className="text-muted-foreground px-5">
-              Nenhum ativo com operação cadastrada ainda.
-            </p>
+            <p className="text-muted-foreground">Nenhum ativo com operação cadastrada ainda.</p>
           ) : (
             <Table>
               <TableHeader>
@@ -137,11 +135,11 @@ export function MarketPanel() {
             <span className="text-caption text-muted-foreground">Banco Central e B3</span>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {indexes.isPending ? (
             <Skeleton className="h-24 w-full" />
           ) : indexes.error ? (
-            <span className="text-destructive px-5">{getApiErrorMessage(indexes.error)}</span>
+            <span className="text-destructive">{getApiErrorMessage(indexes.error)}</span>
           ) : (
             <Table>
               <TableHeader>

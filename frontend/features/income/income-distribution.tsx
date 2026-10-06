@@ -93,7 +93,7 @@ export function IncomeDistributionPanel({
               <CardDescription>Yield pelo valor de hoje e pelo custo</CardDescription>
             </CardAction>
           </CardHeader>
-          <CardContent data-flush>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>

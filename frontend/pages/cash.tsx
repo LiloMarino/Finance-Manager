@@ -151,7 +151,7 @@ export function CashPage() {
               <CardTitle>Extrato</CardTitle>
               <span className="text-caption text-muted-foreground">O mais recente primeiro</span>
             </CardHeader>
-            <CardContent data-flush>
+            <CardContent>
               <EntriesTable entries={data.entries} />
             </CardContent>
           </Card>

@@ -134,23 +134,23 @@ function IncomeCard({ assetId }: { assetId: number }) {
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3" data-flush>
-        {row && (
-          <div className="flex flex-col gap-0.5 px-5">
-            <span className="text-caption text-muted-foreground">Recebido em 12 meses</span>
-            <span className="text-kpi-sm tabular-nums">
-              <Money value={row.amount} />
+      {row && (
+        <CardContent className="flex flex-col gap-0.5">
+          <span className="text-caption text-muted-foreground">Recebido em 12 meses</span>
+          <span className="text-kpi-sm tabular-nums">
+            <Money value={row.amount} />
+          </span>
+          {row.dividend_yield && row.yield_on_cost && (
+            <span className="text-caption text-muted-foreground">
+              Dividend yield de {formatPercent(row.dividend_yield)} · yield on cost de{" "}
+              {formatPercent(row.yield_on_cost)}
             </span>
-            {row.dividend_yield && row.yield_on_cost && (
-              <span className="text-caption text-muted-foreground">
-                Dividend yield de {formatPercent(row.dividend_yield)} · yield on cost de{" "}
-                {formatPercent(row.yield_on_cost)}
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </CardContent>
+      )}
+      <CardContent>
         {recent.length === 0 ? (
-          <p className="text-caption text-muted-foreground px-5">
+          <p className="text-caption text-muted-foreground">
             Nenhum provento registrado para este ativo.
           </p>
         ) : (
@@ -241,7 +241,7 @@ export function AssetDetailPage() {
             </CardDescription>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {operations.isPending ? (
             <Skeleton className="h-40 w-full" />
           ) : operations.error ? (

@@ -108,9 +108,9 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
             </span>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {report.assets.length === 0 ? (
-            <div className="px-5 py-3">
+            <div className="py-3">
               <p className="text-muted-foreground">Nenhum bem em 31/12.</p>
             </div>
           ) : (
@@ -159,13 +159,13 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         <CardHeader>
           <CardTitle>Rendimentos Isentos e Não Tributáveis · código 20</CardTitle>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {report.exempt_months.length === 0 ? (
-            <div className="px-5 py-3">
+            <div className="py-3">
               <p className="text-muted-foreground">Nenhum lucro isento no ano.</p>
             </div>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-2 px-5 py-3">
+            <div className="grid gap-4 lg:grid-cols-2 py-3">
               {report.exempt_months.map((item) => (
                 <div key={item.month} className="grid grid-cols-3 gap-3">
                   <span className="text-caption text-muted-foreground">
@@ -197,7 +197,7 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
             </span>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
@@ -253,13 +253,13 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
         <CardHeader>
           <CardTitle>Prejuízo a compensar em 31/12/{year}</CardTitle>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {report.losses.length === 0 ? (
-            <div className="px-5 py-3">
+            <div className="py-3">
               <p className="text-muted-foreground">Sem apuração no ano.</p>
             </div>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-2 px-5 py-3">
+            <div className="grid gap-4 lg:grid-cols-2 py-3">
               {report.losses.map((loss) => (
                 <div key={loss.pool} className="grid grid-cols-3 gap-3">
                   <span className="text-caption text-muted-foreground">
@@ -283,9 +283,9 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
             <CardHeader>
               <CardTitle>{incomeFormLabels[form]} · proventos</CardTitle>
             </CardHeader>
-            <CardContent data-flush>
+            <CardContent>
               {items.length === 0 ? (
-                <div className="px-5 py-3">
+                <div className="py-3">
                   <p className="text-muted-foreground">Nenhum provento no ano.</p>
                 </div>
               ) : (
@@ -309,7 +309,7 @@ export function IrpfReport({ report }: { report: IrpfReportData }) {
           <CardHeader>
             <CardTitle>Proventos sem ficha automática</CardTitle>
           </CardHeader>
-          <CardContent data-flush>
+          <CardContent>
             <IncomeTable
               items={report.income.filter((item) => item.form === null)}
               withCode={false}

@@ -119,9 +119,9 @@ export function CategoryResultCard({ month }: { month: MonthlyTax }) {
       <CardHeader>
         <CardTitle>Resultado por categoria</CardTitle>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         {month.categories.length === 0 ? (
-          <p className="text-caption text-muted-foreground px-5">Nenhuma venda no mês.</p>
+          <p className="text-caption text-muted-foreground">Nenhuma venda no mês.</p>
         ) : (
           <Table>
             <TableHeader>
@@ -165,7 +165,7 @@ export function PoolsCard({ month }: { month: MonthlyTax }) {
       <CardHeader>
         <CardTitle>Apuração</CardTitle>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>

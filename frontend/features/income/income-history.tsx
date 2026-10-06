@@ -139,7 +139,7 @@ export function IncomeHistory({ subportfolioId, category, filters }: IncomeHisto
               </CardDescription>
             </CardAction>
           </CardHeader>
-          <CardContent data-flush>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>

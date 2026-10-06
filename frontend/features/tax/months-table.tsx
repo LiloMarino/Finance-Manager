@@ -33,11 +33,9 @@ export function MonthsTable({ months, onSelect }: MonthsTableProps) {
           </span>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         {months.length === 0 ? (
-          <p className="text-caption text-muted-foreground px-5">
-            Nenhum mês com venda no período.
-          </p>
+          <p className="text-caption text-muted-foreground">Nenhum mês com venda no período.</p>
         ) : (
           <Table>
             <TableHeader>

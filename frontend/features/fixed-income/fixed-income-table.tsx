@@ -118,7 +118,7 @@ export function FixedIncomeTable({ investments, summary }: FixedIncomeTableProps
           </CardDescription>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>

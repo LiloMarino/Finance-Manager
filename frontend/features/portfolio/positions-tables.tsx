@@ -196,7 +196,7 @@ export function EquityCard({ portfolio }: { portfolio: Portfolio }) {
           </CardDescription>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((group) => (
@@ -346,7 +346,7 @@ export function FixedIncomeCard({ portfolio }: { portfolio: Portfolio }) {
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((group) => (

@@ -41,7 +41,7 @@ export function RiskReturnTable({ riskReturn, hidden, onToggle }: RiskReturnTabl
           </span>
         </CardAction>
       </CardHeader>
-      <CardContent data-flush>
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>

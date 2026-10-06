@@ -264,7 +264,7 @@ export function IncomePerformancePanel({
                 <CardHeader>
                   <CardTitle>No período</CardTitle>
                 </CardHeader>
-                <CardContent data-flush>
+                <CardContent>
                   <CategoryTotals performance={data} />
                 </CardContent>
               </Card>

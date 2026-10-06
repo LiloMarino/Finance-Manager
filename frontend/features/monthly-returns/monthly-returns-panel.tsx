@@ -103,7 +103,7 @@ export function MonthlyReturnsPanel({
                 </CardDescription>
               </CardAction>
             </CardHeader>
-            <CardContent data-flush>
+            <CardContent>
               <MonthlyReturnsTable monthly={data} benchmark={benchmark} />
             </CardContent>
           </Card>

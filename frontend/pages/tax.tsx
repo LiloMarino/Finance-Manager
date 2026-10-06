@@ -157,7 +157,7 @@ function MonthView({ year, month }: { year: number; month: number }) {
             </CardDescription>
           </CardAction>
         </CardHeader>
-        <CardContent data-flush>
+        <CardContent>
           {operations.isPending ? (
             <Skeleton className="h-24 w-full" />
           ) : operations.error ? (
