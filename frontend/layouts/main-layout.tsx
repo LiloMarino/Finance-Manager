@@ -156,6 +156,8 @@ export function MainLayout() {
                 <ScopeSwitcher />
                 <CollapseButton />
               </SidebarMenuItem>
+            </SidebarMenu>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <CommandSearch />
               </SidebarMenuItem>
