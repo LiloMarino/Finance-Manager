@@ -30,9 +30,10 @@ interface SegmentGroup {
 
 const UNCLASSIFIED: SegmentItem = { value: null, label: "Sem classificação" };
 
-function segmentGroups(sectors: Sector[]): SegmentGroup[] {
+// "Sem classificação" é a opção de tirar o segmento: só aparece quando há um escolhido
+function segmentGroups(sectors: Sector[], classified: boolean): SegmentGroup[] {
   return [
-    { value: "none", label: "", items: [UNCLASSIFIED] },
+    ...(classified ? [{ value: "none", label: "", items: [UNCLASSIFIED] }] : []),
     ...sectors
       .filter((sector) => sector.segments.length > 0)
       .map((sector) => ({
@@ -58,9 +59,11 @@ export function SegmentCombobox({ id, value, onChange, onCreate }: SegmentCombob
   const [query, setQuery] = useState("");
   // O item escolhido mantém a identidade entre renders: o Combobox reescreve o texto
   // do campo quando o valor muda, e um objeto novo a cada render apagaria a digitação
-  const groups = useMemo(() => segmentGroups(sectors ?? []), [sectors]);
+  const classified = value !== null;
+  const groups = useMemo(() => segmentGroups(sectors ?? [], classified), [sectors, classified]);
   const all = groups.flatMap((group) => group.items);
-  const selected = all.find((item) => item.value === value) ?? UNCLASSIFIED;
+  // Sem segmento, o campo fica vazio e o que se digita é só a busca
+  const selected = value === null ? null : (all.find((item) => item.value === value) ?? null);
   const typed = query.trim();
   const exists = all.some((item) => item.label.toLowerCase() === typed.toLowerCase());
   const items =
@@ -79,6 +82,7 @@ export function SegmentCombobox({ id, value, onChange, onCreate }: SegmentCombob
     <Combobox
       items={items}
       value={selected}
+      autoHighlight
       onInputValueChange={setQuery}
       onValueChange={(item) => {
         if (item?.creatable) onCreate(item.creatable);

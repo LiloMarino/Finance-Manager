@@ -110,7 +110,10 @@ class Subportfolio(Base):
     A meta de rebalanceamento é dela: a de cada ativo em `asset_targets`, e a da renda
     fixa inteira em `fixed_income_target`. Os limites do alerta são o desvio máximo
     de um item e o desbalanceamento máximo, a raiz da soma dos quadrados dos
-    desvios. Tudo em fração: 0.05 é 5 pontos percentuais."""
+    desvios. Tudo em fração: 0.05 é 5 pontos percentuais.
+
+    `rebalanced_on` é o dia em que o usuário diz ter rebalanceado: a sugestão de
+    aporte não grava nada, e as operações sozinhas não dizem o que foi rebalanceamento."""
 
     __tablename__ = "subportfolios"
     __table_args__ = (
@@ -149,6 +152,7 @@ class Subportfolio(Base):
     max_total_deviation: Mapped[Decimal] = mapped_column(
         DecimalText, default=Decimal("0.07"), server_default="0.07"
     )
+    rebalanced_on: Mapped[date | None] = mapped_column(default=None)
 
 
 class Asset(Base):

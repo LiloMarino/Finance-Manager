@@ -8,6 +8,7 @@ from backend.core.database.session import SessionDep
 from backend.features.subportfolios.dto import (
     DivisionDTO,
     MembersInDTO,
+    RebalancedInDTO,
     SubportfolioDTO,
     SubportfolioInDTO,
 )
@@ -16,6 +17,7 @@ from backend.features.subportfolios.service import (
     delete_subportfolio,
     division,
     list_subportfolios,
+    mark_rebalanced,
     set_members,
     update_subportfolio,
 )
@@ -56,3 +58,10 @@ def update_members(
     session: SessionDep, subportfolio_id: int, payload: MembersInDTO
 ) -> None:
     set_members(session, subportfolio_id, payload)
+
+
+@router.put("/{subportfolio_id}/rebalanced", status_code=status.HTTP_204_NO_CONTENT)
+def update_rebalanced(
+    session: SessionDep, subportfolio_id: int, payload: RebalancedInDTO
+) -> None:
+    mark_rebalanced(session, subportfolio_id, payload, date.today())

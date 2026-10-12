@@ -515,6 +515,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/subportfolios/{subportfolio_id}/rebalanced": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Rebalanced */
+        put: operations["update_rebalanced_api_subportfolios__subportfolio_id__rebalanced_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolio": {
         parameters: {
             query?: never;
@@ -3338,12 +3355,19 @@ export interface components {
             /** Source Unavailable */
             source_unavailable: boolean;
         };
-        /** PendingItemDTO */
+        /**
+         * PendingItemDTO
+         * @description `held` diz se o ativo está em carteira hoje; `suggestion` nula é ativo que a
+         *     fonte não classifica, como o ETF, ou que ficou sem resposta dela.
+         */
         PendingItemDTO: {
             /** Asset Id */
             asset_id: number;
             /** Ticker */
             ticker: string;
+            asset_class: components["schemas"]["AssetClass"];
+            /** Held */
+            held: boolean;
             suggestion: components["schemas"]["SuggestionDTO"] | null;
         };
         /**
@@ -3864,6 +3888,17 @@ export interface components {
             /** Breached */
             breached: boolean;
         };
+        /**
+         * RebalancedInDTO
+         * @description O dia em que o usuário rebalanceou a subcarteira.
+         */
+        RebalancedInDTO: {
+            /**
+             * Rebalanced On
+             * Format: date
+             */
+            rebalanced_on: string;
+        };
         /** RefreshReportDTO */
         RefreshReportDTO: {
             /** Updated */
@@ -4035,6 +4070,7 @@ export interface components {
         /**
          * SubportfolioDTO
          * @description A subcarteira com os ativos e os títulos de hoje, em ordem de nome.
+         *     `rebalanced_on` nulo é subcarteira que nunca foi marcada como rebalanceada.
          */
         SubportfolioDTO: {
             /** Id */
@@ -4043,6 +4079,8 @@ export interface components {
             name: string;
             icon: components["schemas"]["SubportfolioIcon"];
             color: components["schemas"]["SubportfolioColor"];
+            /** Rebalanced On */
+            rebalanced_on: string | null;
             /** Assets */
             assets: components["schemas"]["MemberAssetDTO"][];
             /** Fixed Income */
@@ -5854,6 +5892,48 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["MembersInDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_rebalanced_api_subportfolios__subportfolio_id__rebalanced_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subportfolio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RebalancedInDTO"];
             };
         };
         responses: {

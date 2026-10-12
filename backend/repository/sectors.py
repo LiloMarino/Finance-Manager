@@ -15,17 +15,25 @@ class Classification:
     segment: str
 
 
-def unclassified_held_assets(session: Session) -> list[Asset]:
-    """Os ativos em carteira sem segmento, em ordem de ticker: são os que entram em
-    "Sem classificação" na distribuição por setor."""
-    held = [item.asset_id for item in held_assets(session) if item.window.end is None]
+def held_asset_ids(session: Session) -> set[int]:
+    """Os ativos com posição aberta hoje."""
+    return {item.asset_id for item in held_assets(session) if item.window.end is None}
+
+
+def unclassified_assets(session: Session) -> list[Asset]:
+    """Os ativos sem segmento, em carteira ou não, em ordem de ticker."""
     return list(
         session.scalars(
-            select(Asset)
-            .where(Asset.id.in_(held), Asset.segment_id.is_(None))
-            .order_by(Asset.ticker)
+            select(Asset).where(Asset.segment_id.is_(None)).order_by(Asset.ticker)
         )
     )
+
+
+def unclassified_held_assets(session: Session) -> list[Asset]:
+    """Os ativos em carteira sem segmento: são os que entram em "Sem classificação"
+    na distribuição por setor."""
+    held = held_asset_ids(session)
+    return [asset for asset in unclassified_assets(session) if asset.id in held]
 
 
 def classifications(session: Session) -> dict[int, Classification]:

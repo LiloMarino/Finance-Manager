@@ -7,7 +7,11 @@ import { ClassificationHint } from "@/features/assets/classification-hint";
 import { SegmentCombobox } from "@/features/assets/segment-combobox";
 import { SegmentCreateDialog } from "@/features/assets/segment-create-dialog";
 import { useSaveAsset } from "@/features/assets/use-asset-mutations";
-import { useClassificationSuggestion } from "@/features/assets/use-classification";
+import {
+  suggestionDraft,
+  useClassificationSuggestion,
+  useCreateClassification,
+} from "@/features/assets/use-classification";
 import type { Asset } from "@/shared/hooks/use-assets";
 import { AssetClassSelect } from "@/shared/components/asset-class-select";
 import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
@@ -23,6 +27,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import type { Suggestion } from "@/shared/lib/classification";
 import { type AssetClass, isAssetClass } from "@/shared/lib/labels";
 import { maskCnpj, withMask } from "@/shared/lib/mask";
 
@@ -86,7 +91,9 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
   const { errors } = form.formState;
   const ticker = useWatch({ control: form.control, name: "ticker" });
   const segmentId = useWatch({ control: form.control, name: "segment_id" });
+  const assetClass = useWatch({ control: form.control, name: "asset_class" });
   const { data: suggestion } = useClassificationSuggestion(ticker);
+  const create = useCreateClassification();
   // O nome do segmento a criar; nulo é o diálogo de criação fechado
   const [creating, setCreating] = useState<string | null>(null);
 
@@ -95,6 +102,12 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
   );
   const chooseSegment = (id: number | null) =>
     form.setValue("segment_id", id, { shouldDirty: true });
+  // A sugestão que diz o setor cria direto; sem ele, o diálogo pergunta
+  const createSuggested = (found: Suggestion) => {
+    const draft = suggestionDraft(found);
+    if (draft) create.mutate(draft, { onSuccess: (segment) => chooseSegment(segment.id) });
+    else setCreating(found.new_segment_name ?? "");
+  };
 
   return (
     <>
@@ -145,12 +158,14 @@ function AssetForm({ asset, onSaved }: AssetFormProps) {
                 />
               )}
             />
-            {suggestion && (
+            {suggestion !== undefined && (
               <ClassificationHint
                 suggestion={suggestion}
+                assetClass={assetClass}
                 value={segmentId}
                 onUse={chooseSegment}
-                onCreate={() => setCreating(suggestion.new_segment_name ?? "")}
+                onCreate={() => suggestion && createSuggested(suggestion)}
+                disabled={create.isPending}
               />
             )}
           </Field>

@@ -128,6 +128,51 @@ def test_subportfolio_keeps_icon_and_color(api: TestClient) -> None:
     ]
 
 
+def test_rebalanced_date_is_listed(api: TestClient) -> None:
+    """A subcarteira nasce sem data de rebalanceamento, e a data marcada volta na
+    lista."""
+    created = _subportfolio(api)
+    day = date.today() - timedelta(days=3)
+
+    response = api.put(
+        f"/api/subportfolios/{created['id']}/rebalanced",
+        json={"rebalanced_on": day.isoformat()},
+    )
+    listed = api.get("/api/subportfolios").json()
+
+    assert created["rebalanced_on"] is None
+    assert response.status_code == 204, response.text
+    assert listed[0]["rebalanced_on"] == day.isoformat()
+
+
+def test_rebalanced_date_cannot_be_in_the_future(api: TestClient) -> None:
+    """Rebalanceamento com data futura volta 422 e não grava nada."""
+    created = _subportfolio(api)
+
+    response = api.put(
+        f"/api/subportfolios/{created['id']}/rebalanced",
+        json={"rebalanced_on": (date.today() + timedelta(days=1)).isoformat()},
+    )
+    listed = api.get("/api/subportfolios").json()
+
+    assert response.status_code == 422, response.text
+    assert listed[0]["rebalanced_on"] is None
+
+
+def test_rename_keeps_rebalanced_date(api: TestClient) -> None:
+    """Renomear a subcarteira mantém a data de rebalanceamento."""
+    created = _subportfolio(api)
+    day = date.today().isoformat()
+    api.put(
+        f"/api/subportfolios/{created['id']}/rebalanced", json={"rebalanced_on": day}
+    )
+
+    api.put(f"/api/subportfolios/{created['id']}", json=_identity("Renda"))
+    listed = api.get("/api/subportfolios").json()
+
+    assert (listed[0]["name"], listed[0]["rebalanced_on"]) == ("Renda", day)
+
+
 def test_subportfolio_rejects_unknown_icon(api: TestClient) -> None:
     """Ícone fora da lista volta 422 e não cria nada."""
     response = api.post(

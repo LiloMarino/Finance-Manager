@@ -19,6 +19,7 @@ from backend.domain.classification import (
     CompanyProfile,
     ProfileProvider,
     ProfileUnavailableError,
+    UserSegment,
     suggest,
 )
 from backend.features.classification.dto import (
@@ -27,7 +28,7 @@ from backend.features.classification.dto import (
     PendingItemDTO,
     SuggestionDTO,
 )
-from backend.repository.sectors import unclassified_held_assets
+from backend.repository.sectors import held_asset_ids, unclassified_assets
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +111,22 @@ def _sectors(session: Session) -> dict[str, int]:
     }
 
 
+def _segments(session: Session) -> list[UserSegment]:
+    return [
+        UserSegment(segment_id=segment_id, sector_id=sector_id, name=name)
+        for segment_id, sector_id, name in session.execute(
+            select(Segment.id, Segment.sector_id, Segment.name)
+        ).tuples()
+    ]
+
+
 def _suggestion_dto(
     profile: CompanyProfile | None,
     peers: list[ClassifiedPeer],
     sectors: dict[str, int],
+    segments: list[UserSegment],
 ) -> SuggestionDTO | None:
-    found = suggest(profile, peers, sectors) if profile else None
+    found = suggest(profile, peers, sectors, segments) if profile else None
     return SuggestionDTO.model_validate(found) if found else None
 
 
@@ -135,12 +146,15 @@ def suggestion_for(
         raise ProfileUnavailableError(
             f"A fonte não respondeu, e {ticker} não tem perfil em cache."
         )
-    return _suggestion_dto(profile, _peers(classified, profiles), _sectors(session))
+    return _suggestion_dto(
+        profile, _peers(classified, profiles), _sectors(session), _segments(session)
+    )
 
 
 def pending(session: Session, provider: ProfileProvider, now: datetime) -> PendingDTO:
-    """A sugestão de cada ativo em carteira sem segmento, os do painel de saúde."""
-    assets = unclassified_held_assets(session)
+    """A sugestão de cada ativo sem segmento, em carteira ou não."""
+    assets = unclassified_assets(session)
+    held = held_asset_ids(session)
     classified = _classified(session)
     answered = _ensure_profiles(
         session,
@@ -151,12 +165,17 @@ def pending(session: Session, provider: ProfileProvider, now: datetime) -> Pendi
     profiles = _cached_profiles(session)
     peers = _peers(classified, profiles)
     sectors = _sectors(session)
+    segments = _segments(session)
     return PendingDTO(
         items=[
             PendingItemDTO(
                 asset_id=asset.id,
                 ticker=asset.ticker,
-                suggestion=_suggestion_dto(profiles.get(asset.ticker), peers, sectors),
+                asset_class=asset.asset_class,
+                held=asset.id in held,
+                suggestion=_suggestion_dto(
+                    profiles.get(asset.ticker), peers, sectors, segments
+                ),
             )
             for asset in assets
         ],

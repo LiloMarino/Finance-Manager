@@ -86,6 +86,11 @@ function SegmentForm({ draft, onCreated }: SegmentFormProps) {
   return (
     <form onSubmit={(event) => void submit(event)}>
       <FieldGroup>
+        <Field data-invalid={Boolean(errors.segmentName)}>
+          <FieldLabel htmlFor="segment-create-name">Nome do segmento</FieldLabel>
+          <Input id="segment-create-name" {...form.register("segmentName")} />
+          <FieldError errors={[errors.segmentName]} />
+        </Field>
         <Field>
           <FieldLabel htmlFor="segment-create-sector">Setor</FieldLabel>
           <Controller
@@ -114,11 +119,6 @@ function SegmentForm({ draft, onCreated }: SegmentFormProps) {
             <FieldError errors={[errors.sectorName]} />
           </Field>
         )}
-        <Field data-invalid={Boolean(errors.segmentName)}>
-          <FieldLabel htmlFor="segment-create-name">Nome do segmento</FieldLabel>
-          <Input id="segment-create-name" {...form.register("segmentName")} />
-          <FieldError errors={[errors.segmentName]} />
-        </Field>
       </FieldGroup>
       <DialogFooter className="mt-6">
         <Button type="submit" disabled={create.isPending}>

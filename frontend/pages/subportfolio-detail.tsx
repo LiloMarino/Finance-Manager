@@ -4,6 +4,7 @@ import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useCash } from "@/features/cash/use-cash";
 import { CurrentVsTarget } from "@/features/rebalance/current-vs-target";
 import { RebalancePanel } from "@/features/rebalance/rebalance-panel";
+import { RebalancedBar } from "@/features/rebalance/rebalanced-bar";
 import { TargetsDialog } from "@/features/rebalance/targets-dialog";
 import { useRebalance } from "@/features/rebalance/use-rebalance";
 import { MembersDialog } from "@/features/subportfolios/members-dialog";
@@ -22,6 +23,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { type Subportfolio, useSubportfolios } from "@/shared/hooks/use-subportfolios";
 import { getApiErrorMessage } from "@/shared/lib/api";
+import { formatDaysAgo } from "@/shared/lib/format";
 import { formatPercent } from "@/types/decimal";
 
 const tabs = ["current", "rebalance"] as const;
@@ -71,6 +73,8 @@ function Detail({ subportfolio }: { subportfolio: Subportfolio }) {
                 <Money value={slice.value} /> · {formatPercent(slice.share)} da carteira
               </>
             )}
+            {subportfolio.rebalanced_on &&
+              ` · rebalanceada ${formatDaysAgo(subportfolio.rebalanced_on)}`}
           </>
         }
         actions={
@@ -111,6 +115,7 @@ function Detail({ subportfolio }: { subportfolio: Subportfolio }) {
             <CurrentVsTarget rebalance={rebalance.data} subportfolioId={subportfolio.id} />
           </TabsContent>
           <TabsContent value="rebalance" className="flex flex-col gap-6">
+            <RebalancedBar subportfolio={subportfolio} />
             {rebalance.data.complete ? (
               <RebalancePanel subportfolioId={subportfolio.id} cash={cash.data?.balance ?? null} />
             ) : (

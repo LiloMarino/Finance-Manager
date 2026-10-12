@@ -16,12 +16,15 @@ from backend.domain.classification import (
     ClassifiedPeer,
     CompanyProfile,
     ProfileUnavailableError,
+    UserSegment,
     suggest,
 )
 from backend.features.providers import get_profile_provider
 
 BANKS = CompanyProfile(sector="Financial Services", industry="Banks - Regional")
-INSURANCE = CompanyProfile(sector="Financial Services", industry="Insurance - Diversified")
+INSURANCE = CompanyProfile(
+    sector="Financial Services", industry="Insurance - Diversified"
+)
 
 
 class FakeProfiles:
@@ -50,11 +53,15 @@ def _client(engine: Engine, profiles: FakeProfiles) -> TestClient:
     return TestClient(app)
 
 
-def _peer(profile: CompanyProfile, segment_id: int, sector_id: int = 1) -> ClassifiedPeer:
+def _peer(
+    profile: CompanyProfile, segment_id: int, sector_id: int = 1
+) -> ClassifiedPeer:
     return ClassifiedPeer(profile=profile, segment_id=segment_id, sector_id=sector_id)
 
 
-def _segment(api: TestClient, sector: str = "Financeiro", segment: str = "Bancos") -> int:
+def _segment(
+    api: TestClient, sector: str = "Financeiro", segment: str = "Bancos"
+) -> int:
     sector_id = api.post("/api/sectors", json={"name": sector}).json()["id"]
     return api.post(
         f"/api/sectors/{sector_id}/segments", json={"name": segment}
@@ -65,7 +72,9 @@ def _asset(
     engine: Engine, ticker: str, segment_id: int | None = None, *, held: bool = True
 ) -> int:
     with Session(engine) as session:
-        asset = Asset(ticker=ticker, asset_class=AssetClass.STOCK, segment_id=segment_id)
+        asset = Asset(
+            ticker=ticker, asset_class=AssetClass.STOCK, segment_id=segment_id
+        )
         session.add(asset)
         session.flush()
         if held:
@@ -98,8 +107,8 @@ def test_suggests_the_segment_of_the_peers_with_the_same_industry() -> None:
     ]
     tie = [_peer(BANKS, segment_id=7), _peer(BANKS, segment_id=5)]
 
-    found = suggest(BANKS, peers, {})
-    tied = suggest(BANKS, tie, {})
+    found = suggest(BANKS, peers, {}, [])
+    tied = suggest(BANKS, tie, {}, [])
 
     assert found is not None and (found.segment_id, found.sector_id) == (7, 2)
     assert (found.new_sector_name, found.new_segment_name) == (None, None)
@@ -109,7 +118,7 @@ def test_suggests_the_segment_of_the_peers_with_the_same_industry() -> None:
 def test_new_industry_suggests_creating_the_segment_in_the_peers_sector() -> None:
     """Sem ativo da mesma indústria, o setor vem dos ativos com o mesmo setor na fonte,
     e o segmento chega como nome para criar."""
-    found = suggest(INSURANCE, [_peer(BANKS, segment_id=7, sector_id=3)], {})
+    found = suggest(INSURANCE, [_peer(BANKS, segment_id=7, sector_id=3)], {}, [])
 
     assert found is not None
     assert (found.segment_id, found.sector_id) == (None, 3)
@@ -122,8 +131,8 @@ def test_new_industry_suggests_creating_the_segment_in_the_peers_sector() -> Non
 def test_first_of_its_sector_gets_the_translated_sector_name() -> None:
     """Sem nenhum ativo parecido, o setor chega traduzido para criar; o setor do usuário
     com o mesmo nome, sem diferença de maiúsculas, é usado no lugar."""
-    new = suggest(BANKS, [], {"Energia": 1})
-    existing = suggest(BANKS, [], {"FINANCEIRO": 4})
+    new = suggest(BANKS, [], {"Energia": 1}, [])
+    existing = suggest(BANKS, [], {"FINANCEIRO": 4}, [])
 
     assert new is not None
     assert (new.sector_id, new.new_sector_name) == (None, "Financeiro")
@@ -132,9 +141,25 @@ def test_first_of_its_sector_gets_the_translated_sector_name() -> None:
     assert (existing.sector_id, existing.new_sector_name) == (4, None)
 
 
+def test_existing_segment_named_after_industry_is_suggested() -> None:
+    """Sem ativo da mesma indústria, o segmento com o nome dela, sem diferença de
+    maiúsculas, é sugerido; com dois, vence o do setor sugerido."""
+    reits = CompanyProfile(sector="Real Estate", industry="REIT - Diversified")
+    segments = [
+        UserSegment(segment_id=3, sector_id=1, name="REIT - Diversified"),
+        UserSegment(segment_id=8, sector_id=2, name="reit - diversified"),
+    ]
+
+    found = suggest(reits, [], {"Imobiliário": 2}, segments)
+
+    assert found is not None
+    assert (found.segment_id, found.sector_id) == (8, 2)
+    assert (found.new_sector_name, found.new_segment_name) == (None, None)
+
+
 def test_etf_without_sector_or_industry_has_no_suggestion() -> None:
     """O ETF, sem setor nem indústria na fonte, fica sem sugestão."""
-    assert suggest(CompanyProfile(sector=None, industry=None), [], {}) is None
+    assert suggest(CompanyProfile(sector=None, industry=None), [], {}, []) is None
 
 
 def test_profile_is_fetched_once_per_ticker(engine: Engine) -> None:
@@ -192,24 +217,24 @@ def test_renamed_segment_keeps_being_suggested(engine: Engine) -> None:
     assert sector["segments"][0]["name"] == "Bancos"
 
 
-def test_pending_suggests_for_held_unclassified_assets(engine: Engine) -> None:
-    """O pendente lista os ativos em carteira sem segmento, com a sugestão que os
-    ativos classificados dão, inclusive os fora da carteira."""
+def test_pending_lists_every_unclassified_asset(engine: Engine) -> None:
+    """O pendente lista os ativos sem segmento, em carteira ou não, com a sugestão
+    que os ativos classificados dão, inclusive os fora da carteira."""
     profiles = FakeProfiles({"ABCD3": BANKS, "EFGH3": BANKS, "IJKL3": INSURANCE})
     api = _client(engine, profiles)
     segment_id = _segment(api)
     _asset(engine, "EFGH3", segment_id, held=False)
     abcd = _asset(engine, "ABCD3")
     ijkl = _asset(engine, "IJKL3")
-    _asset(engine, "MNOP3", held=False)
+    mnop = _asset(engine, "MNOP3", held=False)
 
     body = api.get("/api/classification/pending").json()
 
     assert body["source_unavailable"] is False
-    assert [(item["asset_id"], item["ticker"]) for item in body["items"]] == [
-        (abcd, "ABCD3"),
-        (ijkl, "IJKL3"),
-    ]
+    assert [
+        (item["asset_id"], item["ticker"], item["held"]) for item in body["items"]
+    ] == [(abcd, "ABCD3", True), (ijkl, "IJKL3", True), (mnop, "MNOP3", False)]
+    assert body["items"][2]["suggestion"] is None
     assert body["items"][0]["suggestion"]["segment_id"] == segment_id
     assert body["items"][1]["suggestion"]["segment_id"] is None
     assert body["items"][1]["suggestion"]["new_segment_name"] == INSURANCE.industry

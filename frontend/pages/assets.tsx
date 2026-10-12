@@ -4,7 +4,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AssetFormDialog } from "@/features/assets/asset-form-dialog";
 import { AssetsTable } from "@/features/assets/assets-table";
 import { UnclassifiedAssets } from "@/features/assets/unclassified-assets";
-import { usePortfolio } from "@/features/portfolio/use-portfolio";
 import { SectorCard } from "@/features/sectors/sector-card";
 import { useCreateSector } from "@/features/sectors/use-sector-mutations";
 import { NameDialog } from "@/shared/components/name-dialog";
@@ -35,17 +34,12 @@ function isTab(value: string | null): value is Tab {
 export function AssetsPage() {
   const assets = useAssets();
   const sectors = useSectors();
-  const portfolio = usePortfolio({});
   const createSector = useCreateSector();
   const [searchParams, setSearchParams] = useSearchParams();
   const requested = searchParams.get("tab");
   const tab: Tab = isTab(requested) ? requested : "list";
 
-  // Sem segmento, só os que estão em carteira: são os que a Carteira mostra sem classificação
-  const held = new Set(portfolio.data?.positions.map((position) => position.asset_id));
-  const unclassified = (assets.data ?? []).filter(
-    (asset) => asset.segment_id === null && held.has(asset.id),
-  );
+  const unclassified = (assets.data ?? []).filter((asset) => asset.segment_id === null);
 
   return (
     <Tabs
@@ -129,7 +123,7 @@ export function AssetsPage() {
       </TabsContent>
 
       <TabsContent value="sectors" className="flex flex-col gap-6">
-        {unclassified.length > 0 && <UnclassifiedAssets assets={unclassified} />}
+        {unclassified.length > 0 && <UnclassifiedAssets />}
         {sectors.isPending ? (
           <Skeleton className="h-40 w-full" />
         ) : sectors.error ? (

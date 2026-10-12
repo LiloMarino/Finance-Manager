@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from backend.core.dto import BaseDTO
+from backend.core.enum import AssetClass
 
 
 class SuggestionDTO(BaseDTO):
@@ -13,8 +14,13 @@ class SuggestionDTO(BaseDTO):
 
 
 class PendingItemDTO(BaseDTO):
+    """`held` diz se o ativo está em carteira hoje; `suggestion` nula é ativo que a
+    fonte não classifica, como o ETF, ou que ficou sem resposta dela."""
+
     asset_id: int
     ticker: str
+    asset_class: AssetClass
+    held: bool
     suggestion: SuggestionDTO | None
 
 

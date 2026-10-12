@@ -10,6 +10,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import type { Subportfolio } from "@/shared/hooks/use-subportfolios";
+import { formatDaysAgo } from "@/shared/lib/format";
 import { formatPercent, formatPoints, toChartNumber } from "@/types/decimal";
 
 interface SubportfolioOverviewCardProps {
@@ -88,7 +89,14 @@ export function SubportfolioOverviewCard({ subportfolio, slice }: SubportfolioOv
         </div>
 
         <div className="border-border-subtle mt-auto flex items-center justify-between gap-3 border-t pt-3">
-          <span className="text-caption text-muted-foreground">{detail}</span>
+          <span className="text-caption text-muted-foreground flex flex-col gap-0.5">
+            {detail}
+            <span>
+              {subportfolio.rebalanced_on
+                ? `Rebalanceada ${formatDaysAgo(subportfolio.rebalanced_on)}.`
+                : "Nunca marcada como rebalanceada."}
+            </span>
+          </span>
           <Button variant="outline" size="sm" nativeButton={false} render={<Link to={to} />}>
             {rebalance?.complete ? "Abrir" : "Definir metas"}
           </Button>

@@ -3,7 +3,12 @@ import { toast } from "sonner";
 
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { get, getApiErrorMessage, post } from "@/shared/lib/api";
-import { invalidateKeys, queryKeys } from "@/shared/lib/query-keys";
+import type { Suggestion } from "@/shared/lib/classification";
+import { invalidateKeys, invalidatePortfolioData, queryKeys } from "@/shared/lib/query-keys";
+import type { components } from "@/types/openapi.generated";
+
+export type PendingItem = components["schemas"]["PendingItemDTO"];
+type AcceptItem = components["schemas"]["AcceptItemDTO"];
 
 // Quatro letras ou dígitos e o número da classe: o ticker da B3 no lote padrão
 const B3_TICKER = /^[A-Z0-9]{4}\d{1,2}$/;
@@ -19,6 +24,34 @@ export function useClassificationSuggestion(ticker: string) {
     enabled: B3_TICKER.test(query),
     staleTime: Infinity,
     retry: false,
+  });
+}
+
+/** Os ativos sem segmento, cada um com o que o Yahoo diz dele e a sugestão. */
+export function usePendingClassification() {
+  return useQuery({
+    queryKey: [...queryKeys.classification, "pending"],
+    queryFn: () => get("/api/classification/pending"),
+  });
+}
+
+/** Grava o segmento de cada ativo, tudo numa transação. */
+export function useAcceptClassification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (items: AcceptItem[]) => post("/api/classification/accept", { body: { items } }),
+    onSuccess: (_, items) => {
+      toast.success(
+        items.length === 1 ? "Ativo classificado." : `${items.length} ativos classificados.`,
+      );
+      // A contagem de ativos por segmento mora nos setores
+      return Promise.all([
+        invalidatePortfolioData(queryClient),
+        invalidateKeys(queryClient, [queryKeys.sectors]),
+      ]);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   });
 }
 
@@ -46,4 +79,13 @@ export function useCreateClassification() {
     // O setor novo fica mesmo quando o segmento falha
     onSettled: () => invalidateKeys(queryClient, [queryKeys.sectors, queryKeys.classification]),
   });
+}
+
+/** O segmento a criar que a sugestão já descreve inteiro: o nome dele e o setor, existente
+ou novo. Nulo quando a sugestão aponta para um segmento existente ou não diz o setor. */
+export function suggestionDraft(suggestion: Suggestion): SegmentDraft | null {
+  const { segment_id, sector_id, new_sector_name, new_segment_name } = suggestion;
+  if (segment_id !== null || !new_segment_name) return null;
+  if (sector_id === null && !new_sector_name) return null;
+  return { sectorId: sector_id, sectorName: new_sector_name ?? "", segmentName: new_segment_name };
 }

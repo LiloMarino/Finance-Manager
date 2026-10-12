@@ -7,6 +7,7 @@ import { invalidateKeys, queryKeys } from "@/shared/lib/query-keys";
 import type { components } from "@/types/openapi.generated";
 
 type MembersInput = components["schemas"]["MembersInDTO"];
+type RebalancedInput = components["schemas"]["RebalancedInDTO"];
 
 // A filiação aparece no ativo, no título e em toda visão da carteira
 function useWrite<T, R>(write: (input: T) => Promise<R>, success: string) {
@@ -95,5 +96,16 @@ export function useSetMembers(subportfolio: Subportfolio) {
         body,
       }),
     "Subcarteira atualizada.",
+  );
+}
+
+export function useMarkRebalanced(subportfolio: Subportfolio) {
+  return useWrite(
+    (body: RebalancedInput) =>
+      put("/api/subportfolios/{subportfolio_id}/rebalanced", {
+        path: { subportfolio_id: subportfolio.id },
+        body,
+      }),
+    "Rebalanceamento registrado.",
   );
 }

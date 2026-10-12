@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 from backend.core.dto import BaseDTO, DecimalStr, NameInDTO
 from backend.core.enum import SubportfolioColor, SubportfolioIcon
 
@@ -15,12 +17,14 @@ class MemberInvestmentDTO(BaseDTO):
 
 
 class SubportfolioDTO(BaseDTO):
-    """A subcarteira com os ativos e os títulos de hoje, em ordem de nome."""
+    """A subcarteira com os ativos e os títulos de hoje, em ordem de nome.
+    `rebalanced_on` nulo é subcarteira que nunca foi marcada como rebalanceada."""
 
     id: int
     name: str
     icon: SubportfolioIcon
     color: SubportfolioColor
+    rebalanced_on: date | None
     assets: list[MemberAssetDTO]
     fixed_income: list[MemberInvestmentDTO]
 
@@ -30,6 +34,12 @@ class SubportfolioInDTO(NameInDTO):
 
     icon: SubportfolioIcon
     color: SubportfolioColor
+
+
+class RebalancedInDTO(BaseDTO):
+    """O dia em que o usuário rebalanceou a subcarteira."""
+
+    rebalanced_on: date
 
 
 class MembersInDTO(BaseDTO):

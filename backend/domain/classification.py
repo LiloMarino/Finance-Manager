@@ -3,7 +3,7 @@
 A fonte fala inglês, e o setor e o segmento são nomes do usuário. A ponte entre os dois
 são os ativos que ele já classificou: o ticker recebe o segmento dos ativos com a mesma
 indústria na fonte, pelo id, e o nome que aparece é o de hoje. A primeira vez de cada
-indústria chega só com os nomes para criar o segmento."""
+indústria cai no segmento que já tem o nome dela ou chega com os nomes para criá-lo."""
 
 from __future__ import annotations
 
@@ -60,6 +60,15 @@ class ClassifiedPeer:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class UserSegment:
+    """Um segmento do usuário, com o setor dele."""
+
+    segment_id: int
+    sector_id: int
+    name: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Suggestion:
     """`segment_id` e `sector_id` apontam para a classificação do usuário. Sem o
     segmento, `new_sector_name` e `new_segment_name` são o texto inicial para criá-lo:
@@ -79,14 +88,27 @@ def _most_common(ids: Iterable[int]) -> int | None:
     return min(counts, key=lambda key: (-counts[key], key)) if counts else None
 
 
+def _existing(profile: CompanyProfile, segment_id: int, sector_id: int) -> Suggestion:
+    return Suggestion(
+        source_sector=profile.sector,
+        source_industry=profile.industry,
+        segment_id=segment_id,
+        sector_id=sector_id,
+        new_sector_name=None,
+        new_segment_name=None,
+    )
+
+
 def suggest(
     profile: CompanyProfile,
     peers: Iterable[ClassifiedPeer],
     sectors: Mapping[str, int],
+    segments: Iterable[UserSegment],
 ) -> Suggestion | None:
     """A classificação que os ativos parecidos já têm. `sectors` são os setores do
     usuário pelo nome, e a tradução do setor da fonte cai num deles quando o nome
-    coincide, sem diferença de maiúsculas."""
+    coincide, sem diferença de maiúsculas. Sem ativo da mesma indústria, o segmento
+    com o nome da indústria vale como parecido, e o do setor sugerido vence."""
     if profile.sector is None and profile.industry is None:
         return None
     peers = list(peers)
@@ -101,14 +123,7 @@ def suggest(
         sector_id = next(
             peer.sector_id for peer in same_industry if peer.segment_id == segment_id
         )
-        return Suggestion(
-            source_sector=profile.sector,
-            source_industry=profile.industry,
-            segment_id=segment_id,
-            sector_id=sector_id,
-            new_sector_name=None,
-            new_segment_name=None,
-        )
+        return _existing(profile, segment_id, sector_id)
 
     sector_id = _most_common(
         peer.sector_id
@@ -121,6 +136,18 @@ def suggest(
     if sector_id is None and new_sector_name is not None:
         by_name = {name.casefold(): found for name, found in sectors.items()}
         sector_id = by_name.get(new_sector_name.casefold())
+
+    named = sorted(
+        (
+            segment
+            for segment in segments
+            if profile.industry is not None
+            and segment.name.casefold() == profile.industry.casefold()
+        ),
+        key=lambda segment: (segment.sector_id != sector_id, segment.segment_id),
+    )
+    if named:
+        return _existing(profile, named[0].segment_id, named[0].sector_id)
     return Suggestion(
         source_sector=profile.sector,
         source_industry=profile.industry,

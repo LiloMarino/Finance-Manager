@@ -15,6 +15,7 @@ from backend.features.subportfolios.dto import (
     MemberAssetDTO,
     MemberInvestmentDTO,
     MembersInDTO,
+    RebalancedInDTO,
     SubportfolioDTO,
     SubportfolioInDTO,
 )
@@ -28,6 +29,10 @@ class SubportfolioConflictError(FinanceError):
 
 
 class InvalidMembersError(FinanceError):
+    status = 422
+
+
+class InvalidRebalanceDateError(FinanceError):
     status = 422
 
 
@@ -65,6 +70,7 @@ def list_subportfolios(session: Session) -> list[SubportfolioDTO]:
             name=found.name,
             icon=found.icon,
             color=found.color,
+            rebalanced_on=found.rebalanced_on,
             assets=assets[found.id],
             fixed_income=investments[found.id],
         )
@@ -84,6 +90,7 @@ def create_subportfolio(
         name=created.name,
         icon=created.icon,
         color=created.color,
+        rebalanced_on=None,
         assets=[],
         fixed_income=[],
     )
@@ -97,6 +104,16 @@ def update_subportfolio(
     found.name = payload.name
     found.icon = payload.icon
     found.color = payload.color
+    session.commit()
+
+
+def mark_rebalanced(
+    session: Session, subportfolio_id: int, payload: RebalancedInDTO, today: date
+) -> None:
+    found = subportfolio(session, subportfolio_id)
+    if payload.rebalanced_on > today:
+        raise InvalidRebalanceDateError("A data não pode ser futura.")
+    found.rebalanced_on = payload.rebalanced_on
     session.commit()
 
 
