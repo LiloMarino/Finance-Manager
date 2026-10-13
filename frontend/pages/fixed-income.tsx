@@ -83,7 +83,7 @@ export function FixedIncomePage() {
         {/* Filtro de tipo */}
         <div className="flex items-center gap-2">
           <Select items={typeItems} value={selectedType} onValueChange={selectType}>
-            <SelectTrigger size="sm" className="w-48" aria-label="Filtrar por tipo">
+            <SelectTrigger variant="outline" className="w-56" aria-label="Filtrar por tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

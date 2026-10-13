@@ -23,11 +23,10 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
         render={
           <Button
             variant={label ? "outline-active" : "outline"}
-            size="sm"
-            className="w-56 justify-start"
+            className="w-56 justify-start font-normal"
           >
-            <CalendarDays />
-            <span className={label ? "" : "text-muted-foreground"}>{label ?? "Qualquer data"}</span>
+            <CalendarDays className="text-muted-foreground" />
+            {label ?? "Qualquer data"}
           </Button>
         }
       />

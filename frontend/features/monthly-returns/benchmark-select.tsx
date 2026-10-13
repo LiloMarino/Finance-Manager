@@ -27,7 +27,7 @@ export function BenchmarkSelect({ value, onChange }: BenchmarkSelectProps) {
       value={value ?? null}
       onValueChange={(selected) => onChange(selected ?? undefined)}
     >
-      <SelectTrigger size="sm" className="w-32" aria-label="Referência">
+      <SelectTrigger variant="outline" className="w-40" aria-label="Referência">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

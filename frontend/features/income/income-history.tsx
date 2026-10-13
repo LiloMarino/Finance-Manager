@@ -73,7 +73,7 @@ export function IncomeHistory({ subportfolioId, category, filters }: IncomeHisto
       {/* Filtros */}
       <div className="flex flex-wrap items-center gap-2">
         {filters}
-        <Field>
+        <Field className="w-56">
           <FieldLabel htmlFor="income-filter-asset" className="sr-only">
             Ativo
           </FieldLabel>
@@ -97,7 +97,7 @@ export function IncomeHistory({ subportfolioId, category, filters }: IncomeHisto
               setLocalFilters({ ...localFilters, income_type: value ?? undefined })
             }
           >
-            <SelectTrigger id="income-filter-type" className="w-40">
+            <SelectTrigger id="income-filter-type" variant="outline" className="w-56">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

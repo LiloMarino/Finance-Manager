@@ -60,7 +60,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
           value={assetClass}
           onValueChange={(value) => setAssetClass(value)}
         >
-          <SelectTrigger size="sm" className="w-44" aria-label="Filtrar por classe">
+          <SelectTrigger variant="outline" className="w-56" aria-label="Filtrar por classe">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -73,7 +73,6 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
         </Select>
         <ToggleGroup
           variant="segmented"
-          size="sm"
           aria-label="Mostrar"
           value={[scope]}
           onValueChange={([next]) => {

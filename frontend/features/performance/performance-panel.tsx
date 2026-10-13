@@ -94,7 +94,6 @@ export function PerformancePanel({
         <ToggleGroup
           multiple
           variant="segmented"
-          size="sm"
           aria-label="Referências"
           value={selected}
           onValueChange={(values) => setSelected(values.filter(isBenchmark))}

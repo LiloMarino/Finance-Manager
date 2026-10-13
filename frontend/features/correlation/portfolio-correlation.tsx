@@ -51,7 +51,6 @@ export function PortfolioCorrelation({ subportfolioId }: PortfolioCorrelationPro
         <span className="text-caption text-muted-foreground">Janela</span>
         <ToggleGroup
           variant="segmented"
-          size="sm"
           aria-label="Janela"
           value={[window]}
           onValueChange={([next]) => {
@@ -68,7 +67,6 @@ export function PortfolioCorrelation({ subportfolioId }: PortfolioCorrelationPro
         <ToggleGroup
           multiple
           variant="segmented"
-          size="sm"
           aria-label="Referências"
           value={references}
           onValueChange={(values) => setReferences(values.filter(isBenchmark))}

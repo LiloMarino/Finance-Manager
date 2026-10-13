@@ -46,7 +46,7 @@ export function OperationFilters({ filters, onChange }: OperationFiltersProps) {
         value={filters.operation_type ?? null}
         onValueChange={(value) => onChange({ ...filters, operation_type: value ?? undefined })}
       >
-        <SelectTrigger size="sm" className="w-48" aria-label="Tipo">
+        <SelectTrigger variant="outline" className="w-56" aria-label="Tipo">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

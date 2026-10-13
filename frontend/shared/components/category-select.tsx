@@ -32,7 +32,7 @@ export function CategorySelect({ value, onChange }: CategorySelectProps) {
       value={value ?? null}
       onValueChange={(selected) => onChange(selected ?? undefined)}
     >
-      <SelectTrigger size="sm" className="w-48" aria-label="Categoria">
+      <SelectTrigger variant="outline" className="w-56" aria-label="Categoria">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

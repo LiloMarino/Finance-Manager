@@ -225,7 +225,6 @@ export function IncomePerformancePanel({
         <PeriodSelect value={period} onChange={setPeriod} />
         <ToggleGroup
           variant="segmented"
-          size="sm"
           aria-label="Agrupar"
           value={[group]}
           onValueChange={([value]) => {

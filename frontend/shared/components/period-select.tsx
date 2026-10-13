@@ -28,7 +28,6 @@ export function PeriodSelect({ value, onChange }: PeriodSelectProps) {
     <div className="flex items-center gap-1">
       <ToggleGroup
         variant="segmented"
-        size="sm"
         aria-label="Período"
         value={custom ? [] : [value.preset]}
         onValueChange={([preset]) => {
@@ -48,7 +47,7 @@ export function PeriodSelect({ value, onChange }: PeriodSelectProps) {
           render={
             <Button
               variant={custom ? "outline-active" : "ghost"}
-              size={custom ? "sm" : "icon-sm"}
+              size={custom ? "default" : "icon"}
               aria-label="Escolher as datas"
             >
               <CalendarDays />

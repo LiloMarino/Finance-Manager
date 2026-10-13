@@ -20,6 +20,20 @@ const toggleVariants = cva(
         lg: "h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
       },
     },
+    // O trilho segmentado tem a altura do controle do mesmo tamanho: o item desconta
+    // os 2 px de respiro do trilho em cima e embaixo
+    compoundVariants: [
+      {
+        variant: "segmented",
+        size: "default",
+        className: "h-[calc(var(--spacing-control-md)-4px)]",
+      },
+      {
+        variant: "segmented",
+        size: "sm",
+        className: "h-[calc(var(--spacing-control-sm)-4px)] min-w-6",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

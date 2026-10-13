@@ -66,7 +66,6 @@ export function IncomeDistributionPanel({
         {filters}
         <ToggleGroup
           variant="segmented"
-          size="sm"
           aria-label="Janela"
           value={[months]}
           onValueChange={([value]) => {

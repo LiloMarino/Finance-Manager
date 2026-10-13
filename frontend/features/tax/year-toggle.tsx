@@ -12,7 +12,6 @@ export function YearToggle({ years, year, onChange }: YearToggleProps) {
   return (
     <ToggleGroup
       variant="segmented"
-      size="sm"
       aria-label="Ano"
       value={[String(year)]}
       onValueChange={([next]) => {
