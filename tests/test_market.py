@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator
+from collections import defaultdict
+from collections.abc import Collection, Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -13,6 +14,7 @@ from sqlalchemy import Engine, delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from backend.adapters.b3_history_archive import to_ticker_closes
 from backend.adapters.bcb_sgs_provider import to_daily_rates
 from backend.adapters.yfinance_provider import to_daily_closes
 from backend.app import create_app
@@ -24,13 +26,14 @@ from backend.core.enum import (
 )
 from backend.core.models.models import (
     Asset,
+    AssetTickerHistory,
     FetchLog,
     IndexHistory,
     Operation,
     PriceHistory,
 )
 from backend.domain.index_series import DailyRate
-from backend.domain.market_data import DailyClose, MarketDataProvider
+from backend.domain.market_data import DailyClose, HistoryArchive, MarketDataProvider
 from backend.features.market.indexes import (
     IBOV_FIRST_DATE,
     IBOV_TICKER,
@@ -38,8 +41,9 @@ from backend.features.market.indexes import (
     refresh_indexes,
 )
 from backend.features.market.service import refresh_prices
-from backend.features.providers import get_provider
+from backend.features.providers import get_archive, get_provider
 
+ZERO = Decimal(0)
 FIRST_OPERATION = date(2024, 2, 5)
 # Sexta-feira, depois do fechamento do pregão
 TODAY = date(2024, 2, 9)
@@ -68,19 +72,44 @@ class FakeProvider:
         ]
 
 
+@dataclass
+class FakeArchive:
+    name: str = "fake-archive"
+    closes: dict[tuple[str, date], str] = field(
+        default_factory=dict[tuple[str, date], str]
+    )
+    offline: bool = False
+    calls: list[tuple[int, int, frozenset[str]]] = field(
+        default_factory=list[tuple[int, int, frozenset[str]]]
+    )
+
+    def get_month(
+        self, year: int, month: int, tickers: Collection[str]
+    ) -> dict[str, list[DailyClose]]:
+        self.calls.append((year, month, frozenset(tickers)))
+        if self.offline:
+            raise ConnectionError("sem rede")
+        found: defaultdict[str, list[DailyClose]] = defaultdict(list)
+        for (ticker, day), close in sorted(self.closes.items()):
+            if ticker in tickers and (day.year, day.month) == (year, month):
+                found[ticker].append(DailyClose(price_date=day, close=Decimal(close)))
+        return dict(found)
+
+
 def _operation(
     session: Session,
     asset: Asset,
     operation_date: date = FIRST_OPERATION,
     operation_type: OperationType = OperationType.BUY,
+    quantity: Decimal = Decimal(10),
 ) -> None:
     session.add(
         Operation(
             asset_id=asset.id,
             operation_date=operation_date,
             operation_type=operation_type,
-            quantity=Decimal(10),
-            unit_price=Decimal(100),
+            quantity=quantity,
+            unit_price=ZERO if operation_type is OperationType.SPLIT else Decimal(100),
         )
     )
     session.commit()
@@ -112,9 +141,12 @@ def _cached(session: Session) -> dict[date, Decimal]:
 
 
 def _refresh(
-    session: Session, provider: MarketDataProvider, now: datetime = NOW
+    session: Session,
+    provider: MarketDataProvider,
+    now: datetime = NOW,
+    archive: HistoryArchive | None = None,
 ) -> tuple[str, ...]:
-    return refresh_prices(session, provider, now).failed
+    return refresh_prices(session, provider, archive or FakeArchive(), now).failed
 
 
 def test_first_refresh_starts_at_first_operation(session: Session) -> None:
@@ -339,6 +371,174 @@ def test_deleting_asset_drops_its_price_cache(session: Session) -> None:
     assert _cached(session) == {}
 
 
+# Compra anterior ao primeiro fechamento que a fonte tem, em 01/02/2024
+EARLY_BUY = date(2024, 1, 15)
+
+
+def _early_asset(session: Session, ticker: str = "ABCD11") -> Asset:
+    asset = _asset(session, ticker)
+    _operation(session, asset, EARLY_BUY)
+    return asset
+
+
+def test_start_the_source_lacks_comes_from_the_archive(session: Session) -> None:
+    """O começo da janela que a fonte não tem vem da série histórica da B3, e a
+    falta deixa de ser problema."""
+    _early_asset(session)
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive(
+        closes={
+            ("ABCD11", day): "9.00" for day in _closes(EARLY_BUY, date(2024, 1, 31))
+        }
+    )
+
+    failed = _refresh(session, provider, archive=archive)
+
+    assert archive.calls == [(2024, 1, frozenset({"ABCD11"}))]
+    assert _cached(session)[EARLY_BUY] == Decimal("9.00")
+    assert _cached(session)[date(2024, 2, 1)] == Decimal("10.00")
+    assert failed == ()
+
+
+def test_archive_is_searched_once_per_window_start(session: Session) -> None:
+    """O mês publicado não muda: o começo que a B3 também não tem não é procurado de
+    novo, enquanto a fonte segue sendo consultada uma vez por dia."""
+    _early_asset(session)
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive()
+    _refresh(session, provider, archive=archive)
+
+    _refresh(session, provider, NOW + timedelta(days=1, minutes=1), archive)
+
+    assert len(provider.calls) == 2
+    assert len(archive.calls) == 1
+
+
+def test_failed_archive_is_searched_at_the_next_attempt(session: Session) -> None:
+    """A B3 fora do ar não conta como procurada: a próxima tentativa baixa de novo."""
+    _early_asset(session)
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive(offline=True)
+    _refresh(session, provider, archive=archive)
+
+    _refresh(session, provider, NOW + timedelta(days=1, minutes=1), archive)
+
+    assert len(archive.calls) == 2
+
+
+def test_one_download_per_month_serves_every_asset(session: Session) -> None:
+    """Dois ativos sem o mesmo mês na fonte: o arquivo do mês é baixado uma vez, com
+    os dois tickers."""
+    _early_asset(session, "ABCD11")
+    _early_asset(session, "EFGH11")
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive()
+
+    _refresh(session, provider, archive=archive)
+
+    assert archive.calls == [(2024, 1, frozenset({"ABCD11", "EFGH11"}))]
+
+
+def test_unpublished_month_is_not_searched(session: Session) -> None:
+    """O arquivo do mês sai depois do fim dele: a falta no mês corrente fica com a
+    fonte."""
+    _asset(session)
+    provider = FakeProvider("fake", _closes(date(2024, 2, 7), TODAY))
+    archive = FakeArchive()
+
+    _refresh(session, provider, archive=archive)
+
+    assert archive.calls == []
+
+
+def test_archive_close_is_moved_to_the_current_base(session: Session) -> None:
+    """A B3 publica o preço do dia: o fechamento anterior a um desdobro de 1 para 2
+    é dividido por 2, como a fonte entrega o resto do cache."""
+    asset = _early_asset(session)
+    _operation(session, asset, date(2024, 1, 25), OperationType.SPLIT, Decimal(10))
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive(
+        closes={
+            ("ABCD11", date(2024, 1, 24)): "20.00",
+            ("ABCD11", date(2024, 1, 25)): "10.00",
+        }
+    )
+
+    _refresh(session, provider, archive=archive)
+
+    assert _cached(session)[date(2024, 1, 24)] == Decimal("10.00")
+    assert _cached(session)[date(2024, 1, 25)] == Decimal("10.00")
+
+
+def test_archive_uses_the_ticker_of_each_day(session: Session) -> None:
+    """Antes da troca de ticker, o arquivo traz o antigo; depois dela, o antigo é de
+    outro papel e fica de fora."""
+    asset = _early_asset(session)
+    session.add(
+        AssetTickerHistory(
+            asset_id=asset.id, ticker="OLDT11", valid_until=date(2024, 1, 19)
+        )
+    )
+    session.commit()
+    provider = FakeProvider("fake", _closes(date(2024, 2, 1), TODAY))
+    archive = FakeArchive(
+        closes={
+            ("OLDT11", date(2024, 1, 15)): "9.00",
+            ("OLDT11", date(2024, 1, 22)): "1.00",
+            ("ABCD11", date(2024, 1, 16)): "5.00",
+            ("ABCD11", date(2024, 1, 22)): "9.50",
+        }
+    )
+
+    _refresh(session, provider, archive=archive)
+
+    assert archive.calls == [(2024, 1, frozenset({"ABCD11", "OLDT11"}))]
+    cached = _cached(session)
+    assert cached[date(2024, 1, 15)] == Decimal("9.00")
+    assert date(2024, 1, 16) not in cached
+    assert cached[date(2024, 1, 22)] == Decimal("9.50")
+
+
+def _cotahist_line(
+    ticker: str, day: str, close: str, market: str = "010", factor: str = "1"
+) -> bytes:
+    line = (
+        "01"
+        + day
+        + "12"
+        + ticker.ljust(12)
+        + market
+        + " " * 81
+        + close.rjust(13, "0")
+        + " " * 89
+        + factor.rjust(7, "0")
+    )
+    return line.ljust(245).encode()
+
+
+def test_cotahist_spot_close_by_quotation_factor() -> None:
+    """Do COTAHIST sai o último preço do mercado à vista, em centavos, dividido pelo
+    fator de cotação; o cabeçalho, o fracionário e os outros tickers ficam de fora."""
+    text = b"\r\n".join(
+        [
+            b"00COTAHIST.2024BOVESPA 20240131".ljust(245),
+            _cotahist_line("ABCD11", "20240131", "4030"),
+            _cotahist_line("ABCD11", "20240130", "4016"),
+            _cotahist_line("ABCD11", "20240131", "4100", market="020"),
+            _cotahist_line("EFGH3", "20240131", "1250000", factor="1000"),
+            _cotahist_line("WXYZ3", "20240131", "999"),
+        ]
+    )
+
+    assert to_ticker_closes(text, ["ABCD11", "EFGH3"]) == {
+        "ABCD11": [
+            DailyClose(price_date=date(2024, 1, 30), close=Decimal("40.16")),
+            DailyClose(price_date=date(2024, 1, 31), close=Decimal("40.30")),
+        ],
+        "EFGH3": [DailyClose(price_date=date(2024, 1, 31), close=Decimal("12.50"))],
+    }
+
+
 @pytest.fixture
 def provider() -> FakeProvider:
     return FakeProvider("fake")
@@ -353,6 +553,7 @@ def market_client(engine: Engine, provider: FakeProvider) -> TestClient:
     app = create_app()
     app.dependency_overrides[get_session] = session_override
     app.dependency_overrides[get_provider] = lambda: provider
+    app.dependency_overrides[get_archive] = FakeArchive
     return TestClient(app)
 
 

@@ -163,6 +163,41 @@ def price_gaps(
     return gaps
 
 
+def archive_request(
+    window: HoldingWindow,
+    cached: CachedRange | None,
+    checked_from: date | None,
+    now: datetime,
+    calendar: BusinessCalendar,
+) -> DateRange | None:
+    """O começo da janela que a fonte de cotações não tem, a procurar na série
+    histórica da B3 até o fim do último mês publicado. O mês publicado não muda,
+    então a janela já procurada desde `checked_from` fica de fora."""
+    if checked_from is not None and checked_from <= window.start:
+        return None
+    expected = expected_close(window, now, calendar)
+    if expected is None:
+        return None
+    if cached is None:
+        end = expected
+    elif cached.first > calendar.on_or_after(window.start):
+        end = calendar.previous(cached.first)
+    else:
+        return None
+    end = min(end, now.date().replace(day=1) - ONE_DAY)
+    return DateRange(start=window.start, end=end) if end >= window.start else None
+
+
+def archive_months(request: DateRange) -> list[tuple[int, int]]:
+    """Os meses, como `(ano, mês)`, que o pedido toca."""
+    months: list[tuple[int, int]] = []
+    year, month = request.start.year, request.start.month
+    while (year, month) <= (request.end.year, request.end.month):
+        months.append((year, month))
+        year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+    return months
+
+
 def _month_start(day: date, months_back: int) -> date:
     index = day.year * 12 + day.month - 1 - months_back
     return date(index // 12, index % 12 + 1, 1)

@@ -17,11 +17,12 @@ from decimal import Decimal
 
 from backend.core.enum import OperationType, PortfolioCategory
 from backend.core.errors import FinanceError
-from backend.domain.market_data import DailyClose
+from backend.domain.market_data import CENT, DailyClose
 from backend.domain.position import (
     CORPORATE_EVENTS,
     OperationRecord,
     Position,
+    Step,
     steps,
 )
 
@@ -64,11 +65,14 @@ def flow_index(days: Sequence[date], day: date) -> int:
     return min(bisect_left(days, day), len(days) - 1)
 
 
-def _event_factors(
-    ordered: Sequence[tuple[date, Decimal]],
-) -> tuple[list[date], list[Decimal]]:
-    """As datas dos eventos e, para cada índice `i`, o produto dos fatores do
-    evento `i` em diante."""
+def _event_factors(settled: Iterable[Step]) -> tuple[list[date], list[Decimal]]:
+    """As datas dos desdobros, grupamentos e bonificações e, para cada índice `i`, o
+    produto dos fatores do evento `i` em diante."""
+    ordered = [
+        (step.operation.operation_date, step.after.quantity / step.before.quantity)
+        for step in settled
+        if step.operation.operation_type in CORPORATE_EVENTS and step.before.quantity
+    ]
     dates = [day for day, _ in ordered]
     suffix = [ONE] * (len(ordered) + 1)
     for index in range(len(ordered) - 1, -1, -1):
@@ -106,14 +110,7 @@ def equity_line(
             outflows[flow_index(days, operation.operation_date)] += amount
 
     settled = list(steps(operations))
-    event_dates, suffix = _event_factors(
-        [
-            (step.operation.operation_date, step.after.quantity / step.before.quantity)
-            for step in settled
-            if step.operation.operation_type in CORPORATE_EVENTS
-            and step.before.quantity
-        ]
-    )
+    event_dates, suffix = _event_factors(settled)
     close_dates = [close.price_date for close in closes]
 
     position = Position()
@@ -131,6 +128,24 @@ def equity_line(
         factor = suffix[bisect_right(event_dates, day)]
         values[index] = position.quantity * factor * closes[found - 1].close
     return values, inflows, outflows
+
+
+def current_base(
+    operations: Sequence[OperationRecord], closes: Iterable[DailyClose]
+) -> list[DailyClose]:
+    """O fechamento do pregão, como a bolsa o publicou, na base de quantidade de
+    hoje, que é a do cache: dividido pelo fator de cada evento com data posterior a
+    ele."""
+    event_dates, suffix = _event_factors(steps(operations))
+    return [
+        DailyClose(
+            price_date=close.price_date,
+            close=(
+                close.close / suffix[bisect_right(event_dates, close.price_date)]
+            ).quantize(CENT),
+        )
+        for close in closes
+    ]
 
 
 def aggregate(days: Sequence[date], lines: Iterable[DailyLine]) -> list[DailyPoint]:

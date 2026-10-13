@@ -10,7 +10,12 @@ from backend.core.enum import AssetClass, IndexSeries
 from backend.domain.ticker_search import search_tickers
 from backend.features.market.indexes import latest_indexes, refresh_indexes
 from backend.features.market.service import refresh_prices
-from backend.features.providers import IndexProviderDep, ProviderDep, TickerSearchDep
+from backend.features.providers import (
+    ArchiveDep,
+    IndexProviderDep,
+    ProviderDep,
+    TickerSearchDep,
+)
 from backend.repository.market import latest_prices
 
 router = APIRouter(prefix="/api/market", tags=["market"])
@@ -51,10 +56,12 @@ def list_prices(session: SessionDep) -> list[AssetPriceDTO]:
 
 
 @router.post("/prices/refresh")
-def refresh(session: SessionDep, provider: ProviderDep) -> RefreshReportDTO:
+def refresh(
+    session: SessionDep, provider: ProviderDep, archive: ArchiveDep
+) -> RefreshReportDTO:
     """Com o cache em dia, responde sem sair da máquina. Sem rede não é erro: o cache
     fica como estava, e o ticker vai para `failed` quando a falta é problema novo."""
-    report = refresh_prices(session, provider, datetime.now())
+    report = refresh_prices(session, provider, archive, datetime.now())
     return RefreshReportDTO.model_validate(report)
 
 

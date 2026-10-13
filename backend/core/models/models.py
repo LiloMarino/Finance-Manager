@@ -406,6 +406,8 @@ class FetchLog(Base):
     problema de dado novo de um que já tinha sido avisado.
 
     `gap` diz se, depois da tentativa, ainda faltava dado além da folga de publicação.
+    `archive_checked_from` é o começo da janela do ativo já procurado na série
+    histórica da B3.
     """
 
     __tablename__ = "fetch_log"
@@ -427,6 +429,7 @@ class FetchLog(Base):
         _enum_column(IndexSeries, "series"), unique=True, default=None
     )
     ticker: Mapped[str | None] = mapped_column(String, unique=True, default=None)
+    archive_checked_from: Mapped[date | None] = mapped_column(default=None)
 
 
 class DarfPayment(Base):

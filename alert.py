@@ -16,6 +16,7 @@ from tkinter import messagebox
 
 from sqlalchemy.orm import Session
 
+from backend.adapters.b3_history_archive import B3HistoryArchive
 from backend.adapters.bcb_sgs_provider import BcbSgsProvider
 from backend.adapters.yfinance_provider import YFinanceProvider
 from backend.config import settings
@@ -69,7 +70,7 @@ def main() -> None:
     now = datetime.now()
     with Session(get_engine()) as session:
         market = YFinanceProvider()
-        refresh_prices(session, market, now)
+        refresh_prices(session, market, B3HistoryArchive(), now)
         refresh_indexes(session, BcbSgsProvider(), market, now)
         lines = alert_lines(data_issues(session, now))
 

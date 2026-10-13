@@ -39,7 +39,7 @@ backend/
 │   ├── enum/         # enums do domínio
 │   └── models/       # models.py: Base, DecimalText e todas as tabelas
 ├── migrations/       # Alembic: env.py e versions/
-├── adapters/         # fronteira de pandas, yfinance, BCB SGS, openpyxl, pdfplumber e schtasks (pyright relaxado)
+├── adapters/         # fronteira de pandas, yfinance, BCB SGS, série histórica da B3, openpyxl, pdfplumber e schtasks (pyright relaxado)
 ├── domain/           # dataclasses e funções puras
 ├── repository/       # acesso a dados compartilhado; devolve dataclass, nunca Row
 └── features/<dominio>/router.py
