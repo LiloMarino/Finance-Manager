@@ -1,8 +1,14 @@
-"""Nota de negociação da Nubank (Nu Investimentos): compras e vendas do pregão."""
+"""Nota de negociação da Nubank (Nu Investimentos): compras e vendas do pregão.
+
+O PDF traz uma nota por pregão, e cada página é uma folha com a data do pregão no
+cabeçalho, logo abaixo do rótulo "Data Pregão". O PDF de um período junta as notas de
+vários pregões, então a data vale por página.
+"""
 
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -11,8 +17,9 @@ from backend.features.imports.dto import ImportedOperationDTO
 
 BROKER_PATTERN = re.compile(r"\bNu\s+Investimentos\b", re.IGNORECASE)
 
-TRADE_DATE_PATTERN = re.compile(r"(?i)preg[aã]o.*?(\d{2}/\d{2}/\d{4})")
-ANY_DATE_PATTERN = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")
+TRADE_DATE_PATTERN = re.compile(
+    r"preg[aã]o.*?(\d{2}/\d{2}/\d{4})", re.IGNORECASE | re.DOTALL
+)
 
 # Uma linha de negociação, já com os espaços normalizados:
 # BOVESPA C VISTA ABCD11 CI ER # 1 R$ 27,55 R$ 27,55 D
@@ -50,7 +57,7 @@ def is_nubank_note(text: str) -> bool:
 
 
 def trade_date(text: str) -> date:
-    match = TRADE_DATE_PATTERN.search(text) or ANY_DATE_PATTERN.search(text)
+    match = TRADE_DATE_PATTERN.search(text)
     if match is None:
         raise UnsupportedNoteError("A nota não traz a data do pregão.")
     return datetime.strptime(match.group(1), "%d/%m/%Y").date()
@@ -79,5 +86,29 @@ def parse_nubank_note(text: str) -> list[ImportedOperationDTO]:
                 quantity=Decimal(match["quantity"].replace(".", "")),
                 unit_price=_brl(match["price"]),
             )
+        )
+    return operations
+
+
+def _has_trades(page: str) -> bool:
+    return any(
+        LINE_PATTERN.search(" ".join(line.split())) for line in page.splitlines()
+    )
+
+
+def parse_nubank_pdf(pages: Sequence[str]) -> list[ImportedOperationDTO]:
+    """As operações de todas as notas do PDF, cada página com a data do pregão dela.
+    A folha sem linha de negociação, como a de resumo, não traz operação."""
+    if not any(is_nubank_note(page) for page in pages):
+        raise UnsupportedNoteError("PDF de corretora não suportada: só a Nubank.")
+    operations = [
+        operation
+        for page in pages
+        if _has_trades(page)
+        for operation in parse_nubank_note(page)
+    ]
+    if not operations:
+        raise UnsupportedNoteError(
+            "Nenhuma linha de negociação reconhecida no PDF da Nubank."
         )
     return operations

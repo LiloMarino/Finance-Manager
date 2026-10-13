@@ -26,6 +26,7 @@ from backend.features.imports.importing import (
 from backend.features.imports.nubank_note import (
     UnsupportedNoteError,
     parse_nubank_note,
+    parse_nubank_pdf,
 )
 
 INCOME_HEADER = (
@@ -570,7 +571,8 @@ def test_settlement_without_note_points_to_the_missing_note(api: TestClient) -> 
 def test_settlement_is_matched_by_note_in_batch_or_in_database(
     session: Session,
 ) -> None:
-    """A nota do pregão no mesmo lote ou já gravada no banco cobre a liquidação."""
+    """A nota do pregão no mesmo lote ou já gravada no banco cobre a liquidação, e a
+    nota gravada que volta no lote conta uma vez só."""
     note = _parsed("nota.pdf", _note(BUY_LINE))
     report = parse_file(
         UploadedFile(name="movimentacao.xlsx", content=_xlsx(SETTLED_BUY))
@@ -579,6 +581,54 @@ def test_settlement_is_matched_by_note_in_batch_or_in_database(
     together = preview_import(session, [note, report])
     confirm_import(session, _confirm_all(session, note))
     alone = preview_import(session, [report])
+    again = preview_import(session, [note, report])
 
     assert together.missing_notes == []
     assert alone.missing_notes == []
+    assert again.missing_notes == []
+
+
+def _note_page(*lines: str, trade_day: str) -> str:
+    """Uma folha como a do PDF da Nubank: a data do pregão na linha de baixo do
+    rótulo."""
+    return "\n".join(
+        [
+            "Nu Investimentos S.A. - CTVM Data Pregão Folha",
+            f"www.corretora.com.br {trade_day} 1 / 1",
+            *lines,
+        ]
+    )
+
+
+def test_period_pdf_dates_each_note_by_its_own_page() -> None:
+    """O PDF de um período junta uma nota por pregão: cada operação fica com a data
+    da página dela, e a folha de resumo sem negociação não atrapalha."""
+    operations = parse_nubank_pdf(
+        [
+            _note_page(BUY_LINE, trade_day="13/02/2026"),
+            "Nu Investimentos S.A. - CTVM\nResumo financeiro",
+            _note_page(
+                "BOVESPA C VISTA WXYZ3 ON NM 2 R$ 20,00 R$ 40,00 D",
+                trade_day="14/05/2026",
+            ),
+        ]
+    )
+
+    assert [(op.ticker, op.operation_date) for op in operations] == [
+        ("ABCD11", date(2026, 2, 13)),
+        ("WXYZ3", date(2026, 5, 14)),
+    ]
+
+
+def test_nubank_pdf_without_trade_lines_is_refused() -> None:
+    """O PDF da Nubank em que nenhuma linha de negociação foi reconhecida é recusado,
+    em vez de entrar como zero operações."""
+    with pytest.raises(UnsupportedNoteError, match="Nenhuma linha"):
+        parse_nubank_pdf([_note_page("Resumo financeiro", trade_day="13/02/2026")])
+
+
+def test_note_page_with_trades_and_no_trade_date_is_refused() -> None:
+    """A folha com negociação e sem a data do pregão é recusada: a data de outra
+    parte do PDF não vale para ela."""
+    with pytest.raises(UnsupportedNoteError, match="data do pregão"):
+        parse_nubank_pdf(["Nu Investimentos S.A. 01/01/2026\n" + BUY_LINE])

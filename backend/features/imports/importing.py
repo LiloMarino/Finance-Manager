@@ -24,7 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.adapters.b3_movements import read_b3_report
-from backend.adapters.pdf_text import extract_pdf_text
+from backend.adapters.pdf_text import extract_pdf_pages
 from backend.core.enum import (
     AssetClass,
     ImportSource,
@@ -51,7 +51,7 @@ from backend.features.imports.dto import (
     NewAssetDTO,
     PreviewRowDTO,
 )
-from backend.features.imports.nubank_note import parse_nubank_note
+from backend.features.imports.nubank_note import parse_nubank_pdf
 from backend.repository.income import income_records
 from backend.repository.market import drop_price_cache
 from backend.repository.operations import check_positions, operation_records
@@ -154,13 +154,13 @@ def _parse(file: UploadedFile) -> ParsedFile:
         )
     if extension == ".pdf":
         try:
-            text = extract_pdf_text(file.content)
+            pages = extract_pdf_pages(file.content)
         except Exception as error:
             raise ImportFileError("Não foi possível ler o PDF.") from error
         return ParsedFile(
             name=file.name,
             source=ImportSource.NUBANK,
-            operations=parse_nubank_note(text),
+            operations=parse_nubank_pdf(pages),
         )
     raise ImportFileError(
         "Formato não suportado: envie um relatório da B3 em xlsx ou a nota de "
@@ -193,10 +193,11 @@ def _current_tickers[T: ImportedOperationDTO | ImportedIncomeDTO](
 
 
 def _missing_notes(
-    session: Session, files: Sequence[ParsedFile]
+    session: Session, files: Sequence[ParsedFile], rows: Sequence[PreviewRowDTO]
 ) -> list[MissingNoteDTO]:
-    """As liquidações do lote conferidas contra as operações do banco e as das notas
-    do mesmo lote, já com o ticker atual dos dois lados."""
+    """As liquidações do lote conferidas contra as operações como ficam depois de
+    confirmar a prévia: as do banco mais as linhas novas do lote, já com o ticker
+    atual dos dois lados."""
     settlements = [item for file in files for item in file.settlements]
     resolved = resolve_tickers(session, {item.ticker for item in settlements})
     settlements = [
@@ -206,7 +207,11 @@ def _missing_notes(
     tickers = {item.ticker for item in settlements}
     trades = [
         *operation_records(session, tickers),
-        *(op for file in files for op in file.operations if op.ticker in tickers),
+        *(
+            row
+            for row in rows
+            if row.status is ImportStatus.NEW and row.ticker in tickers
+        ),
     ]
     return [
         MissingNoteDTO(
@@ -303,7 +308,7 @@ def preview_import(session: Session, files: Sequence[ParsedFile]) -> ImportPrevi
         rows=rows,
         income_rows=income_rows,
         ignored=[movement for file in files for movement in file.ignored],
-        missing_notes=_missing_notes(session, files),
+        missing_notes=_missing_notes(session, files, rows),
         new_assets=[
             NewAssetDTO(ticker=ticker, asset_class=infer_asset_class(ticker))
             for ticker in new_tickers
