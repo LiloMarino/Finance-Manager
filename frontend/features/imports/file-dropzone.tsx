@@ -44,8 +44,13 @@ export function FileDropzone({ onFiles }: FileDropzoneProps) {
       <div>
         <h2 className="text-section-title">Solte os arquivos aqui</h2>
         <p className="text-ink-2 mt-1">
-          Notas de corretagem em PDF e os relatórios da B3 em xlsx: o de movimentação, que traz
-          eventos e proventos, e o de proventos recebidos. Quantos quiser de uma vez.
+          Notas de corretagem em PDF e os relatórios da B3 em xlsx, o de movimentação e o de
+          proventos recebidos. Quantos quiser de uma vez.
+        </p>
+        <p className="text-ink-2 mt-2">
+          Compra e venda entram só pela nota de corretagem, que traz a data do pregão. Os relatórios
+          da B3 trazem os eventos e os proventos, e as compras e vendas deles servem para apontar a
+          nota que falta.
         </p>
       </div>
       <Button variant="outline" onClick={() => input.current?.click()}>

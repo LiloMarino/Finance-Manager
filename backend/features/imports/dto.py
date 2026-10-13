@@ -5,7 +5,7 @@ from typing import Self
 
 from pydantic import model_validator
 
-from backend.core.dto import BaseDTO, DecimalStrIn
+from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
 from backend.core.enum import (
     AssetClass,
     ImportSource,
@@ -57,6 +57,16 @@ class IgnoredMovementDTO(BaseDTO):
     reason: str
 
 
+class MissingNoteDTO(BaseDTO):
+    """Uma compra ou venda que a B3 liquidou e que não está nas operações do banco
+    nem nas notas do lote."""
+
+    ticker: str
+    settlement_date: date
+    operation_type: OperationType
+    quantity: DecimalStr
+
+
 class ImportFileDTO(BaseDTO):
     name: str
     source: ImportSource | None
@@ -83,6 +93,7 @@ class ImportPreviewDTO(BaseDTO):
     rows: list[PreviewRowDTO]
     income_rows: list[IncomePreviewRowDTO]
     ignored: list[IgnoredMovementDTO]
+    missing_notes: list[MissingNoteDTO]
     new_assets: list[NewAssetDTO]
 
 

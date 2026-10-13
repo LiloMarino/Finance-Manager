@@ -17,8 +17,10 @@ from backend.features.imports.dto import ImportConfirmDTO, NewAssetDTO
 from backend.features.imports.importing import (
     MissingAssetClassError,
     ParsedFile,
+    UploadedFile,
     confirm_import,
     infer_asset_class,
+    parse_file,
     preview_import,
 )
 from backend.features.imports.nubank_note import (
@@ -277,7 +279,7 @@ def test_b3_report_brings_only_corporate_events_and_fraction_auction(
     assert [(item["movement"], item["reason"]) for item in preview["ignored"]] == [
         (
             "Transferência - Liquidação",
-            "liquidação de compra ou venda: entra pela nota de corretagem",
+            "liquidação da compra ou venda: ela entra pela nota de corretagem do pregão",
         ),
         (
             "Fração em Ativos",
@@ -535,3 +537,48 @@ def test_import_that_leaves_a_negative_position_is_refused(session: Session) -> 
     session.rollback()
 
     assert _operation_count(session) == 0
+
+
+# A compra da BUY_LINE, liquidada pela B3 dois dias úteis depois do pregão
+SETTLED_BUY = (
+    "Credito",
+    "07/02/2024",
+    "Transferência - Liquidação",
+    "ABCD11 - FUNDO ABCD",
+    "CORRETORA",
+    10,
+    10.5,
+    105,
+)
+
+
+def test_settlement_without_note_points_to_the_missing_note(api: TestClient) -> None:
+    """A liquidação da B3 sem a nota do pregão vira aviso na prévia, com o ativo, a
+    data da liquidação e a quantidade."""
+    preview = _preview_files(api, ("movimentacao.xlsx", _xlsx(SETTLED_BUY)))
+
+    assert preview["missing_notes"] == [
+        {
+            "ticker": "ABCD11",
+            "settlement_date": "2024-02-07",
+            "operation_type": "buy",
+            "quantity": "10",
+        }
+    ]
+
+
+def test_settlement_is_matched_by_note_in_batch_or_in_database(
+    session: Session,
+) -> None:
+    """A nota do pregão no mesmo lote ou já gravada no banco cobre a liquidação."""
+    note = _parsed("nota.pdf", _note(BUY_LINE))
+    report = parse_file(
+        UploadedFile(name="movimentacao.xlsx", content=_xlsx(SETTLED_BUY))
+    )
+
+    together = preview_import(session, [note, report])
+    confirm_import(session, _confirm_all(session, note))
+    alone = preview_import(session, [report])
+
+    assert together.missing_notes == []
+    assert alone.missing_notes == []

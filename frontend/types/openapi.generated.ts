@@ -2474,6 +2474,8 @@ export interface components {
             income_rows: components["schemas"]["IncomePreviewRowDTO"][];
             /** Ignored */
             ignored: components["schemas"]["IgnoredMovementDTO"][];
+            /** Missing Notes */
+            missing_notes: components["schemas"]["MissingNoteDTO"][];
             /** New Assets */
             new_assets: components["schemas"]["NewAssetDTO"][];
         };
@@ -3096,6 +3098,26 @@ export interface components {
             asset_ids: number[];
             /** Investment Ids */
             investment_ids: number[];
+        };
+        /**
+         * MissingNoteDTO
+         * @description Uma compra ou venda que a B3 liquidou e que não está nas operações do banco
+         *     nem nas notas do lote.
+         */
+        MissingNoteDTO: {
+            /** Ticker */
+            ticker: string;
+            /**
+             * Settlement Date
+             * Format: date
+             */
+            settlement_date: string;
+            operation_type: components["schemas"]["OperationType"];
+            /**
+             * Quantity
+             * Format: decimal
+             */
+            quantity: DecimalString;
         };
         /** MonthReturnDTO */
         MonthReturnDTO: {

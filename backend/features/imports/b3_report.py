@@ -4,7 +4,8 @@ Compra e venda entram pela nota de corretagem, que traz a data do pregão e cada
 execução. O relatório de movimentação traz as mesmas negociações como liquidação, em
 D+2 e agregadas por dia, então delas só se aproveitam os eventos, a venda da fração em
 leilão e os proventos. Cada tipo de operação tem uma fonte só, e é isso que deixa
-importar as duas sem dobrar posição.
+importar as duas sem dobrar posição. A liquidação serve para conferir as notas: a que
+não tem pregão correspondente aponta a nota que falta.
 
 O relatório de proventos recebidos traz os mesmos proventos do de movimentação, com o
 valor por unidade arredondado a 2 casas.
@@ -20,6 +21,7 @@ from pydantic import ValidationError
 
 from backend.adapters.b3_movements import B3Movement
 from backend.core.enum import IncomeType, OperationType
+from backend.domain.settlement import Settlement
 from backend.features.imports.dto import (
     IgnoredMovementDTO,
     ImportedIncomeDTO,
@@ -32,6 +34,9 @@ CORPORATE_EVENTS = {
     # A Quantidade do grupamento entra como o fator (ver `Operation`)
     "Grupamento": OperationType.REVERSE_SPLIT,
 }
+
+SETTLEMENT = "Transferência - Liquidação"
+SETTLEMENT_SIDES = {"Credito": OperationType.BUY, "Debito": OperationType.SELL}
 
 # A fração que sobra de um evento é vendida em leilão, e o dinheiro entra como
 # crédito: para a posição, é uma venda
@@ -46,7 +51,7 @@ INCOME_MOVEMENTS = {
 }
 
 IGNORED_MOVEMENTS = {
-    "Transferência - Liquidação": "liquidação de compra ou venda: entra pela nota de corretagem",
+    SETTLEMENT: "liquidação da compra ou venda: ela entra pela nota de corretagem do pregão",
     "Fração em Ativos": "saída da fração para o leilão: a venda entra pelo Leilão de Fração",
     "Atualização": "atualização de custódia: troca de ticker entra pelo detalhe do ativo",
     "Direito de Subscrição": "direito de subscrição não é posição",
@@ -61,6 +66,7 @@ class ParsedB3Report:
     operations: list[ImportedOperationDTO]
     income: list[ImportedIncomeDTO]
     ignored: list[IgnoredMovementDTO]
+    settlements: list[Settlement]
 
 
 def _decimal(value: str) -> Decimal:
@@ -107,6 +113,17 @@ def _operation(ticker: str, movement: B3Movement) -> ImportedOperationDTO | None
     )
 
 
+def _settlement(ticker: str, movement: B3Movement) -> Settlement | None:
+    if movement.movement != SETTLEMENT:
+        return None
+    return Settlement(
+        ticker=ticker,
+        settlement_date=_date(movement.movement_date),
+        operation_type=SETTLEMENT_SIDES[movement.direction],
+        quantity=_decimal(movement.quantity),
+    )
+
+
 def _income(ticker: str, movement: B3Movement) -> ImportedIncomeDTO | None:
     income_type = INCOME_MOVEMENTS.get(movement.movement)
     if income_type is None:
@@ -125,16 +142,18 @@ def parse_b3_movements(file: str, movements: list[B3Movement]) -> ParsedB3Report
     operations: list[ImportedOperationDTO] = []
     income: list[ImportedIncomeDTO] = []
     ignored: list[IgnoredMovementDTO] = []
+    settlements: list[Settlement] = []
 
     for movement in movements:
         ticker = movement.product.split("-")[0].strip().upper()
         try:
             parsed = _operation(ticker, movement) or _income(ticker, movement)
+            settlement = _settlement(ticker, movement)
         except ValidationError as error:
             reason = f"linha inválida: {error.errors()[0]['msg']}"
             ignored.append(_ignored(file, ticker, movement, reason))
             continue
-        except (ValueError, InvalidOperation):
+        except (ValueError, InvalidOperation, KeyError):
             reason = "linha inválida: data, quantidade ou valor ilegível"
             ignored.append(_ignored(file, ticker, movement, reason))
             continue
@@ -144,9 +163,13 @@ def parse_b3_movements(file: str, movements: list[B3Movement]) -> ParsedB3Report
         elif isinstance(parsed, ImportedIncomeDTO):
             income.append(parsed)
         else:
+            if settlement is not None:
+                settlements.append(settlement)
             reason = IGNORED_MOVEMENTS.get(
                 movement.movement, "movimentação não reconhecida"
             )
             ignored.append(_ignored(file, ticker, movement, reason))
 
-    return ParsedB3Report(operations=operations, income=income, ignored=ignored)
+    return ParsedB3Report(
+        operations=operations, income=income, ignored=ignored, settlements=settlements
+    )

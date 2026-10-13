@@ -168,6 +168,9 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
           </Alert>
         )}
 
+        {/* Notas de corretagem que faltam */}
+        {preview.missing_notes.length > 0 && <MissingNotes notes={preview.missing_notes} />}
+
         {/* Ativos novos */}
         {preview.new_assets.length > 0 && (
           <Card>
@@ -372,7 +375,9 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
                 <span className="font-semibold">
                   {preview.ignored.length} movimentações ignoradas
                 </span>
-                <span className="text-ink-2 text-sm">não mudam posição nem saldo</span>
+                <span className="text-ink-2 text-sm">
+                  entram por outra fonte ou não mudam a posição
+                </span>
                 <ChevronDown
                   className={`size-5 text-muted-foreground transition-transform ${!showIgnored ? "-rotate-90" : ""}`}
                 />
@@ -404,5 +409,51 @@ export function ImportPreview({ preview, onCancel, onDone }: ImportPreviewProps)
         )}
       </div>
     </>
+  );
+}
+
+interface MissingNotesProps {
+  notes: Preview["missing_notes"];
+}
+
+/** As compras e vendas que a B3 liquidou sem a nota do pregão no app, agrupadas pela
+data da liquidação. */
+function MissingNotes({ notes }: MissingNotesProps) {
+  const byDay = new Map<string, Preview["missing_notes"]>();
+  for (const note of notes) {
+    byDay.set(note.settlement_date, [...(byDay.get(note.settlement_date) ?? []), note]);
+  }
+
+  return (
+    <Alert variant="warning">
+      <AlertTitle>
+        {notes.length}{" "}
+        {notes.length === 1
+          ? "compra ou venda da B3 sem nota de corretagem"
+          : "compras e vendas da B3 sem nota de corretagem"}
+      </AlertTitle>
+      <AlertDescription className="flex flex-col gap-1 text-sm mt-2">
+        <p>
+          Compra e venda entram só pela nota de corretagem. A B3 liquidou estas, e o app não tem a
+          nota do pregão, que fica uns 2 dias úteis antes da liquidação. Importe as notas desses
+          pregões.
+        </p>
+        {[...byDay].map(([day, dayNotes]) => (
+          <div key={day}>
+            <span className="font-medium">Liquidadas em {formatDate(day)}:</span>{" "}
+            {dayNotes.map((note, index) => (
+              <span key={`${note.ticker}-${note.operation_type}`}>
+                {index > 0 && " · "}
+                <span className="whitespace-nowrap">
+                  <span className="font-mono">{note.ticker}</span>{" "}
+                  {operationTypeLabels[note.operation_type].toLowerCase()} de{" "}
+                  <Quantity value={note.quantity} />
+                </span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </AlertDescription>
+    </Alert>
   );
 }

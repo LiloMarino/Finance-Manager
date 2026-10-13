@@ -36,6 +36,7 @@ from backend.core.errors import FinanceError
 from backend.core.models.models import Asset, IncomeEvent, Operation
 from backend.domain.income import IncomeRecord
 from backend.domain.position import CORPORATE_EVENTS, OperationRecord
+from backend.domain.settlement import Settlement, missing_notes
 from backend.features.imports.b3_report import parse_b3_movements
 from backend.features.imports.dto import (
     IgnoredMovementDTO,
@@ -46,6 +47,7 @@ from backend.features.imports.dto import (
     ImportPreviewDTO,
     ImportResultDTO,
     IncomePreviewRowDTO,
+    MissingNoteDTO,
     NewAssetDTO,
     PreviewRowDTO,
 )
@@ -84,6 +86,7 @@ class ParsedFile:
     )
     income: list[ImportedIncomeDTO] = field(default_factory=list[ImportedIncomeDTO])
     ignored: list[IgnoredMovementDTO] = field(default_factory=list[IgnoredMovementDTO])
+    settlements: list[Settlement] = field(default_factory=list[Settlement])
     error: str | None = None
 
 
@@ -147,6 +150,7 @@ def _parse(file: UploadedFile) -> ParsedFile:
             operations=parsed.operations,
             income=parsed.income,
             ignored=parsed.ignored,
+            settlements=parsed.settlements,
         )
     if extension == ".pdf":
         try:
@@ -185,6 +189,33 @@ def _current_tickers[T: ImportedOperationDTO | ImportedIncomeDTO](
     return [
         row.model_copy(update={"ticker": resolved.get(row.ticker, row.ticker)})
         for row in rows
+    ]
+
+
+def _missing_notes(
+    session: Session, files: Sequence[ParsedFile]
+) -> list[MissingNoteDTO]:
+    """As liquidações do lote conferidas contra as operações do banco e as das notas
+    do mesmo lote, já com o ticker atual dos dois lados."""
+    settlements = [item for file in files for item in file.settlements]
+    resolved = resolve_tickers(session, {item.ticker for item in settlements})
+    settlements = [
+        replace(item, ticker=resolved.get(item.ticker, item.ticker))
+        for item in settlements
+    ]
+    tickers = {item.ticker for item in settlements}
+    trades = [
+        *operation_records(session, tickers),
+        *(op for file in files for op in file.operations if op.ticker in tickers),
+    ]
+    return [
+        MissingNoteDTO(
+            ticker=item.ticker,
+            settlement_date=item.settlement_date,
+            operation_type=item.operation_type,
+            quantity=item.quantity,
+        )
+        for item in missing_notes(settlements, trades)
     ]
 
 
@@ -272,6 +303,7 @@ def preview_import(session: Session, files: Sequence[ParsedFile]) -> ImportPrevi
         rows=rows,
         income_rows=income_rows,
         ignored=[movement for file in files for movement in file.ignored],
+        missing_notes=_missing_notes(session, files),
         new_assets=[
             NewAssetDTO(ticker=ticker, asset_class=infer_asset_class(ticker))
             for ticker in new_tickers
