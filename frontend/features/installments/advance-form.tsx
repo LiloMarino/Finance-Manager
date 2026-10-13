@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { bankRateHint, bankTotalHint } from "@/features/installments/hints";
+import { bankAmountHint, bankRateHint } from "@/features/installments/hints";
 import {
   type AdvanceParams,
   MAX_INSTALLMENTS,
@@ -27,7 +27,7 @@ import { parseDecimalInput, toDecimalInput, toMoneyInput } from "@/types/decimal
 type BankMode = AdvanceParams["bank_discount"]["kind"];
 
 function isBankMode(value: unknown): value is BankMode {
-  return value === "rate" || value === "total";
+  return value === "rate" || value === "amount";
 }
 
 const schema = z
@@ -70,7 +70,7 @@ const schema = z
       bank_discount:
         values.bank_mode === "rate"
           ? { kind: "rate", monthly_rate: bankValue }
-          : { kind: "total", bank_total: bankValue },
+          : { kind: "amount", discount: bankValue },
       chosen: null,
       investment: values.investment,
     };
@@ -95,7 +95,7 @@ export function AdvanceForm({ value, current, onSubmit }: AdvanceFormProps) {
         ? ""
         : discount.kind === "rate"
           ? toDecimalInput(discount.monthly_rate)
-          : toMoneyInput(discount.bank_total),
+          : toMoneyInput(discount.discount),
       investment: value
         ? { ...value.investment, rate: toDecimalInput(value.investment.rate) }
         : defaultInvestment,
@@ -145,7 +145,7 @@ export function AdvanceForm({ value, current, onSubmit }: AdvanceFormProps) {
               </Field>
               <Field data-invalid={Boolean(errors.bank_value)}>
                 <FieldLabel htmlFor="advance-bank">
-                  <MetricHint hint={mode === "rate" ? bankRateHint : bankTotalHint}>
+                  <MetricHint hint={mode === "rate" ? bankRateHint : bankAmountHint}>
                     Desconto do banco para adiantar
                   </MetricHint>
                 </FieldLabel>
@@ -167,7 +167,7 @@ export function AdvanceForm({ value, current, onSubmit }: AdvanceFormProps) {
                         }}
                       >
                         <ToggleGroupItem value="rate">Taxa</ToggleGroupItem>
-                        <ToggleGroupItem value="total">Valor</ToggleGroupItem>
+                        <ToggleGroupItem value="amount">Desconto em R$</ToggleGroupItem>
                       </ToggleGroup>
                     )}
                   />
@@ -186,8 +186,8 @@ export function AdvanceForm({ value, current, onSubmit }: AdvanceFormProps) {
                   )}
                 </div>
                 <FieldDescription>
-                  Em Valor, você digita o que o banco cobra para adiantar todas, menos a da fatura
-                  atual, e o app acha a taxa.
+                  Em Desconto em R$, você digita quanto o banco desconta para adiantar todas, menos
+                  a da fatura atual, e o app acha a taxa.
                 </FieldDescription>
                 <FieldError errors={[errors.bank_value]} />
               </Field>

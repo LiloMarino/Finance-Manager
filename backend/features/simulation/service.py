@@ -219,7 +219,7 @@ def compare_advance_and_keep(session: Session, payload: AdvanceInDTO) -> Advance
     monthly_rate = (
         discount.monthly_rate
         if isinstance(discount, BankRateInDTO)
-        else implied_rate(payload.amount, payload.installments, discount.bank_total)
+        else implied_rate(payload.amount, payload.installments, discount.discount)
     )
     rates = project(
         index_rates(session),

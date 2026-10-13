@@ -288,17 +288,12 @@ class BankRateInDTO(BaseDTO):
         return _monthly_rate(value)
 
 
-class BankTotalInDTO(BaseDTO):
-    """O desconto do banco pelo valor: a soma que o banco pede hoje para adiantar de
-    uma vez todas as parcelas menos a da fatura atual. A taxa sai dele."""
+class BankAmountInDTO(BaseDTO):
+    """O desconto do banco em R$: quanto ele abate para adiantar de uma vez todas as
+    parcelas menos a da fatura atual. A taxa sai dele."""
 
-    kind: Literal["total"]
-    bank_total: DecimalStrIn
-
-    @field_validator("bank_total")
-    @classmethod
-    def _positive_total(cls, value: Decimal) -> Decimal:
-        return _positive(value)
+    kind: Literal["amount"]
+    discount: DecimalStrIn
 
 
 class AdvanceInDTO(BaseDTO):
@@ -312,7 +307,7 @@ class AdvanceInDTO(BaseDTO):
     start_date: date
     next_due_date: date
     bank_discount: Annotated[
-        BankRateInDTO | BankTotalInDTO, Field(discriminator="kind")
+        BankRateInDTO | BankAmountInDTO, Field(discriminator="kind")
     ]
     chosen: list[int] | None = None
     investment: InvestmentInDTO

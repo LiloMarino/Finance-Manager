@@ -123,23 +123,28 @@ def cash_or_advance(
     )
 
 
-def implied_rate(amount: Decimal, count: int, bank_total: Decimal) -> Decimal:
-    """A taxa, em % ao mês, com que o banco chega a `bank_total`.
+def implied_rate(amount: Decimal, count: int, discount: Decimal) -> Decimal:
+    """A taxa, em % ao mês, com que o banco chega a `discount`.
 
-    `bank_total` é a soma que o banco pede hoje para adiantar de uma vez todas as
+    `discount` é o desconto, em R$, que o banco dá para adiantar de uma vez todas as
     parcelas que dá para adiantar, que são todas menos a da fatura atual. Cada
-    parcela entra sem arredondar, então a soma cai continuamente com a taxa, e a
-    taxa achada refaz o valor do banco bem abaixo do centavo. Fica entre zero (sem
-    desconto, o valor é a soma das parcelas) e qualquer valor positivo."""
+    parcela entra sem arredondar, então o total pago cai continuamente com a taxa, e
+    a taxa achada refaz o desconto do banco bem abaixo do centavo. Desconto zero é
+    taxa zero; o desconto vai até a metade das parcelas, acima do que nenhum banco dá
+    para adiantar faturas."""
     face = amount * (count - 1)
     if count < 2:
         raise BankAmountError(
             "Só falta a parcela da fatura atual: não há o que adiantar."
         )
-    if not ZERO < bank_total <= face:
+    if discount < ZERO:
+        raise BankAmountError("O desconto do banco não pode ser negativo.")
+    if discount > face / 2:
         raise BankAmountError(
-            "O valor do banco fica entre zero e a soma das parcelas que dá para adiantar."
+            "O desconto passa da metade das parcelas que dá para adiantar: confira se "
+            "o número é o desconto, e não o total a pagar."
         )
+    bank_total = face - discount
 
     def gap(rate: Decimal) -> Decimal:
         return bank_total - sum(

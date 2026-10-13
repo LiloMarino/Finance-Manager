@@ -64,7 +64,7 @@ function Verdict({ advance, value }: { advance: Advance; value: AdvanceParams })
   const bank =
     value.bank_discount.kind === "rate"
       ? `O banco desconta ${rate}`
-      : `Pelo valor que o banco pede, o desconto é de ${rate}`;
+      : `Pelo desconto que o banco dá, a taxa é de ${rate}`;
   const low = advance.earnings_rate_low && `${formatRate(advance.earnings_rate_low)}%`;
   const high = advance.earnings_rate_high && `${formatRate(advance.earnings_rate_high)}%`;
   const investment = fixedIncomeTypeLabels[value.investment.product_type];
@@ -107,7 +107,15 @@ function Verdict({ advance, value }: { advance: Advance; value: AdvanceParams })
         label="Diferença"
         tone={sign > 0 ? "text-gain" : sign < 0 ? "text-loss" : ""}
         value={<Money value={advance.difference} signed />}
-        detail={sign < 0 ? "a favor de deixar aplicado" : "a favor de adiantar"}
+        detail={
+          sign < 0
+            ? "a favor de deixar aplicado"
+            : sign > 0
+              ? "a favor de adiantar"
+              : advance.chosen_count === 0
+                ? "nenhuma parcela marcada"
+                : "empate"
+        }
       />
     </VerdictCard>
   );

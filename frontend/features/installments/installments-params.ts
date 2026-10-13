@@ -147,8 +147,8 @@ export function writeCashOrAdvance(
 function readBankDiscount(params: URLSearchParams): BankDiscount | null {
   const rate = parseDecimalText(params.get("bank_rate") ?? "");
   if (rate) return { kind: "rate", monthly_rate: rate };
-  const total = parseDecimalText(params.get("bank_total") ?? "");
-  return total ? { kind: "total", bank_total: total } : null;
+  const discount = parseDecimalText(params.get("bank_discount") ?? "");
+  return discount ? { kind: "amount", discount } : null;
 }
 
 // As parcelas escolhidas viajam como posições separadas por vírgula; sem a chave,
@@ -187,9 +187,9 @@ export function writeAdvance(params: URLSearchParams, value: AdvanceParams): URL
   params.set("next_due", value.next_due_date);
   if (value.bank_discount.kind === "rate") {
     params.set("bank_rate", value.bank_discount.monthly_rate);
-    params.delete("bank_total");
+    params.delete("bank_discount");
   } else {
-    params.set("bank_total", value.bank_discount.bank_total);
+    params.set("bank_discount", value.bank_discount.discount);
     params.delete("bank_rate");
   }
   writeInvestment(params, value.investment);

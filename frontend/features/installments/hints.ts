@@ -22,8 +22,8 @@ export const bankRateHint =
 export const cashBreakEvenHint =
   "O desconto à vista que deixa os dois caminhos com o mesmo preço: 1 menos o total pago adiantando dividido pelo preço cheio. Ex.: R$ 2.400 em 12x, adiantadas com o banco a 1,6% ao mês, saem por R$ 2.202,67, e o empate é 8,22%: à vista com 10% de desconto vence, com 5% não.";
 
-export const bankTotalHint =
-  "Digite a soma que o app do banco pede hoje para adiantar todas as parcelas, menos a da fatura atual. O app acha a taxa ao mês que chega exatamente a esse valor e usa ela em cada parcela.";
+export const bankAmountHint =
+  "Digite o desconto que o app do banco mostra para adiantar todas as parcelas, menos a da fatura atual: a soma delas menos o que ele cobra hoje. O app acha a taxa ao mês que chega exatamente a esse desconto e usa ela em cada parcela. Ex.: 3 parcelas de R$ 80 que o banco cobra R$ 236,02 para adiantar têm desconto de R$ 3,98, uns 0,84% ao mês.";
 
 export const bankDiscountHint =
   "A soma das parcelas marcadas menos o que você paga hoje por elas. Marcando todas, é o desconto que o app do banco mostra para adiantar tudo.";

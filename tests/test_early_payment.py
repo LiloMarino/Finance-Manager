@@ -150,11 +150,11 @@ def test_first_installment_is_never_discounted_and_cents_add_up() -> None:
     assert first.paid == first.installment.amount
 
 
-def test_bank_total_matches_the_discount_shown() -> None:
-    """Duas parcelas de R$ 100 que dá para adiantar e o banco pede R$ 197,04 por
-    elas: a taxa achada fecha o total pago em 197,04 e o desconto em 2,96, que é o
-    que o app do banco mostra."""
-    rate = implied_rate(Decimal(100), 3, Decimal("197.04"))
+def test_bank_discount_matches_the_total_shown() -> None:
+    """Duas parcelas de R$ 100 que dá para adiantar e o banco desconta R$ 2,96: a
+    taxa achada fecha o desconto em 2,96 e o total pago em 197,04, que é o que o app
+    do banco mostra."""
+    rate = implied_rate(Decimal(100), 3, Decimal("2.96"))
 
     plan = _plan(amount="100", count=3, rate=rate, chosen=[1, 2])
 
@@ -164,27 +164,28 @@ def test_bank_total_matches_the_discount_shown() -> None:
 
 
 def test_implied_rate_round_trips_with_the_rate_mode() -> None:
-    """O valor que o banco pediria a 1,6% ao mês devolve a taxa de 1,6%, e refazer a
-    conta com a taxa achada devolve o mesmo valor."""
+    """O desconto que o banco daria a 1,6% ao mês devolve a taxa de 1,6%, e refazer
+    a conta com a taxa achada devolve o mesmo desconto."""
     every = range(1, 12)
-    bank_total = _plan(chosen=every).paid_today
+    discount = _plan(chosen=every).discount
 
-    rate = implied_rate(Decimal(200), 12, bank_total)
+    rate = implied_rate(Decimal(200), 12, discount)
 
     assert abs(rate - Decimal("1.6")) < Decimal("1e-9")
-    assert abs(_plan(rate=rate, chosen=every).paid_today - bank_total) < Decimal("1e-6")
+    assert abs(_plan(rate=rate, chosen=every).discount - discount) < Decimal("1e-6")
 
 
-def test_bank_total_without_discount_means_zero_rate() -> None:
-    """O banco pedindo a soma cheia das parcelas é taxa zero."""
-    assert implied_rate(Decimal(200), 12, Decimal(2200)) == 0
+def test_zero_bank_discount_means_zero_rate() -> None:
+    """O banco sem desconto nenhum é taxa zero."""
+    assert implied_rate(Decimal(200), 12, Decimal(0)) == 0
 
 
-@pytest.mark.parametrize("bank_total", ["0", "2200.01"])
-def test_impossible_bank_total_is_rejected(bank_total: str) -> None:
-    """O valor do banco fica acima de zero e no máximo na soma das parcelas."""
+@pytest.mark.parametrize("discount", ["-0.01", "1100.01"])
+def test_impossible_bank_discount_is_rejected(discount: str) -> None:
+    """O desconto do banco vai de zero até a metade das parcelas que dá para
+    adiantar: acima disso, o número digitado é o total a pagar."""
     with pytest.raises(BankAmountError):
-        implied_rate(Decimal(200), 12, Decimal(bank_total))
+        implied_rate(Decimal(200), 12, Decimal(discount))
 
 
 def test_earnings_follow_the_regressive_income_tax() -> None:
@@ -297,13 +298,13 @@ def test_cash_or_advance_endpoint(api: TestClient) -> None:
     assert len(body["installments"]) == 12
 
 
-def test_advance_endpoint_with_bank_total(api: TestClient) -> None:
-    """Pelo valor do banco, a API devolve a taxa achada e os totais das parcelas
-    escolhidas."""
+def test_advance_endpoint_with_bank_discount_amount(api: TestClient) -> None:
+    """Pelo desconto do banco em R$, a API devolve a taxa achada e os totais das
+    parcelas escolhidas."""
     response = api.post(
         "/api/simulation/advance",
         json=_advance_payload(
-            bank_discount={"kind": "total", "bank_total": "2000"},
+            bank_discount={"kind": "amount", "discount": "200"},
             chosen=list(range(1, 12)),
         ),
     )
@@ -322,10 +323,10 @@ def test_advance_endpoint_with_bank_total(api: TestClient) -> None:
         ({"installments": 0}, "parcelas"),
         ({"installments": 61}, "parcelas"),
         ({"bank_discount": {"kind": "rate", "monthly_rate": "-1"}}, "negativa"),
-        ({"bank_discount": {"kind": "total", "bank_total": "0"}}, "maior que zero"),
-        ({"bank_discount": {"kind": "total", "bank_total": "2200.01"}}, "banco"),
+        ({"bank_discount": {"kind": "amount", "discount": "-1"}}, "negativo"),
+        ({"bank_discount": {"kind": "amount", "discount": "1100.01"}}, "total a pagar"),
         (
-            {"installments": 1, "bank_discount": {"kind": "total", "bank_total": "1"}},
+            {"installments": 1, "bank_discount": {"kind": "amount", "discount": "1"}},
             "fatura atual",
         ),
         ({"chosen": [0]}, "escolhidas"),
@@ -337,7 +338,7 @@ def test_advance_endpoint_with_bank_total(api: TestClient) -> None:
 def test_advance_rejects_invalid_input(
     api: TestClient, changes: dict[str, object], message: str
 ) -> None:
-    """Parcelas fora de 1 a 60, taxa negativa, valor do banco impossível e
+    """Parcelas fora de 1 a 60, taxa negativa, desconto do banco impossível e
     escolha fora das parcelas são recusados com o motivo."""
     response = api.post("/api/simulation/advance", json=_advance_payload(**changes))
 

@@ -1260,7 +1260,7 @@ export interface components {
              */
             next_due_date: string;
             /** Bank Discount */
-            bank_discount: components["schemas"]["BankRateInDTO"] | components["schemas"]["BankTotalInDTO"];
+            bank_discount: components["schemas"]["BankRateInDTO"] | components["schemas"]["BankAmountInDTO"];
             /** Chosen */
             chosen?: number[] | null;
             investment: components["schemas"]["InvestmentInDTO"];
@@ -1444,6 +1444,23 @@ export interface components {
             cash: DecimalString | null;
         };
         /**
+         * BankAmountInDTO
+         * @description O desconto do banco em R$: quanto ele abate para adiantar de uma vez todas as
+         *     parcelas menos a da fatura atual. A taxa sai dele.
+         */
+        BankAmountInDTO: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "amount";
+            /**
+             * Discount
+             * Format: decimal
+             */
+            discount: DecimalString;
+        };
+        /**
          * BankRateInDTO
          * @description O desconto do banco pela taxa, em % ao mês por fatura de antecedência.
          */
@@ -1458,23 +1475,6 @@ export interface components {
              * Format: decimal
              */
             monthly_rate: DecimalString;
-        };
-        /**
-         * BankTotalInDTO
-         * @description O desconto do banco pelo valor: a soma que o banco pede hoje para adiantar de
-         *     uma vez todas as parcelas menos a da fatura atual. A taxa sai dele.
-         */
-        BankTotalInDTO: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            kind: "total";
-            /**
-             * Bank Total
-             * Format: decimal
-             */
-            bank_total: DecimalString;
         };
         /**
          * BenchmarkReturnDTO
