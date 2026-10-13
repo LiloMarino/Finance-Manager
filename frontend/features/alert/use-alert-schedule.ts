@@ -38,6 +38,6 @@ export function useRemoveSchedule() {
 export function useRunAlert() {
   return useWrite<void, void>(
     () => post("/api/alert/run"),
-    "Alerta rodando: a janela aparece se houver algo a avisar.",
+    "Alerta rodando: a janela abre em alguns segundos.",
   );
 }

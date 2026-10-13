@@ -7,10 +7,16 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from alert import alert_lines
+from alert import ALL_CLEAR, alert_lines, alert_message, consume_test_flag
 from backend.app import create_app
 from backend.core.enum import DataIssueKind, Severity
-from backend.domain.task_schedule import TaskCommand, scheduled_time, task_xml
+from backend.domain.task_schedule import (
+    SchedulerUnavailableError,
+    TaskCommand,
+    scheduled_time,
+    task_xml,
+)
+from backend.features.alert import service as alert_service
 from backend.features.data_health.dto import DataIssueDTO
 from backend.features.data_health.service import data_issues
 from backend.features.providers import get_scheduler
@@ -42,7 +48,14 @@ def scheduler() -> FakeScheduler:
 
 
 @pytest.fixture
-def alert_client(scheduler: FakeScheduler) -> TestClient:
+def test_flag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    flag = tmp_path / "logs" / "alert-test.flag"
+    monkeypatch.setattr(alert_service, "TEST_FLAG", flag)
+    return flag
+
+
+@pytest.fixture
+def alert_client(scheduler: FakeScheduler, test_flag: Path) -> TestClient:
     app = create_app()
     app.dependency_overrides[get_scheduler] = lambda: scheduler
     return TestClient(app)
@@ -113,9 +126,10 @@ def test_task_runs_daily_even_after_missing_the_time() -> None:
 
 
 def test_schedule_is_created_run_and_removed(
-    alert_client: TestClient, scheduler: FakeScheduler
+    alert_client: TestClient, scheduler: FakeScheduler, test_flag: Path
 ) -> None:
-    """Agendar cria a tarefa no horário, testar roda a tarefa, e remover apaga."""
+    """Agendar cria a tarefa no horário, testar roda a tarefa com o marcador de
+    teste, e remover apaga."""
     assert alert_client.get("/api/alert/schedule").json() == {
         "scheduled": False,
         "time": None,
@@ -128,6 +142,7 @@ def test_schedule_is_created_run_and_removed(
     assert created == {"scheduled": True, "time": "07:30:00"}
     assert ran.status_code == 204
     assert scheduler.runs == 1
+    assert test_flag.exists()
     assert alert_client.get("/api/alert/schedule").json()["scheduled"] is False
 
 
@@ -136,3 +151,37 @@ def test_running_without_schedule_is_refused(alert_client: TestClient) -> None:
     response = alert_client.post("/api/alert/run")
 
     assert response.status_code == 422
+
+
+class RefusingScheduler(FakeScheduler):
+    def run(self) -> None:
+        raise SchedulerUnavailableError("O Agendador de Tarefas recusou.")
+
+
+def test_refused_run_leaves_no_test_flag(test_flag: Path) -> None:
+    """Quando o Agendador recusa a rodada, o marcador sai junto: a próxima rodada
+    agendada continua silenciosa sem aviso."""
+    scheduler = RefusingScheduler()
+    scheduler.install("<Task/>")
+
+    with pytest.raises(SchedulerUnavailableError):
+        alert_service.run_now(scheduler)
+
+    assert not test_flag.exists()
+
+
+def test_test_flag_counts_for_one_run(tmp_path: Path) -> None:
+    """O marcador do "Testar agora" vale para uma rodada: ela o apaga."""
+    flag = tmp_path / "alert-test.flag"
+    flag.touch()
+
+    assert consume_test_flag(flag) is True
+    assert consume_test_flag(flag) is False
+
+
+def test_window_opens_without_warnings_only_when_testing() -> None:
+    """Sem aviso, a rodada diária fica em silêncio e a de teste abre a janela com o
+    tudo em ordem; com aviso, as duas mostram os avisos."""
+    assert alert_message([], testing=False) is None
+    assert alert_message([], testing=True) == ALL_CLEAR
+    assert alert_message(["Saldo: Algo."], testing=True) == "Saldo: Algo."

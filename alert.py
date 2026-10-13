@@ -2,7 +2,8 @@
 
 Atualiza as cotações e as séries, lê as pendências e, se há DARF a pagar, alguma
 subcarteira passou do limite ou o saldo está parado, abre uma janela com o aviso.
-Sem nada a avisar, termina sem mostrar nada.
+Sem nada a avisar, termina sem mostrar nada, a não ser na rodada do "Testar agora",
+que sempre abre a janela.
 """
 
 from __future__ import annotations
@@ -24,12 +25,14 @@ from backend.core.database.migrate import current_revision, head_revision
 from backend.core.database.session import get_engine
 from backend.core.enum import DataIssueKind
 from backend.core.logger import setup_logging
+from backend.features.alert.service import TEST_FLAG
 from backend.features.data_health.dto import DataIssueDTO
 from backend.features.data_health.service import data_issues
 from backend.features.market.indexes import refresh_indexes
 from backend.features.market.service import refresh_prices
 
 TITLE = "Finance Manager"
+ALL_CLEAR = "Tudo em ordem: nada a avisar hoje."
 LOG_FILE = Path("logs/alert.log")
 
 # O alerta é o recorte das pendências que pede ação, e não correção de dado
@@ -48,6 +51,22 @@ def alert_lines(issues: Iterable[DataIssueDTO]) -> list[str]:
     ]
 
 
+def consume_test_flag(flag: Path) -> bool:
+    """Se esta rodada veio do "Testar agora". O marcador vale para uma rodada só."""
+    try:
+        flag.unlink()
+    except FileNotFoundError:
+        return False
+    return True
+
+
+def alert_message(lines: list[str], *, testing: bool) -> str | None:
+    """O texto da janela, ou nulo quando ela não abre."""
+    if lines:
+        return "\n\n".join(lines)
+    return ALL_CLEAR if testing else None
+
+
 def _show(message: str) -> None:
     """Uma janela de aviso, só com o OK, intrusiva de propósito para não passar
     batida."""
@@ -59,6 +78,7 @@ def _show(message: str) -> None:
 
 def main() -> None:
     setup_logging(settings.logging.level, LOG_FILE)
+    testing = consume_test_flag(TEST_FLAG)
     # A migration fica com o start do app, que tira o snapshot antes dela
     if current_revision(settings.database.path) != head_revision():
         logger.warning("Banco com migration pendente; alerta não rodou.")
@@ -74,9 +94,10 @@ def main() -> None:
         refresh_indexes(session, BcbSgsProvider(), market, now)
         lines = alert_lines(data_issues(session, now))
 
-    logger.info("Alerta com %d aviso(s).", len(lines))
-    if lines:
-        _show("\n\n".join(lines))
+    logger.info("Alerta com %d aviso(s)%s.", len(lines), " (teste)" if testing else "")
+    message = alert_message(lines, testing=testing)
+    if message is not None:
+        _show(message)
 
 
 if __name__ == "__main__":

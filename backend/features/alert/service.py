@@ -18,6 +18,10 @@ from backend.features.alert.dto import ScheduleDTO
 # A raiz do repositório: backend/features/alert/service.py fica três pastas abaixo
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ALERT_SCRIPT = "alert.py"
+# O "Testar agora" deixa este marcador antes de rodar a tarefa: o `schtasks /Run`
+# roda o comando agendado como está, e o marcador é como a rodada de teste chega ao
+# `alert.py`, que o apaga e mostra a janela mesmo sem aviso
+TEST_FLAG = PROJECT_ROOT / "logs" / "alert-test.flag"
 
 
 def task_command() -> TaskCommand:
@@ -50,4 +54,10 @@ def remove_schedule(scheduler: TaskScheduler) -> None:
 def run_now(scheduler: TaskScheduler) -> None:
     if scheduler.query() is None:
         raise SchedulerUnavailableError("Agende o alerta antes de testá-lo.")
-    scheduler.run()
+    TEST_FLAG.parent.mkdir(parents=True, exist_ok=True)
+    TEST_FLAG.touch()
+    try:
+        scheduler.run()
+    except Exception:
+        TEST_FLAG.unlink(missing_ok=True)
+        raise
