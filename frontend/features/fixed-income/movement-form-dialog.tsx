@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { CornerDownLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import {
 import { useAddMovement } from "@/features/fixed-income/use-fixed-income";
 import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { Kbd } from "@/shared/components/ui/kbd";
 import {
   Select,
   SelectContent,
@@ -52,6 +54,7 @@ const schema = z
 
 export function MovementFormDialog({ investmentId }: { investmentId: number }) {
   const [open, setOpen] = useState(false);
+  const [createMore, setCreateMore] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -63,7 +66,14 @@ export function MovementFormDialog({ investmentId }: { investmentId: number }) {
         <DialogHeader>
           <DialogTitle>Nova movimentação</DialogTitle>
         </DialogHeader>
-        {open && <MovementForm investmentId={investmentId} onSaved={() => setOpen(false)} />}
+        {open && (
+          <MovementForm
+            investmentId={investmentId}
+            createMore={createMore}
+            onCreateMoreChange={setCreateMore}
+            onSaved={() => setOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -71,10 +81,17 @@ export function MovementFormDialog({ investmentId }: { investmentId: number }) {
 
 interface MovementFormProps {
   investmentId: number;
+  createMore: boolean;
+  onCreateMoreChange: (createMore: boolean) => void;
   onSaved: () => void;
 }
 
-function MovementForm({ investmentId, onSaved }: MovementFormProps) {
+function MovementForm({
+  investmentId,
+  createMore,
+  onCreateMoreChange,
+  onSaved,
+}: MovementFormProps) {
   const add = useAddMovement(investmentId);
   const defaultValues: z.input<typeof schema> = {
     movement_type: "application",
@@ -84,23 +101,30 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
   const form = useForm({ resolver: zodResolver(schema), defaultValues });
   const { errors } = form.formState;
 
-  const save = (keepOpen: boolean) =>
-    form.handleSubmit((body) =>
-      add.mutate(body, {
-        onSuccess: () => {
-          if (!keepOpen) {
-            onSaved();
-            return;
-          }
-          // A próxima movimentação herda o tipo e a data desta: só o valor recomeça
-          form.reset({ ...form.getValues(), amount: "" });
-          form.setFocus("amount");
-        },
-      }),
-    );
+  const submit = form.handleSubmit((body) =>
+    add.mutate(body, {
+      onSuccess: () => {
+        if (!createMore) {
+          onSaved();
+          return;
+        }
+        // A próxima movimentação herda o tipo e a data desta: só o valor recomeça
+        form.reset({ ...form.getValues(), amount: "" });
+        form.setFocus("amount");
+      },
+    }),
+  );
 
   return (
-    <form onSubmit={(event) => void save(false)(event)}>
+    <form
+      onSubmit={(event) => void submit(event)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          event.currentTarget.requestSubmit();
+        }
+      }}
+    >
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="movement-type">Tipo</FieldLabel>
@@ -141,16 +165,20 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
         </Field>
       </FieldGroup>
       <DialogFooter className="mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={add.isPending}
-          onClick={(event) => void save(true)(event)}
-        >
-          Salvar e adicionar outra
-        </Button>
+        <Field orientation="horizontal" className="sm:mr-auto sm:w-auto">
+          <Checkbox
+            id="movement-create-more"
+            checked={createMore}
+            onCheckedChange={(checked) => onCreateMoreChange(checked === true)}
+          />
+          <FieldLabel htmlFor="movement-create-more">Adicionar outra</FieldLabel>
+        </Field>
         <Button type="submit" disabled={add.isPending}>
           Salvar
+          <Kbd variant="tinted" aria-label="Ctrl Enter">
+            Ctrl
+            <CornerDownLeft />
+          </Kbd>
         </Button>
       </DialogFooter>
     </form>
