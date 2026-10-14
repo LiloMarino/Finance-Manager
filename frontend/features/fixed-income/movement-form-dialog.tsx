@@ -84,10 +84,23 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
   const form = useForm({ resolver: zodResolver(schema), defaultValues });
   const { errors } = form.formState;
 
-  const submit = form.handleSubmit((body) => add.mutate(body, { onSuccess: onSaved }));
+  const save = (keepOpen: boolean) =>
+    form.handleSubmit((body) =>
+      add.mutate(body, {
+        onSuccess: () => {
+          if (!keepOpen) {
+            onSaved();
+            return;
+          }
+          // A próxima movimentação herda o tipo e a data desta: só o valor recomeça
+          form.reset({ ...form.getValues(), amount: "" });
+          form.setFocus("amount");
+        },
+      }),
+    );
 
   return (
-    <form onSubmit={(event) => void submit(event)}>
+    <form onSubmit={(event) => void save(false)(event)}>
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="movement-type">Tipo</FieldLabel>
@@ -128,6 +141,14 @@ function MovementForm({ investmentId, onSaved }: MovementFormProps) {
         </Field>
       </FieldGroup>
       <DialogFooter className="mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={add.isPending}
+          onClick={(event) => void save(true)(event)}
+        >
+          Salvar e adicionar outra
+        </Button>
         <Button type="submit" disabled={add.isPending}>
           Salvar
         </Button>
