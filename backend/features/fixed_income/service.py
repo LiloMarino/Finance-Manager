@@ -186,6 +186,7 @@ def create_investment(
         maturity_date=payload.maturity_date,
         daily_liquidity=payload.daily_liquidity,
         subportfolio_id=payload.subportfolio_id,
+        redemption_order=payload.redemption_order,
     )
     session.add(investment)
     session.flush()
@@ -215,6 +216,7 @@ def update_investment(
     investment.maturity_date = payload.maturity_date
     investment.daily_liquidity = payload.daily_liquidity
     investment.subportfolio_id = payload.subportfolio_id
+    investment.redemption_order = payload.redemption_order
     _check_before_maturity(session, investment_id)
     session.commit()
     return get_investment(session, investment_id, today)

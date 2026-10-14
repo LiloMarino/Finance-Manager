@@ -4,6 +4,12 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import {
+  type RedemptionOrder,
+  isRedemptionOrder,
+  redemptionOrderLabels,
+  redemptionOrders,
+} from "@/features/fixed-income/labels";
+import {
   useCreateFixedIncome,
   useUpdateFixedIncome,
 } from "@/features/fixed-income/use-fixed-income";
@@ -20,8 +26,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import type { FixedIncome } from "@/shared/hooks/use-fixed-income-list";
 import { investmentTermsSchema } from "@/shared/lib/investment-terms";
 import { maskMoney, withMask } from "@/shared/lib/mask";
@@ -36,6 +55,9 @@ function schemaFor(creating: boolean) {
       investment: investmentTermsSchema,
       maturity_date: z.string(),
       daily_liquidity: z.boolean(),
+      redemption_order: z.custom<RedemptionOrder>(
+        (value) => typeof value === "string" && isRedemptionOrder(value),
+      ),
       subportfolio_id: z.number().nullable(),
       application_date: z.string(),
       application_amount: z.string(),
@@ -111,6 +133,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
       },
       maturity_date: investment?.maturity_date ?? "",
       daily_liquidity: investment?.daily_liquidity ?? false,
+      redemption_order: investment?.redemption_order ?? "oldest_first",
       subportfolio_id: investment?.subportfolio_id ?? null,
       application_date: "",
       application_amount: "",
@@ -168,6 +191,38 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
             </Field>
           )}
         />
+        <Field>
+          <FieldLabel htmlFor="fixed-income-redemption-order">Resgate parcial sai</FieldLabel>
+          <Controller
+            control={form.control}
+            name="redemption_order"
+            render={({ field }) => (
+              <Select
+                items={redemptionOrderLabels}
+                value={field.value}
+                onValueChange={(next) => {
+                  if (next !== null && isRedemptionOrder(next)) field.onChange(next);
+                }}
+              >
+                <SelectTrigger id="fixed-income-redemption-order" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {redemptionOrders.map((order) => (
+                    <SelectItem key={order} value={order}>
+                      {redemptionOrderLabels[order]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <FieldDescription>
+            Muda o IR estimado: cada aplicação paga a alíquota da própria idade, de 22,5% até 180
+            dias a 15% depois de 720. Confira no extrato do banco de quais aplicações o resgate
+            saiu.
+          </FieldDescription>
+        </Field>
         <Field>
           <FieldLabel htmlFor="fixed-income-subportfolio">Subcarteira</FieldLabel>
           <Controller

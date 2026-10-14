@@ -21,6 +21,7 @@ from backend.core.enum import (
     FixedIncomeType,
     Indexer,
     IndexSeries,
+    RedemptionOrder,
 )
 from backend.domain.business_days import BusinessCalendar
 from backend.domain.index_growth import (
@@ -80,12 +81,14 @@ TREASURY_INDEXER = {
 @dataclass(frozen=True, slots=True, kw_only=True)
 class FixedIncomeTerms:
     """`rate` segue o indexador: % do CDI; spread anual somado à Selic; taxa real
-    somada ao IPCA; taxa anual no pré. Tudo em %."""
+    somada ao IPCA; taxa anual no pré. Tudo em %. `redemption_order` diz de quais
+    aplicações sai o resgate parcial."""
 
     product_type: FixedIncomeType
     indexer: Indexer
     rate: Decimal
     maturity_date: date | None
+    redemption_order: RedemptionOrder = RedemptionOrder.OLDEST_FIRST
 
     @property
     def tax_exempt(self) -> bool:
@@ -217,14 +220,17 @@ class Application:
         return net / (ONE - gain_share * (iof + income * (ONE - iof)))
 
 
-def _take(lots: list[_Lot], units: Decimal) -> tuple[list[_Lot], list[_Lot]]:
-    """Consome as unidades das aplicações mais antigas primeiro e devolve o que
-    ficou e o que saiu. Resgate maior que o saldo zera o título: a diferença é o
-    erro da estimativa."""
+def _take(
+    lots: list[_Lot], units: Decimal, order: RedemptionOrder
+) -> tuple[list[_Lot], list[_Lot]]:
+    """Consome as unidades das aplicações na `order` e devolve o que ficou, em ordem
+    de aplicação, e o que saiu. Resgate maior que o saldo zera o título: a diferença
+    é o erro da estimativa."""
+    newest_first = order is RedemptionOrder.NEWEST_FIRST
     remaining = units
     kept_lots: list[_Lot] = []
     taken_lots: list[_Lot] = []
-    for lot in lots:
+    for lot in reversed(lots) if newest_first else lots:
         taken = min(lot.units, remaining)
         remaining -= taken
         if taken:
@@ -237,11 +243,13 @@ def _take(lots: list[_Lot], units: Decimal) -> tuple[list[_Lot], list[_Lot]]:
         kept_lots.append(
             replace(lot, units=kept, principal=lot.principal * kept / lot.units)
         )
+    if newest_first:
+        kept_lots.reverse()
     return kept_lots, taken_lots
 
 
-def _redeem(lots: list[_Lot], units: Decimal) -> list[_Lot]:
-    return _take(lots, units)[0]
+def _redeem(lots: list[_Lot], units: Decimal, order: RedemptionOrder) -> list[_Lot]:
+    return _take(lots, units, order)[0]
 
 
 def _withheld(
@@ -301,7 +309,7 @@ def payouts(
         if movement.movement_type is FixedIncomeMovementType.APPLICATION:
             lots.append(_Lot(opened=day, units=units, principal=movement.amount))
             continue
-        lots, taken = _take(lots, units)
+        lots, taken = _take(lots, units, terms.redemption_order)
         withheld = _withheld(taken, factor(day), day, terms.tax_exempt)
         found.append(
             Payout(
@@ -407,7 +415,7 @@ def mark(
                 )
             )
         else:
-            lots = _redeem(lots, units)
+            lots = _redeem(lots, units, terms.redemption_order)
 
     now = factor(as_of)
     gains = [(lot, lot.units * now - lot.principal) for lot in lots]

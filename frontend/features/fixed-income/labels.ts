@@ -12,3 +12,16 @@ export function isMovementType(value: string): value is MovementType {
 }
 
 export const movementTypes = Object.keys(movementTypeLabels).filter(isMovementType);
+
+export type RedemptionOrder = components["schemas"]["RedemptionOrder"];
+
+export const redemptionOrderLabels: Record<RedemptionOrder, string> = {
+  oldest_first: "Das aplicações mais antigas",
+  newest_first: "Das aplicações mais novas",
+};
+
+export function isRedemptionOrder(value: string): value is RedemptionOrder {
+  return value in redemptionOrderLabels;
+}
+
+export const redemptionOrders = Object.keys(redemptionOrderLabels).filter(isRedemptionOrder);

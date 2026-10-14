@@ -9,6 +9,7 @@ from backend.core.enum import (
     FixedIncomeType,
     Indexer,
     IndexSeries,
+    RedemptionOrder,
 )
 from backend.domain.fixed_income import FixedIncomeTerms, Movement, mark
 from backend.domain.index_series import DailyRate
@@ -24,12 +25,14 @@ def _terms(
     *,
     maturity_date: date | None = None,
     product_type: FixedIncomeType = FixedIncomeType.CDB,
+    redemption_order: RedemptionOrder = RedemptionOrder.OLDEST_FIRST,
 ) -> FixedIncomeTerms:
     return FixedIncomeTerms(
         product_type=product_type,
         indexer=indexer,
         rate=Decimal(rate),
         maturity_date=maturity_date,
+        redemption_order=redemption_order,
     )
 
 
@@ -56,13 +59,13 @@ def _round(value: Decimal) -> Decimal:
 
 
 def test_prefixed_compounds_by_business_days() -> None:
-    """Sem série do CDI, o dia útil é dia de semana, e o pré rende
-    `(1 + taxa)^(dias úteis / 252)`."""
+    """Sem série do CDI, o dia útil é dia de semana fora dos feriados nacionais, e o
+    pré rende `(1 + taxa)^(dias úteis / 252)`: o 1º de janeiro não rende."""
     start, today = date(2024, 1, 1), date(2024, 1, 15)
 
     marking = mark(_terms(), [_movement(start, "1000")], {}, today)
 
-    expected = Decimal(1000) * Decimal("1.12") ** (Decimal(10) / Decimal(252))
+    expected = Decimal(1000) * Decimal("1.12") ** (Decimal(9) / Decimal(252))
     assert _round(marking.gross_value) == _round(expected)
     assert marking.invested == Decimal(1000)
 
@@ -156,7 +159,7 @@ def test_partial_redemption_is_subtracted_linearly() -> None:
         today,
     )
 
-    expected = Decimal(1000) * daily**10 - Decimal(500) * daily**5
+    expected = Decimal(1000) * daily**9 - Decimal(500) * daily**5
     assert _round(marking.gross_value) == _round(expected)
 
 
@@ -201,6 +204,32 @@ def test_redemption_consumes_oldest_application_first() -> None:
     assert _round(marking.invested) == Decimal(1000)
     assert _round(marking.estimated_tax) == _round(
         (alone_recent.gross_value - Decimal(1000)) * Decimal("0.225")
+    )
+
+
+def test_newest_first_redemption_consumes_latest_application() -> None:
+    """Com o resgate saindo das aplicações mais novas, resgatar o valor da recente
+    no dia dela a tira do IR: sobra só a antiga, com a alíquota dela."""
+    today = date(2025, 6, 2)
+    old, recent = today - timedelta(days=400), today - timedelta(days=100)
+    terms = _terms(redemption_order=RedemptionOrder.NEWEST_FIRST)
+
+    marking = mark(
+        terms,
+        [
+            _movement(old, "1000"),
+            _movement(recent, "1000"),
+            _movement(recent, "1000", REDEMPTION),
+        ],
+        {},
+        today,
+    )
+
+    alone_old = mark(terms, [_movement(old, "1000")], {}, today)
+    assert _round(marking.invested) == Decimal(1000)
+    assert _round(marking.gross_value) == _round(alone_old.gross_value)
+    assert _round(marking.estimated_tax) == _round(
+        (alone_old.gross_value - Decimal(1000)) * Decimal("0.175")
     )
 
 

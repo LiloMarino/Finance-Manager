@@ -16,6 +16,7 @@ from backend.core.enum.loss_pool import LossPool
 from backend.core.enum.operation_type import OperationType
 from backend.core.enum.payment_choice import PaymentChoice
 from backend.core.enum.portfolio_category import PortfolioCategory
+from backend.core.enum.redemption_order import RedemptionOrder
 from backend.core.enum.severity import Severity
 from backend.core.enum.subportfolio_color import SubportfolioColor
 from backend.core.enum.subportfolio_icon import SubportfolioIcon
@@ -40,6 +41,7 @@ __all__ = [
     "OperationType",
     "PaymentChoice",
     "PortfolioCategory",
+    "RedemptionOrder",
     "Severity",
     "SubportfolioColor",
     "SubportfolioIcon",

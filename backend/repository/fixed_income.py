@@ -8,7 +8,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.core.enum import FixedIncomeType, Indexer
+from backend.core.enum import FixedIncomeType, Indexer, RedemptionOrder
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
 from backend.domain.fixed_income import (
     TAX_EXEMPT_TYPES,
@@ -30,6 +30,7 @@ class MarkedInvestment:
     maturity_date: date | None
     daily_liquidity: bool
     subportfolio_id: int | None
+    redemption_order: RedemptionOrder
     tax_exempt: bool
     matured: bool
     invested: Decimal
@@ -67,6 +68,7 @@ def investment_terms(investment: FixedIncomeInvestment) -> FixedIncomeTerms:
         indexer=investment.indexer,
         rate=investment.rate,
         maturity_date=investment.maturity_date,
+        redemption_order=investment.redemption_order,
     )
 
 
@@ -107,6 +109,7 @@ def _marked(
         maturity_date=investment.maturity_date,
         daily_liquidity=investment.daily_liquidity,
         subportfolio_id=investment.subportfolio_id,
+        redemption_order=investment.redemption_order,
         tax_exempt=investment.product_type in TAX_EXEMPT_TYPES,
         matured=investment_terms(investment).matured(today),
         invested=marking.invested,

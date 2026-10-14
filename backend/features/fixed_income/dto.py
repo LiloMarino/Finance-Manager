@@ -7,7 +7,12 @@ from typing import Self
 from pydantic import field_validator, model_validator
 
 from backend.core.dto import BaseDTO, DecimalStr, DecimalStrIn
-from backend.core.enum import FixedIncomeMovementType, FixedIncomeType, Indexer
+from backend.core.enum import (
+    FixedIncomeMovementType,
+    FixedIncomeType,
+    Indexer,
+    RedemptionOrder,
+)
 from backend.domain.fixed_income import terms_problem
 
 
@@ -22,6 +27,7 @@ class FixedIncomeInDTO(BaseDTO):
     maturity_date: date | None = None
     daily_liquidity: bool
     subportfolio_id: int | None = None
+    redemption_order: RedemptionOrder
 
     @field_validator("label")
     @classmethod
@@ -52,6 +58,7 @@ class FixedIncomeDTO(BaseDTO):
     maturity_date: date | None
     daily_liquidity: bool
     subportfolio_id: int | None
+    redemption_order: RedemptionOrder
     tax_exempt: bool
     matured: bool
     invested: DecimalStr

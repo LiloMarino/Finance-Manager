@@ -720,8 +720,8 @@ def test_ipca_is_expected_from_day_15_of_the_next_month(session: Session) -> Non
 
 def test_offline_index_refresh_keeps_cache(session: Session) -> None:
     """Provider fora do ar deixa o cache como estava, e o aviso sai uma vez só."""
-    provider = _published(date(2024, 2, 8))
-    market = _ibov(date(2024, 2, 8))
+    provider = _published(date(2024, 2, 7))
+    market = _ibov(date(2024, 2, 7))
     refresh_indexes(session, provider, market, NOW)
     cached = _cached_rates(session)
     provider.offline = True
@@ -748,10 +748,10 @@ def test_ibov_is_fetched_from_market_provider_only(session: Session) -> None:
 
 
 def test_ibov_missing_last_close_is_reported_once(session: Session) -> None:
-    """Sem o fechamento do dia útil anterior depois da folga, o IBOV vai para
-    `failed` na primeira tentativa e não se repete na seguinte."""
+    """Sem os fechamentos de antes da folga do Carnaval, o IBOV vai para `failed` na
+    primeira tentativa e não se repete na seguinte."""
     provider = _published(date(2024, 2, 13))
-    market = _ibov(date(2024, 2, 8))
+    market = _ibov(date(2024, 2, 7))
     refresh_indexes(session, provider, market, NOW)
 
     first = refresh_indexes(session, provider, market, datetime(2024, 2, 14, 9, 0))

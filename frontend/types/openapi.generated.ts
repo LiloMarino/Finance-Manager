@@ -2117,6 +2117,7 @@ export interface components {
             daily_liquidity: boolean;
             /** Subportfolio Id */
             subportfolio_id?: number | null;
+            redemption_order: components["schemas"]["RedemptionOrder"];
             application: components["schemas"]["ApplicationInDTO"];
         };
         /**
@@ -2143,6 +2144,7 @@ export interface components {
             daily_liquidity: boolean;
             /** Subportfolio Id */
             subportfolio_id: number | null;
+            redemption_order: components["schemas"]["RedemptionOrder"];
             /** Tax Exempt */
             tax_exempt: boolean;
             /** Matured */
@@ -2194,6 +2196,7 @@ export interface components {
             daily_liquidity: boolean;
             /** Subportfolio Id */
             subportfolio_id: number | null;
+            redemption_order: components["schemas"]["RedemptionOrder"];
             /** Tax Exempt */
             tax_exempt: boolean;
             /** Matured */
@@ -2307,6 +2310,7 @@ export interface components {
             daily_liquidity: boolean;
             /** Subportfolio Id */
             subportfolio_id?: number | null;
+            redemption_order: components["schemas"]["RedemptionOrder"];
         };
         /**
          * FixedIncomeMovementType
@@ -3921,6 +3925,11 @@ export interface components {
              */
             rebalanced_on: string;
         };
+        /**
+         * RedemptionOrder
+         * @enum {string}
+         */
+        RedemptionOrder: "oldest_first" | "newest_first";
         /** RefreshReportDTO */
         RefreshReportDTO: {
             /** Updated */

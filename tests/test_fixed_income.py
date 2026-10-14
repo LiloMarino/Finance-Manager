@@ -13,6 +13,7 @@ TITLE: dict[str, Any] = {
     "rate": "12",
     "maturity_date": "2030-01-02",
     "daily_liquidity": False,
+    "redemption_order": "oldest_first",
 }
 APPLICATION = {"movement_date": "2024-01-02", "amount": "1000.00"}
 

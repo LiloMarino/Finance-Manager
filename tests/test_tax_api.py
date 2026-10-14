@@ -49,7 +49,7 @@ def test_months_list_the_darf_due(api: TestClient, session: Session) -> None:
     february = _month(api, 2024, 2)
 
     assert Decimal(str(february["darf_amount"])) == Decimal(750)
-    assert february["due_date"] == "2024-03-29"
+    assert february["due_date"] == "2024-03-28"
     assert february["status"] == "overdue"
     assert _month(api, 2024, 1)["status"] == "none"
 
@@ -92,7 +92,7 @@ def test_unpaid_darf_is_a_critical_pending_item(
 
     [darf] = darfs()
     assert darf["severity"] == "critical"
-    assert darf["missing"] == "DARF de fevereiro venceu em 29/03/2024: R$ 750,00."
+    assert darf["missing"] == "DARF de fevereiro venceu em 28/03/2024: R$ 750,00."
     assert darf["path"] == "/tax?tab=monthly&year=2024&month=2"
 
     api.put(

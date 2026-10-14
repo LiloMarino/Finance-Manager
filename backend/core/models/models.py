@@ -26,6 +26,7 @@ from backend.core.enum import (
     Indexer,
     IndexSeries,
     OperationType,
+    RedemptionOrder,
     SubportfolioColor,
     SubportfolioIcon,
 )
@@ -331,6 +332,8 @@ class FixedIncomeInvestment(Base):
     - prefixed: a taxa anual (12 = 12% a.a.).
 
     A isenção de IR vem do `product_type`, e o do Tesouro fixa o indexador.
+    `redemption_order` diz de quais aplicações sai o resgate parcial, o que muda a
+    idade delas e com isso o IR.
     """
 
     __tablename__ = "fixed_income_investments"
@@ -360,6 +363,11 @@ class FixedIncomeInvestment(Base):
     # Nulo é "só na carteira geral"; apagar a subcarteira devolve o título a ela
     subportfolio_id: Mapped[int | None] = mapped_column(
         ForeignKey("subportfolios.id", ondelete="SET NULL"), index=True, default=None
+    )
+    redemption_order: Mapped[RedemptionOrder] = mapped_column(
+        _enum_column(RedemptionOrder, "redemption_order"),
+        default=RedemptionOrder.OLDEST_FIRST,
+        server_default=RedemptionOrder.OLDEST_FIRST.value,
     )
 
 
