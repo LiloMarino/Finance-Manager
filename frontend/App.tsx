@@ -62,7 +62,8 @@ export default function App() {
           </BrowserRouter>
         </PrivacyProvider>
       </PortfolioScopeProvider>
-      <ReactQueryDevtools buttonPosition="bottom-left" />
+      {/* O painel do React Query sobe só no modo do `pnpm dev:devtools` */}
+      {import.meta.env.MODE === "devtools" && <ReactQueryDevtools buttonPosition="bottom-left" />}
     </QueryClientProvider>
   );
 }

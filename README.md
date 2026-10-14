@@ -22,6 +22,7 @@ O que construir, em que ordem e por quê está em [ROADMAP.md](ROADMAP.md) e
 ```bash
 pnpm setup     # uv sync --dev + pnpm install no front
 pnpm dev       # gera os tipos e sobe backend (:8000) e frontend (:5173)
+pnpm dev:devtools  # o mesmo, com o painel do React Query na tela
 pnpm check     # codegen + ruff + pyright + pytest + oxlint + tsc
 pnpm openapi   # regenera frontend/types/openapi.generated.ts direto do backend
 pnpm format    # ruff format
