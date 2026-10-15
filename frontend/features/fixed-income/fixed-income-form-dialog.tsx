@@ -15,6 +15,7 @@ import {
 } from "@/features/fixed-income/use-fixed-income";
 import { InvestmentTermsFields } from "@/shared/components/investment-terms-fields";
 import { SubportfolioSelect } from "@/shared/components/subportfolio-select";
+import { MetricHint } from "@/shared/components/metric-hint";
 import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -26,13 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/shared/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import {
   Select,
@@ -89,6 +84,9 @@ function schemaFor(creating: boolean) {
     });
 }
 
+const redemptionOrderHint =
+  "Muda o IR estimado: cada aplicação paga a alíquota da própria idade, de 22,5% até 180 dias a 15% depois de 720. Confira no extrato do banco de quais aplicações o resgate saiu.";
+
 interface FixedIncomeFormDialogProps {
   /** Título a editar; sem ele, o formulário cria um novo. */
   investment?: FixedIncome;
@@ -101,7 +99,7 @@ export function FixedIncomeFormDialog({ investment, trigger }: FixedIncomeFormDi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {investment ? `Editar ${investment.label}` : "Novo título de renda fixa"}
@@ -151,7 +149,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
 
   return (
     <form onSubmit={(event) => void submit(event)}>
-      <FieldGroup>
+      <FieldGroup className="grid gap-x-4 sm:grid-cols-2">
         <Field data-invalid={Boolean(errors.label)}>
           <FieldLabel htmlFor="fixed-income-label">Nome</FieldLabel>
           <Input
@@ -160,6 +158,20 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
             {...form.register("label")}
           />
           <FieldError errors={[errors.label]} />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="fixed-income-subportfolio">Subcarteira</FieldLabel>
+          <Controller
+            control={form.control}
+            name="subportfolio_id"
+            render={({ field }) => (
+              <SubportfolioSelect
+                id="fixed-income-subportfolio"
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </Field>
         <Controller
           control={form.control}
@@ -170,6 +182,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
               value={field.value}
               onChange={field.onChange}
               rateError={errors.investment?.rate}
+              compact
             />
           )}
         />
@@ -177,22 +190,10 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
           <FieldLabel htmlFor="fixed-income-maturity">Vencimento (opcional)</FieldLabel>
           <Input id="fixed-income-maturity" type="date" {...form.register("maturity_date")} />
         </Field>
-        <Controller
-          control={form.control}
-          name="daily_liquidity"
-          render={({ field }) => (
-            <Field orientation="horizontal">
-              <Checkbox
-                id="fixed-income-liquidity"
-                checked={field.value}
-                onCheckedChange={(checked) => field.onChange(checked === true)}
-              />
-              <FieldLabel htmlFor="fixed-income-liquidity">Liquidez diária</FieldLabel>
-            </Field>
-          )}
-        />
         <Field>
-          <FieldLabel htmlFor="fixed-income-redemption-order">Resgate parcial sai</FieldLabel>
+          <FieldLabel htmlFor="fixed-income-redemption-order">
+            <MetricHint hint={redemptionOrderHint}>Resgate parcial sai</MetricHint>
+          </FieldLabel>
           <Controller
             control={form.control}
             name="redemption_order"
@@ -217,30 +218,25 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
               </Select>
             )}
           />
-          <FieldDescription>
-            Muda o IR estimado: cada aplicação paga a alíquota da própria idade, de 22,5% até 180
-            dias a 15% depois de 720. Confira no extrato do banco de quais aplicações o resgate
-            saiu.
-          </FieldDescription>
         </Field>
-        <Field>
-          <FieldLabel htmlFor="fixed-income-subportfolio">Subcarteira</FieldLabel>
-          <Controller
-            control={form.control}
-            name="subportfolio_id"
-            render={({ field }) => (
-              <SubportfolioSelect
-                id="fixed-income-subportfolio"
-                value={field.value}
-                onChange={field.onChange}
+        <Controller
+          control={form.control}
+          name="daily_liquidity"
+          render={({ field }) => (
+            <Field orientation="horizontal" className="sm:self-end sm:pb-2">
+              <Checkbox
+                id="fixed-income-liquidity"
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(checked === true)}
               />
-            )}
-          />
-        </Field>
+              <FieldLabel htmlFor="fixed-income-liquidity">Liquidez diária</FieldLabel>
+            </Field>
+          )}
+        />
 
         {/* Primeira aplicação */}
         {creating && (
-          <div className="grid grid-cols-2 gap-4">
+          <>
             <Field data-invalid={Boolean(errors.application_date)}>
               <FieldLabel htmlFor="fixed-income-application-date">Data da aplicação</FieldLabel>
               <Input
@@ -258,7 +254,7 @@ function FixedIncomeForm({ investment, onSaved }: FixedIncomeFormProps) {
               />
               <FieldError errors={[errors.application_amount]} />
             </Field>
-          </div>
+          </>
         )}
       </FieldGroup>
       <DialogFooter className="mt-6">
