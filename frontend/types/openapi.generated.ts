@@ -3235,7 +3235,8 @@ export interface components {
         };
         /**
          * MovementInDTO
-         * @description Aplicação ou resgate, pelo valor bruto.
+         * @description Aplicação ou resgate. O resgate vem pelo bruto ou, com `net`, pelo líquido que
+         *     caiu na conta; a aplicação não retém nada, e o valor dela é um só.
          */
         MovementInDTO: {
             /**
@@ -3249,6 +3250,11 @@ export interface components {
              */
             amount: DecimalString;
             movement_type: components["schemas"]["FixedIncomeMovementType"];
+            /**
+             * Net
+             * @default false
+             */
+            net: boolean;
         };
         /**
          * NameInDTO

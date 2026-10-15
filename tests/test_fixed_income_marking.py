@@ -11,7 +11,13 @@ from backend.core.enum import (
     IndexSeries,
     RedemptionOrder,
 )
-from backend.domain.fixed_income import FixedIncomeTerms, Movement, mark
+from backend.domain.fixed_income import (
+    FixedIncomeTerms,
+    Movement,
+    mark,
+    payouts,
+    redemption_gross,
+)
 from backend.domain.index_series import DailyRate
 
 APPLICATION = FixedIncomeMovementType.APPLICATION
@@ -231,6 +237,47 @@ def test_newest_first_redemption_consumes_latest_application() -> None:
     assert _round(marking.estimated_tax) == _round(
         (alone_old.gross_value - Decimal(1000)) * Decimal("0.175")
     )
+
+
+def test_net_redemption_leaves_the_net_in_the_account() -> None:
+    """O bruto achado para um líquido, resgatado no dia, deixa exatamente esse
+    líquido depois do IOF e do IR."""
+    start, day = date(2024, 1, 2), date(2024, 1, 12)
+    movements = [_movement(start, "1000")]
+
+    gross = redemption_gross(_terms(), movements, {}, day, Decimal(500))
+
+    [payout] = payouts(
+        _terms(), [*movements, _movement(day, str(gross), REDEMPTION)], {}, day
+    )
+    assert gross > Decimal(500)
+    assert _round(payout.net) == Decimal(500)
+
+
+def test_net_redemption_crosses_applications_in_title_order() -> None:
+    """O líquido que passa da aplicação mais nova entra na antiga, cada uma com a
+    retenção da própria idade."""
+    old, recent, day = date(2024, 1, 2), date(2024, 6, 3), date(2024, 8, 1)
+    terms = _terms(redemption_order=RedemptionOrder.NEWEST_FIRST)
+    movements = [_movement(old, "1000"), _movement(recent, "1000")]
+
+    gross = redemption_gross(terms, movements, {}, day, Decimal(1500))
+
+    [payout] = payouts(
+        terms, [*movements, _movement(day, str(gross), REDEMPTION)], {}, day
+    )
+    assert _round(payout.net) == Decimal(1500)
+
+
+def test_net_redemption_of_the_whole_net_closes_investment() -> None:
+    """Resgatar pelo líquido o saldo líquido inteiro dá o saldo bruto inteiro."""
+    start, day = date(2024, 1, 2), date(2024, 6, 3)
+    movements = [_movement(start, "1000")]
+    marking = mark(_terms(), movements, {}, day)
+
+    gross = redemption_gross(_terms(), movements, {}, day, marking.net_value)
+
+    assert _round(gross) == _round(marking.gross_value)
 
 
 def test_redemption_above_balance_closes_investment() -> None:

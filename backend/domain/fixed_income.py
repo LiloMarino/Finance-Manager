@@ -11,7 +11,7 @@ bruto do vencimento vai para o saldo de investimento.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
@@ -252,20 +252,87 @@ def _redeem(lots: list[_Lot], units: Decimal, order: RedemptionOrder) -> list[_L
     return _take(lots, units, order)[0]
 
 
+def _lot_withheld(lot: _Lot, factor: Decimal, day: date, exempt: bool) -> Decimal:
+    """O IOF e o IR retidos no resgate do lote inteiro no dia, pela idade da
+    aplicação dele, como em `Application.redeem`. Resgatar uma fração do lote retém
+    a mesma fração."""
+    gain = lot.units * factor - lot.principal
+    if gain <= ZERO:
+        return ZERO
+    days = (day - lot.opened).days
+    iof = gain * iof_rate(days)
+    return iof + (ZERO if exempt else (gain - iof) * tax_rate(days))
+
+
 def _withheld(
     lots: Sequence[_Lot], factor: Decimal, day: date, exempt: bool
 ) -> Decimal:
-    """O IOF e o IR retidos no resgate dos `lots` no dia, cada um pela idade da
-    aplicação dele, como em `Application.redeem`."""
-    total = ZERO
+    return sum((_lot_withheld(lot, factor, day, exempt) for lot in lots), ZERO)
+
+
+def _open_lots(
+    ordered: Sequence[Movement],
+    factor: Callable[[date], Decimal],
+    order: RedemptionOrder,
+    until: date,
+) -> list[_Lot]:
+    """As aplicações que seguem abertas depois das movimentações até `until`,
+    inclusive, já descontados os resgates."""
+    lots: list[_Lot] = []
+    for movement in ordered:
+        if movement.movement_date > until:
+            break
+        units = movement.amount / factor(movement.movement_date)
+        if movement.movement_type is FixedIncomeMovementType.APPLICATION:
+            lots.append(
+                _Lot(
+                    opened=movement.movement_date,
+                    units=units,
+                    principal=movement.amount,
+                )
+            )
+        else:
+            lots = _redeem(lots, units, order)
+    return lots
+
+
+def redemption_gross(
+    terms: FixedIncomeTerms,
+    movements: Sequence[Movement],
+    rates: Mapping[IndexSeries, Sequence[DailyRate]],
+    day: date,
+    net: Decimal,
+) -> Decimal:
+    """O bruto do resgate que, no dia, deixa `net` na conta depois do IOF e do IR.
+    O resgate entra depois das movimentações do mesmo dia e consome as aplicações na
+    ordem do título; o líquido além do saldo passa como bruto, e o resgate zera o
+    título."""
+    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    if not ordered:
+        return net
+    end = min(day, terms.maturity_date) if terms.maturity_date else day
+    business = BusinessCalendar(rates.get(IndexSeries.CDI, ()))
+    factor = accumulation(
+        daily_factor(terms.indexer, terms.rate, rates, business),
+        ordered[0].movement_date,
+        end,
+    )
+    lots = _open_lots(ordered, factor, terms.redemption_order, day)
+    if terms.redemption_order is RedemptionOrder.NEWEST_FIRST:
+        lots.reverse()
+
+    # Cada lote rende o líquido dele por inteiro, até o que falta caber numa fração
+    now = factor(day)
+    gross = ZERO
+    remaining = net
     for lot in lots:
-        gain = lot.units * factor - lot.principal
-        if gain <= ZERO:
-            continue
-        days = (day - lot.opened).days
-        iof = gain * iof_rate(days)
-        total += iof + (ZERO if exempt else (gain - iof) * tax_rate(days))
-    return total
+        lot_gross = lot.units * now
+        lot_net = lot_gross - _lot_withheld(lot, now, day, terms.tax_exempt)
+        if lot_net >= remaining:
+            return gross + remaining * lot_gross / lot_net
+        gross += lot_gross
+        remaining -= lot_net
+    return gross + remaining
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -403,19 +470,9 @@ def mark(
         ordered[0].movement_date,
         as_of,
     )
-    lots: list[_Lot] = []
-    for movement in ordered:
-        units = movement.amount / factor(movement.movement_date)
-        if movement.movement_type is FixedIncomeMovementType.APPLICATION:
-            lots.append(
-                _Lot(
-                    opened=movement.movement_date,
-                    units=units,
-                    principal=movement.amount,
-                )
-            )
-        else:
-            lots = _redeem(lots, units, terms.redemption_order)
+    lots = _open_lots(
+        ordered, factor, terms.redemption_order, ordered[-1].movement_date
+    )
 
     now = factor(as_of)
     gains = [(lot, lot.units * now - lot.principal) for lot in lots]

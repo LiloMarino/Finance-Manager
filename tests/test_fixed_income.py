@@ -36,6 +36,8 @@ def _move(
     movement_type: str,
     movement_date: str,
     amount: str,
+    *,
+    net: bool = False,
 ) -> Response:
     return api.post(
         f"/api/fixed-income/{investment_id}/movements",
@@ -43,6 +45,7 @@ def _move(
             "movement_type": movement_type,
             "movement_date": movement_date,
             "amount": amount,
+            "net": net,
         },
     )
 
@@ -205,3 +208,20 @@ def test_summary_adds_titles_by_type(api: TestClient) -> None:
     assert Decimal(body["daily_share"]) == Decimal(
         body["daily_liquidity"]["gross_value"]
     ) / Decimal(body["total"]["gross_value"])
+
+
+def test_net_redemption_is_stored_by_its_gross(api: TestClient) -> None:
+    """O resgate pelo líquido é gravado pelo bruto, que passa do líquido pelo IR
+    retido; a aplicação pelo líquido é gravada como veio."""
+    investment = _create(api)
+
+    redemption = _move(
+        api, investment["id"], "redemption", "2024-07-01", "500.00", net=True
+    )
+    application = _move(
+        api, investment["id"], "application", "2024-07-01", "300.00", net=True
+    )
+
+    assert redemption.status_code == 201, redemption.text
+    assert Decimal(redemption.json()["amount"]) > Decimal(500)
+    assert Decimal(application.json()["amount"]) == Decimal(300)

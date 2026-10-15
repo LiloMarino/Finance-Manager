@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from backend.core.enum import FixedIncomeMovementType, FixedIncomeType
 from backend.core.errors import FinanceError
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
+from backend.domain.fixed_income import redemption_gross
 from backend.features.fixed_income.dto import (
     FixedIncomeCreateDTO,
     FixedIncomeDetailDTO,
@@ -21,7 +22,13 @@ from backend.features.fixed_income.dto import (
     MovementDTO,
     MovementInDTO,
 )
-from backend.repository.fixed_income import MarkedInvestment, marked_investments
+from backend.repository.fixed_income import (
+    MarkedInvestment,
+    investment_terms,
+    marked_investments,
+    movements_by_investment,
+)
+from backend.repository.market import index_rates
 from backend.repository.subportfolios import check_subportfolio
 
 ZERO = Decimal(0)
@@ -238,12 +245,23 @@ def delete_investment(session: Session, investment_id: int) -> None:
 def add_movement(
     session: Session, investment_id: int, payload: MovementInDTO
 ) -> MovementDTO:
-    _investment(session, investment_id)
+    """O resgate pelo líquido é gravado pelo bruto que deixa esse líquido na conta,
+    na marcação do dia."""
+    investment = _investment(session, investment_id)
+    amount = payload.amount
+    if payload.movement_type is FixedIncomeMovementType.REDEMPTION and payload.net:
+        amount = redemption_gross(
+            investment_terms(investment),
+            movements_by_investment(session, investment_id)[investment_id],
+            index_rates(session),
+            payload.movement_date,
+            payload.amount,
+        )
     movement = FixedIncomeMovement(
         investment_id=investment_id,
         movement_date=payload.movement_date,
         movement_type=payload.movement_type,
-        amount=payload.amount,
+        amount=amount,
     )
     session.add(movement)
     _check_starts_with_application(session, investment_id)

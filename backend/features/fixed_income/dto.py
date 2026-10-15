@@ -122,9 +122,11 @@ class FixedIncomeCreateDTO(FixedIncomeInDTO):
 
 
 class MovementInDTO(ApplicationInDTO):
-    """Aplicação ou resgate, pelo valor bruto."""
+    """Aplicação ou resgate. O resgate vem pelo bruto ou, com `net`, pelo líquido que
+    caiu na conta; a aplicação não retém nada, e o valor dela é um só."""
 
     movement_type: FixedIncomeMovementType
+    net: bool = False
 
 
 class MovementDTO(BaseDTO):

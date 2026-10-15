@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CornerDownLeft, Plus } from "lucide-react";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import {
@@ -11,6 +11,7 @@ import {
   movementTypes,
 } from "@/features/fixed-income/labels";
 import { useAddMovement } from "@/features/fixed-income/use-fixed-income";
+import { MetricHint } from "@/shared/components/metric-hint";
 import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -42,6 +43,7 @@ const schema = z
     ),
     movement_date: z.string().min(1, "Informe a data."),
     amount: z.string(),
+    net: z.boolean(),
   })
   .transform((values, context) => {
     const amount = parseDecimalInput(values.amount);
@@ -51,6 +53,9 @@ const schema = z
     }
     return { ...values, amount };
   });
+
+const netHint =
+  "O banco retém o IOF e o IR no resgate: cai na conta o líquido. Marcado, o app acha o bruto que deixa esse líquido e grava o bruto.";
 
 export function MovementFormDialog({ investmentId }: { investmentId: number }) {
   const [open, setOpen] = useState(false);
@@ -97,9 +102,12 @@ function MovementForm({
     movement_type: "application",
     movement_date: "",
     amount: "",
+    net: true,
   };
   const form = useForm({ resolver: zodResolver(schema), defaultValues });
   const { errors } = form.formState;
+  const [movementType, net] = useWatch({ control: form.control, name: ["movement_type", "net"] });
+  const redemption = movementType === "redemption";
 
   const submit = form.handleSubmit((body) =>
     add.mutate(body, {
@@ -159,10 +167,30 @@ function MovementForm({
           <FieldError errors={[errors.movement_date]} />
         </Field>
         <Field data-invalid={Boolean(errors.amount)}>
-          <FieldLabel htmlFor="movement-amount">Valor bruto</FieldLabel>
+          <FieldLabel htmlFor="movement-amount">
+            {redemption && net ? "Valor líquido" : "Valor bruto"}
+          </FieldLabel>
           <MoneyInput id="movement-amount" {...withMask(form.register("amount"), maskMoney)} />
           <FieldError errors={[errors.amount]} />
         </Field>
+        {redemption && (
+          <Controller
+            control={form.control}
+            name="net"
+            render={({ field }) => (
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="movement-net"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                />
+                <FieldLabel htmlFor="movement-net">
+                  <MetricHint hint={netHint}>É o valor que caiu na conta</MetricHint>
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        )}
       </FieldGroup>
       <DialogFooter className="mt-6">
         <Field orientation="horizontal" className="sm:mr-auto sm:w-auto">
