@@ -47,7 +47,12 @@ export function MovementsTable({ movements }: { movements: Movement[] }) {
             <TableCell className="tabular-nums">{formatDate(movement.movement_date)}</TableCell>
             <TableCell>{movementTypeLabels[movement.movement_type]}</TableCell>
             <TableCell className="text-right tabular-nums">
-              <Money value={movement.amount} />
+              <Money value={movement.gross} />
+              {movement.net && (
+                <div className="text-muted-foreground text-xs">
+                  líquido <Money value={movement.amount} />
+                </div>
+              )}
             </TableCell>
             <TableCell className="text-right">
               <MovementFormDialog

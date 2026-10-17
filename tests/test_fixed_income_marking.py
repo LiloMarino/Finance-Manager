@@ -14,6 +14,7 @@ from backend.core.enum import (
 from backend.domain.fixed_income import (
     FixedIncomeTerms,
     Movement,
+    gross_movements,
     mark,
     payouts,
     redemption_gross,
@@ -267,6 +268,67 @@ def test_net_redemption_crosses_applications_in_title_order() -> None:
         terms, [*movements, _movement(day, str(gross), REDEMPTION)], {}, day
     )
     assert _round(payout.net) == Decimal(1500)
+
+
+def _net_redemption(day: date, net: str) -> Movement:
+    return Movement(
+        movement_date=day, movement_type=REDEMPTION, amount=Decimal(net), net=True
+    )
+
+
+def test_net_redemption_gross_follows_the_redemption_order() -> None:
+    """O resgate gravado pelo líquido tem o bruto achado na ordem atual do título:
+    trocar a ordem muda o bruto, e o líquido que chega ao saldo segue o digitado."""
+    old, recent, day = date(2024, 1, 2), date(2024, 6, 3), date(2024, 8, 1)
+    movements = [
+        _movement(old, "1000"),
+        _movement(recent, "1000"),
+        _net_redemption(day, "500"),
+    ]
+
+    found: list[tuple[Decimal, Decimal]] = []
+    for order in RedemptionOrder:
+        terms = _terms(redemption_order=order)
+        [*_, resolved] = gross_movements(terms, movements, {})
+        [payout] = payouts(terms, movements, {}, day)
+        assert resolved.amount == redemption_gross(
+            terms, movements[:2], {}, day, Decimal(500)
+        )
+        found.append((resolved.amount, _round(payout.net)))
+
+    [(oldest_gross, oldest_net), (newest_gross, newest_net)] = found
+    assert oldest_gross != newest_gross
+    assert oldest_net == newest_net == Decimal(500)
+
+
+def test_net_redemption_gross_sees_only_what_came_before() -> None:
+    """Cada resgate pelo líquido é achado sobre o histórico anterior já resolvido: o
+    líquido de um resgate não muda quando o anterior muda, e a aplicação gravada
+    depois dele no mesmo dia não entra na conta."""
+    start, first_day, day = date(2024, 1, 2), date(2024, 7, 1), date(2024, 8, 1)
+
+    def nets(first_net: str) -> list[Decimal]:
+        movements = [
+            _movement(start, "1000"),
+            _net_redemption(first_day, first_net),
+            _net_redemption(day, "400"),
+            _movement(day, "1000"),
+        ]
+        return [_round(payout.net) for payout in payouts(_terms(), movements, {}, day)]
+
+    [_, alone] = gross_movements(
+        _terms(), [_movement(start, "1000"), _net_redemption(day, "400")], {}
+    )
+    [_, with_application, _] = gross_movements(
+        _terms(),
+        [_movement(start, "1000"), _net_redemption(day, "400"), _movement(day, "1000")],
+        {},
+    )
+
+    assert nets("300") == [Decimal(300), Decimal(400)]
+    assert nets("800") == [Decimal(800), Decimal(400)]
+    assert alone.amount > Decimal(400)
+    assert with_application.amount == alone.amount
 
 
 def test_net_redemption_of_the_whole_net_closes_investment() -> None:

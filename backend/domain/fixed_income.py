@@ -113,9 +113,13 @@ def terms_problem(
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Movement:
+    """`net` só vale no resgate: `amount` é o líquido que caiu na conta, e o bruto
+    sai de `gross_movements`."""
+
     movement_date: date
     movement_type: FixedIncomeMovementType
     amount: Decimal
+    net: bool = False
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -335,10 +339,36 @@ def redemption_gross(
     return gross + remaining
 
 
+def gross_movements(
+    terms: FixedIncomeTerms,
+    movements: Sequence[Movement],
+    rates: Mapping[IndexSeries, Sequence[DailyRate]],
+) -> list[Movement]:
+    """As movimentações em ordem de data, com cada resgate pelo líquido trocado pelo
+    bruto de `redemption_gross`. O bruto é achado sobre as movimentações anteriores,
+    já resolvidas, então a ordem do resgate, uma aplicação anterior ou a série do
+    indexador mudam o bruto e mantêm o líquido."""
+    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    resolved: list[Movement] = []
+    for movement in ordered:
+        resolved.append(
+            replace(
+                movement,
+                amount=redemption_gross(
+                    terms, resolved, rates, movement.movement_date, movement.amount
+                ),
+                net=False,
+            )
+            if movement.net
+            else movement
+        )
+    return resolved
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Payout:
-    """Um resgate: o registrado, pelo bruto do extrato, ou o do vencimento, pelo
-    bruto marcado. `net` é o que chega ao saldo, sem o IOF e o IR."""
+    """Um resgate: o registrado, pelo bruto do extrato ou pelo achado para o líquido,
+    ou o do vencimento, pelo bruto marcado. `net` é o que chega ao saldo, sem o IOF e o IR."""
 
     payout_date: date
     gross: Decimal
@@ -354,7 +384,7 @@ def payouts(
 ) -> list[Payout]:
     """Os resgates do título até `until`, inclusive, em ordem: os registrados e, se o
     vencimento já chegou, o automático dele, com o que sobrou."""
-    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    ordered = gross_movements(terms, movements, rates)
     maturity = terms.maturity_date
     end = min(until, maturity) if maturity else until
     if not ordered or end < ordered[0].movement_date:
@@ -411,7 +441,7 @@ def daily_gross(
     """O saldo bruto no fim de cada um dos `days`, em ordem: o de `mark` com as
     movimentações até o dia, e zero do vencimento em diante. Uma acumulação só serve
     a série toda, porque `F(d)` só depende dos dias até `d`."""
-    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    ordered = gross_movements(terms, movements, rates)
     if not ordered or not days:
         return [ZERO] * len(days)
 
@@ -453,7 +483,7 @@ def mark(
     series = INDEX_SERIES.get(terms.indexer)
     series_date = PublishedSeries(rates.get(series, ())).last_date if series else None
 
-    ordered = sorted(movements, key=lambda movement: movement.movement_date)
+    ordered = gross_movements(terms, movements, rates)
     if not ordered or terms.matured(today):
         return Marking(
             invested=ZERO,

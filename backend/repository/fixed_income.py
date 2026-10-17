@@ -57,6 +57,7 @@ def movements_by_investment(
                 movement_date=movement.movement_date,
                 movement_type=movement.movement_type,
                 amount=movement.amount,
+                net=movement.net,
             )
         )
     return by_investment

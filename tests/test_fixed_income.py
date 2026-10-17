@@ -144,19 +144,35 @@ def test_movement_edit_checks_missing_invalid_and_ordering(api: TestClient) -> N
 
     missing = api.put(
         "/api/fixed-income/movements/999999",
-        json={"movement_type": "application", "movement_date": "2024-01-01", "amount": "1"},
+        json={
+            "movement_type": "application",
+            "movement_date": "2024-01-01",
+            "amount": "1",
+        },
     )
     invalid = api.put(
         f"/api/fixed-income/movements/{application['id']}",
-        json={"movement_type": "application", "movement_date": "2024-01-02", "amount": "0"},
+        json={
+            "movement_type": "application",
+            "movement_date": "2024-01-02",
+            "amount": "0",
+        },
     )
     first_redemption = api.put(
         f"/api/fixed-income/movements/{application['id']}",
-        json={"movement_type": "redemption", "movement_date": "2024-01-02", "amount": "100"},
+        json={
+            "movement_type": "redemption",
+            "movement_date": "2024-01-02",
+            "amount": "100",
+        },
     )
     after_maturity = api.put(
         f"/api/fixed-income/movements/{redemption_id}",
-        json={"movement_type": "redemption", "movement_date": "2030-01-03", "amount": "100"},
+        json={
+            "movement_type": "redemption",
+            "movement_date": "2030-01-03",
+            "amount": "100",
+        },
     )
 
     assert missing.status_code == 404
@@ -165,7 +181,9 @@ def test_movement_edit_checks_missing_invalid_and_ordering(api: TestClient) -> N
     assert after_maturity.status_code == 422
 
 
-def test_net_redemption_edit_excludes_the_previous_movement(api: TestClient) -> None:
+def test_net_redemption_edit_matches_a_fresh_net_redemption(api: TestClient) -> None:
+    """Trocar um resgate pelo bruto por um pelo líquido dá o mesmo bruto de um resgate
+    novo pelo mesmo líquido: o valor antigo não entra na conta."""
     investment = _create(api)
     existing = _move(api, investment["id"], "redemption", "2024-07-01", "100")
 
@@ -190,7 +208,31 @@ def test_net_redemption_edit_excludes_the_previous_movement(api: TestClient) -> 
 
     assert edited.status_code == 200, edited.text
     assert comparison.status_code == 201, comparison.text
-    assert edited.json()["amount"] == comparison.json()["amount"]
+    assert edited.json()["gross"] == comparison.json()["gross"]
+
+
+def test_net_redemption_edit_with_the_same_net_keeps_the_gross(
+    api: TestClient,
+) -> None:
+    """Reenviar o mesmo líquido na edição devolve o mesmo bruto, e a edição abre com
+    o líquido que foi digitado."""
+    investment = _create(api)
+    created = _move(
+        api, investment["id"], "redemption", "2024-07-01", "500.00", net=True
+    ).json()
+
+    edited = api.put(
+        f"/api/fixed-income/movements/{created['id']}",
+        json={
+            "movement_type": "redemption",
+            "movement_date": "2024-07-01",
+            "amount": created["amount"],
+            "net": created["net"],
+        },
+    ).json()
+
+    assert (created["amount"], created["net"]) == ("500.00", True)
+    assert edited["gross"] == created["gross"]
 
 
 def test_update_changes_terms(api: TestClient) -> None:
@@ -288,9 +330,9 @@ def test_summary_adds_titles_by_type(api: TestClient) -> None:
     ) / Decimal(body["total"]["gross_value"])
 
 
-def test_net_redemption_is_stored_by_its_gross(api: TestClient) -> None:
-    """O resgate pelo líquido é gravado pelo bruto, que passa do líquido pelo IR
-    retido; a aplicação pelo líquido é gravada como veio."""
+def test_net_redemption_is_stored_by_the_typed_net(api: TestClient) -> None:
+    """O resgate pelo líquido guarda o líquido digitado, e o bruto dele passa do
+    líquido pelo IR retido; a aplicação pelo líquido é gravada como veio."""
     investment = _create(api)
 
     redemption = _move(
@@ -301,5 +343,71 @@ def test_net_redemption_is_stored_by_its_gross(api: TestClient) -> None:
     )
 
     assert redemption.status_code == 201, redemption.text
-    assert Decimal(redemption.json()["amount"]) > Decimal(500)
-    assert Decimal(application.json()["amount"]) == Decimal(300)
+    assert (redemption.json()["amount"], redemption.json()["net"]) == ("500.00", True)
+    assert Decimal(redemption.json()["gross"]) > Decimal(500)
+    assert application.json()["net"] is False
+    assert Decimal(application.json()["gross"]) == Decimal(300)
+
+
+def _open_cash(api: TestClient) -> None:
+    response = api.post(
+        "/api/cash/checks", json={"check_date": "2024-01-01", "balance": "0.00"}
+    )
+    assert response.status_code == 204, response.text
+
+
+def _redemptions_in_cash(api: TestClient) -> list[Decimal]:
+    return [
+        Decimal(entry["amount"]).quantize(Decimal("0.01"))
+        for entry in api.get("/api/cash").json()["entries"]
+        if entry["kind"] == "redemption"
+    ]
+
+
+def test_redemption_order_change_keeps_the_net_in_cash(api: TestClient) -> None:
+    """Trocar a ordem do resgate parcial recalcula o bruto do resgate pelo líquido, e
+    o saldo segue recebendo o líquido digitado."""
+    investment = _create(api)
+    _move(api, investment["id"], "application", "2024-06-03", "1000.00")
+    redemption = _move(
+        api, investment["id"], "redemption", "2024-08-01", "500.00", net=True
+    ).json()
+    _open_cash(api)
+
+    reordered = api.put(
+        f"/api/fixed-income/{investment['id']}",
+        json={**TITLE, "redemption_order": "newest_first"},
+    )
+    [after] = [
+        movement
+        for movement in reordered.json()["movements"]
+        if movement["id"] == redemption["id"]
+    ]
+
+    assert reordered.status_code == 200, reordered.text
+    assert after["gross"] != redemption["gross"]
+    assert _redemptions_in_cash(api) == [Decimal("500.00")]
+
+
+def test_editing_an_earlier_redemption_keeps_later_nets(api: TestClient) -> None:
+    """Editar um resgate pelo líquido não muda o líquido dos resgates depois dele."""
+    investment = _create(api)
+    _move(api, investment["id"], "application", "2024-06-03", "1000.00")
+    first = _move(
+        api, investment["id"], "redemption", "2024-07-01", "300.00", net=True
+    ).json()
+    _move(api, investment["id"], "redemption", "2024-08-01", "400.00", net=True)
+    _open_cash(api)
+
+    edited = api.put(
+        f"/api/fixed-income/movements/{first['id']}",
+        json={
+            "movement_type": "redemption",
+            "movement_date": "2024-07-01",
+            "amount": "800.00",
+            "net": True,
+        },
+    )
+
+    assert edited.status_code == 200, edited.text
+    assert sorted(_redemptions_in_cash(api)) == [Decimal("400.00"), Decimal("800.00")]

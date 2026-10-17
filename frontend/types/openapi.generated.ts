@@ -3216,7 +3216,12 @@ export interface components {
             payment: components["schemas"]["DarfPaymentDTO"] | null;
             status: components["schemas"]["DarfStatus"];
         };
-        /** MovementDTO */
+        /**
+         * MovementDTO
+         * @description `amount` é o valor como foi digitado: o líquido, no resgate com `net`, ou o
+         *     bruto. `gross` é o bruto, recalculado na marcação de hoje para o resgate pelo
+         *     líquido.
+         */
         MovementDTO: {
             /** Id */
             id: number;
@@ -3233,6 +3238,13 @@ export interface components {
              * Format: decimal
              */
             amount: DecimalString;
+            /** Net */
+            net: boolean;
+            /**
+             * Gross
+             * Format: decimal
+             */
+            gross: DecimalString;
         };
         /**
          * MovementInDTO

@@ -11,7 +11,7 @@ from backend.core.enum import FixedIncomeMovementType, FixedIncomeType
 from backend.core.errors import FinanceError
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
 from backend.domain.fixed_income import Movement as DomainMovement
-from backend.domain.fixed_income import redemption_gross
+from backend.domain.fixed_income import gross_movements
 from backend.features.fixed_income.dto import (
     FixedIncomeCreateDTO,
     FixedIncomeDetailDTO,
@@ -27,7 +27,6 @@ from backend.repository.fixed_income import (
     MarkedInvestment,
     investment_terms,
     marked_investments,
-    movements_by_investment,
 )
 from backend.repository.market import index_rates
 from backend.repository.subportfolios import check_subportfolio
@@ -104,6 +103,53 @@ def _check_before_maturity(session: Session, investment_id: int) -> None:
         )
 
 
+def _movements(session: Session, investment_id: int) -> list[MovementDTO]:
+    """As movimentações do título por data, e no mesmo dia pela gravação, cada uma com
+    o bruto: o do resgate pelo líquido sai da marcação de hoje."""
+    investment = _investment(session, investment_id)
+    rows = list(
+        session.scalars(
+            select(FixedIncomeMovement)
+            .where(FixedIncomeMovement.investment_id == investment_id)
+            .order_by(FixedIncomeMovement.movement_date, FixedIncomeMovement.id)
+        )
+    )
+    # `gross_movements` ordena por data de forma estável: a ordem das linhas fica
+    resolved = gross_movements(
+        investment_terms(investment),
+        [
+            DomainMovement(
+                movement_date=row.movement_date,
+                movement_type=row.movement_type,
+                amount=row.amount,
+                net=row.net,
+            )
+            for row in rows
+        ],
+        index_rates(session),
+    )
+    return [
+        MovementDTO(
+            id=row.id,
+            investment_id=row.investment_id,
+            movement_date=row.movement_date,
+            movement_type=row.movement_type,
+            amount=row.amount,
+            net=row.net,
+            gross=movement.amount,
+        )
+        for row, movement in zip(rows, resolved, strict=True)
+    ]
+
+
+def _movement(session: Session, movement: FixedIncomeMovement) -> MovementDTO:
+    return next(
+        found
+        for found in _movements(session, movement.investment_id)
+        if found.id == movement.id
+    )
+
+
 def list_investments(session: Session, today: date) -> list[FixedIncomeDTO]:
     return [
         FixedIncomeDTO.model_validate(investment)
@@ -167,16 +213,9 @@ def get_investment(
     """O título marcado, com as movimentações das mais recentes para as antigas."""
     _investment(session, investment_id)
     [marked] = marked_investments(session, today, investment_id)
-    movements = session.scalars(
-        select(FixedIncomeMovement)
-        .where(FixedIncomeMovement.investment_id == investment_id)
-        .order_by(
-            FixedIncomeMovement.movement_date.desc(), FixedIncomeMovement.id.desc()
-        )
-    )
     return FixedIncomeDetailDTO(
         **FixedIncomeDTO.model_validate(marked).model_dump(),
-        movements=[MovementDTO.model_validate(movement) for movement in movements],
+        movements=_movements(session, investment_id)[::-1],
     )
 
 
@@ -243,32 +282,30 @@ def delete_investment(session: Session, investment_id: int) -> None:
     session.commit()
 
 
+def _net(payload: MovementInDTO) -> bool:
+    """Só o resgate retém imposto: a aplicação é gravada pelo valor, com ou sem
+    `net`."""
+    return payload.movement_type is FixedIncomeMovementType.REDEMPTION and payload.net
+
+
 def add_movement(
     session: Session, investment_id: int, payload: MovementInDTO
 ) -> MovementDTO:
-    """O resgate pelo líquido é gravado pelo bruto que deixa esse líquido na conta,
-    na marcação do dia."""
-    investment = _investment(session, investment_id)
-    amount = payload.amount
-    if payload.movement_type is FixedIncomeMovementType.REDEMPTION and payload.net:
-        amount = redemption_gross(
-            investment_terms(investment),
-            movements_by_investment(session, investment_id)[investment_id],
-            index_rates(session),
-            payload.movement_date,
-            payload.amount,
-        )
+    """O resgate pelo líquido é gravado pelo líquido, e o bruto dele é recalculado a
+    cada marcação."""
+    _investment(session, investment_id)
     movement = FixedIncomeMovement(
         investment_id=investment_id,
         movement_date=payload.movement_date,
         movement_type=payload.movement_type,
-        amount=amount,
+        amount=payload.amount,
+        net=_net(payload),
     )
     session.add(movement)
     _check_starts_with_application(session, investment_id)
     _check_before_maturity(session, investment_id)
     session.commit()
-    return MovementDTO.model_validate(movement)
+    return _movement(session, movement)
 
 
 def delete_movement(session: Session, movement_id: int) -> None:
@@ -287,36 +324,11 @@ def update_movement(
     movement = session.get(FixedIncomeMovement, movement_id)
     if movement is None:
         raise InvestmentNotFoundError("Movimentação não encontrada.")
-
-    amount = payload.amount
-    if payload.movement_type is FixedIncomeMovementType.REDEMPTION and payload.net:
-        investment = _investment(session, movement.investment_id)
-        others = session.scalars(
-            select(FixedIncomeMovement).where(
-                FixedIncomeMovement.investment_id == movement.investment_id,
-                FixedIncomeMovement.id != movement_id,
-            )
-        )
-        previous_movements = [
-            DomainMovement(
-                movement_date=other.movement_date,
-                movement_type=other.movement_type,
-                amount=other.amount,
-            )
-            for other in others
-        ]
-        amount = redemption_gross(
-            investment_terms(investment),
-            previous_movements,
-            index_rates(session),
-            payload.movement_date,
-            payload.amount,
-        )
-
     movement.movement_date = payload.movement_date
     movement.movement_type = payload.movement_type
-    movement.amount = amount
+    movement.amount = payload.amount
+    movement.net = _net(payload)
     _check_starts_with_application(session, movement.investment_id)
     _check_before_maturity(session, movement.investment_id)
     session.commit()
-    return MovementDTO.model_validate(movement)
+    return _movement(session, movement)
