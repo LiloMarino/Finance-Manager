@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from backend.core.enum import FixedIncomeMovementType, FixedIncomeType
 from backend.core.errors import FinanceError
 from backend.core.models.models import FixedIncomeInvestment, FixedIncomeMovement
+from backend.domain.fixed_income import Movement as DomainMovement
 from backend.domain.fixed_income import redemption_gross
 from backend.features.fixed_income.dto import (
     FixedIncomeCreateDTO,
@@ -277,3 +278,45 @@ def delete_movement(session: Session, movement_id: int) -> None:
     session.delete(movement)
     _check_starts_with_application(session, movement.investment_id)
     session.commit()
+
+
+def update_movement(
+    session: Session, movement_id: int, payload: MovementInDTO
+) -> MovementDTO:
+    """Edita a movimentação e mantém as validações cronológicas do título."""
+    movement = session.get(FixedIncomeMovement, movement_id)
+    if movement is None:
+        raise InvestmentNotFoundError("Movimentação não encontrada.")
+
+    amount = payload.amount
+    if payload.movement_type is FixedIncomeMovementType.REDEMPTION and payload.net:
+        investment = _investment(session, movement.investment_id)
+        others = session.scalars(
+            select(FixedIncomeMovement).where(
+                FixedIncomeMovement.investment_id == movement.investment_id,
+                FixedIncomeMovement.id != movement_id,
+            )
+        )
+        previous_movements = [
+            DomainMovement(
+                movement_date=other.movement_date,
+                movement_type=other.movement_type,
+                amount=other.amount,
+            )
+            for other in others
+        ]
+        amount = redemption_gross(
+            investment_terms(investment),
+            previous_movements,
+            index_rates(session),
+            payload.movement_date,
+            payload.amount,
+        )
+
+    movement.movement_date = payload.movement_date
+    movement.movement_type = payload.movement_type
+    movement.amount = amount
+    _check_starts_with_application(session, movement.investment_id)
+    _check_before_maturity(session, movement.investment_id)
+    session.commit()
+    return MovementDTO.model_validate(movement)

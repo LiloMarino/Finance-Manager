@@ -1,6 +1,7 @@
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { movementTypeLabels } from "@/features/fixed-income/labels";
+import { MovementFormDialog } from "@/features/fixed-income/movement-form-dialog";
 import { type Movement, useDeleteMovement } from "@/features/fixed-income/use-fixed-income";
 import {
   AlertDialog,
@@ -49,6 +50,15 @@ export function MovementsTable({ movements }: { movements: Movement[] }) {
               <Money value={movement.amount} />
             </TableCell>
             <TableCell className="text-right">
+              <MovementFormDialog
+                investmentId={movement.investment_id}
+                movement={movement}
+                trigger={
+                  <Button variant="ghost" size="icon-sm" aria-label="Editar movimentação">
+                    <Pencil />
+                  </Button>
+                }
+              />
               <DeleteMovementDialog movement={movement} />
             </TableCell>
           </TableRow>

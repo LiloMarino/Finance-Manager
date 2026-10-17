@@ -23,6 +23,7 @@ from backend.features.fixed_income.service import (
     list_investments,
     summarize_investments,
     update_investment,
+    update_movement,
 )
 
 router = APIRouter(prefix="/api/fixed-income", tags=["fixed-income"])
@@ -65,6 +66,13 @@ def create_movement(
     session: SessionDep, investment_id: int, payload: MovementInDTO
 ) -> MovementDTO:
     return add_movement(session, investment_id, payload)
+
+
+@router.put("/movements/{movement_id}")
+def edit_movement(
+    session: SessionDep, movement_id: int, payload: MovementInDTO
+) -> MovementDTO:
+    return update_movement(session, movement_id, payload)
 
 
 @router.delete("/movements/{movement_id}", status_code=status.HTTP_204_NO_CONTENT)

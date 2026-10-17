@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CornerDownLeft, Plus } from "lucide-react";
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -10,7 +10,11 @@ import {
   movementTypeLabels,
   movementTypes,
 } from "@/features/fixed-income/labels";
-import { useAddMovement } from "@/features/fixed-income/use-fixed-income";
+import {
+  type Movement,
+  useAddMovement,
+  useUpdateMovement,
+} from "@/features/fixed-income/use-fixed-income";
 import { MetricHint } from "@/shared/components/metric-hint";
 import { MoneyInput } from "@/shared/components/money-input";
 import { Button } from "@/shared/components/ui/button";
@@ -34,7 +38,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { maskMoney, withMask } from "@/shared/lib/mask";
-import { parseDecimalInput } from "@/types/decimal";
+import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
 
 const schema = z
   .object({
@@ -57,23 +61,38 @@ const schema = z
 const netHint =
   "O banco retém o IOF e o IR no resgate: cai na conta o líquido. Marcado, o app acha o bruto que deixa esse líquido e grava o bruto.";
 
-export function MovementFormDialog({ investmentId }: { investmentId: number }) {
+export function MovementFormDialog({
+  investmentId,
+  movement,
+  trigger,
+}: {
+  investmentId: number;
+  movement?: Movement;
+  trigger?: ReactElement;
+}) {
   const [open, setOpen] = useState(false);
   const [createMore, setCreateMore] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <Plus />
-        Nova movimentação
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          trigger ?? (
+            <Button>
+              <Plus />
+              Nova movimentação
+            </Button>
+          )
+        }
+      />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nova movimentação</DialogTitle>
+          <DialogTitle>{movement ? "Editar movimentação" : "Nova movimentação"}</DialogTitle>
         </DialogHeader>
         {open && (
           <MovementForm
             investmentId={investmentId}
+            movement={movement}
             createMore={createMore}
             onCreateMoreChange={setCreateMore}
             onSaved={() => setOpen(false)}
@@ -86,6 +105,7 @@ export function MovementFormDialog({ investmentId }: { investmentId: number }) {
 
 interface MovementFormProps {
   investmentId: number;
+  movement?: Movement;
   createMore: boolean;
   onCreateMoreChange: (createMore: boolean) => void;
   onSaved: () => void;
@@ -93,35 +113,42 @@ interface MovementFormProps {
 
 function MovementForm({
   investmentId,
+  movement,
   createMore,
   onCreateMoreChange,
   onSaved,
 }: MovementFormProps) {
   const add = useAddMovement(investmentId);
+  const update = useUpdateMovement();
   const defaultValues: z.input<typeof schema> = {
-    movement_type: "application",
-    movement_date: "",
-    amount: "",
+    movement_type: movement?.movement_type ?? "application",
+    movement_date: movement?.movement_date ?? "",
+    amount: movement ? maskMoney(toDecimalInput(movement.amount)) : "",
+    // O DTO guarda o bruto; editar começa nesse valor e o modo líquido é opcional.
     net: true,
   };
+  if (movement) defaultValues.net = false;
   const form = useForm({ resolver: zodResolver(schema), defaultValues });
   const { errors } = form.formState;
   const [movementType, net] = useWatch({ control: form.control, name: ["movement_type", "net"] });
   const redemption = movementType === "redemption";
 
-  const submit = form.handleSubmit((body) =>
-    add.mutate(body, {
-      onSuccess: () => {
-        if (!createMore) {
-          onSaved();
-          return;
-        }
-        // A próxima movimentação herda o tipo e a data desta: só o valor recomeça
-        form.reset({ ...form.getValues(), amount: "" });
-        form.setFocus("amount");
-      },
-    }),
-  );
+  const submit = form.handleSubmit((body) => {
+    const onSuccess = () => {
+      if (movement || !createMore) {
+        onSaved();
+        return;
+      }
+      // A próxima movimentação herda o tipo e a data desta: só o valor recomeça
+      form.reset({ ...form.getValues(), amount: "" });
+      form.setFocus("amount");
+    };
+    if (movement) {
+      update.mutate({ movementId: movement.id, body }, { onSuccess });
+    } else {
+      add.mutate(body, { onSuccess });
+    }
+  });
 
   return (
     <form
@@ -193,15 +220,17 @@ function MovementForm({
         )}
       </FieldGroup>
       <DialogFooter className="mt-6">
-        <Field orientation="horizontal" className="sm:mr-auto sm:w-auto">
-          <Checkbox
-            id="movement-create-more"
-            checked={createMore}
-            onCheckedChange={(checked) => onCreateMoreChange(checked === true)}
-          />
-          <FieldLabel htmlFor="movement-create-more">Adicionar outra</FieldLabel>
-        </Field>
-        <Button type="submit" disabled={add.isPending}>
+        {!movement && (
+          <Field orientation="horizontal" className="sm:mr-auto sm:w-auto">
+            <Checkbox
+              id="movement-create-more"
+              checked={createMore}
+              onCheckedChange={(checked) => onCreateMoreChange(checked === true)}
+            />
+            <FieldLabel htmlFor="movement-create-more">Adicionar outra</FieldLabel>
+          </Field>
+        )}
+        <Button type="submit" disabled={add.isPending || update.isPending}>
           Salvar
           <Kbd variant="tinted" aria-label="Ctrl Enter">
             Ctrl

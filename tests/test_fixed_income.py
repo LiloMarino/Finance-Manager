@@ -115,6 +115,84 @@ def test_detail_lists_movements_newest_first(api: TestClient) -> None:
     ]
 
 
+def test_movement_can_be_edited(api: TestClient) -> None:
+    investment = _create(api)
+    [application] = investment["movements"]
+
+    response = api.put(
+        f"/api/fixed-income/movements/{application['id']}",
+        json={
+            "movement_type": "application",
+            "movement_date": "2024-01-03",
+            "amount": "1500.00",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["movement_date"] == "2024-01-03"
+    assert response.json()["amount"] == "1500.00"
+    detail = api.get(f"/api/fixed-income/{investment['id']}").json()
+    assert detail["movements"][0]["id"] == application["id"]
+    assert detail["invested"] == "1500.00"
+
+
+def test_movement_edit_checks_missing_invalid_and_ordering(api: TestClient) -> None:
+    investment = _create(api)
+    [application] = investment["movements"]
+    redemption = _move(api, investment["id"], "redemption", "2024-03-01", "100")
+    redemption_id = redemption.json()["id"]
+
+    missing = api.put(
+        "/api/fixed-income/movements/999999",
+        json={"movement_type": "application", "movement_date": "2024-01-01", "amount": "1"},
+    )
+    invalid = api.put(
+        f"/api/fixed-income/movements/{application['id']}",
+        json={"movement_type": "application", "movement_date": "2024-01-02", "amount": "0"},
+    )
+    first_redemption = api.put(
+        f"/api/fixed-income/movements/{application['id']}",
+        json={"movement_type": "redemption", "movement_date": "2024-01-02", "amount": "100"},
+    )
+    after_maturity = api.put(
+        f"/api/fixed-income/movements/{redemption_id}",
+        json={"movement_type": "redemption", "movement_date": "2030-01-03", "amount": "100"},
+    )
+
+    assert missing.status_code == 404
+    assert invalid.status_code == 422
+    assert first_redemption.status_code == 422
+    assert after_maturity.status_code == 422
+
+
+def test_net_redemption_edit_excludes_the_previous_movement(api: TestClient) -> None:
+    investment = _create(api)
+    existing = _move(api, investment["id"], "redemption", "2024-07-01", "100")
+
+    edited = api.put(
+        f"/api/fixed-income/movements/{existing.json()['id']}",
+        json={
+            "movement_type": "redemption",
+            "movement_date": "2024-07-01",
+            "amount": "500.00",
+            "net": True,
+        },
+    )
+    comparison_investment = _create(api, label="CDB XYZ comparison")
+    comparison = _move(
+        api,
+        comparison_investment["id"],
+        "redemption",
+        "2024-07-01",
+        "500.00",
+        net=True,
+    )
+
+    assert edited.status_code == 200, edited.text
+    assert comparison.status_code == 201, comparison.text
+    assert edited.json()["amount"] == comparison.json()["amount"]
+
+
 def test_update_changes_terms(api: TestClient) -> None:
     """Editar troca os termos do título, e o nome segue único."""
     investment = _create(api)

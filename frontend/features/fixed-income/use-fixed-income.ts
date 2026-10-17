@@ -88,6 +88,17 @@ export function useAddMovement(investmentId: number) {
   );
 }
 
+export function useUpdateMovement() {
+  return useWrite(
+    ({ movementId, body }: { movementId: number; body: MovementInput }) =>
+      put("/api/fixed-income/movements/{movement_id}", {
+        path: { movement_id: movementId },
+        body,
+      }),
+    "Movimentação salva.",
+  );
+}
+
 export function useDeleteMovement() {
   return useWrite(
     (movement: Movement) =>
