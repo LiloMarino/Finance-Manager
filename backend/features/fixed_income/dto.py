@@ -130,11 +130,17 @@ class MovementInDTO(ApplicationInDTO):
 
 
 class MovementDTO(BaseDTO):
+    """`amount` é o valor como foi digitado: o líquido, no resgate com `net`, ou o
+    bruto. `gross` é o bruto, recalculado na marcação de hoje para o resgate pelo
+    líquido."""
+
     id: int
     investment_id: int
     movement_date: date
     movement_type: FixedIncomeMovementType
     amount: DecimalStr
+    net: bool
+    gross: DecimalStr
 
 
 class FixedIncomeDetailDTO(FixedIncomeDTO):

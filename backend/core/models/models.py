@@ -372,7 +372,9 @@ class FixedIncomeInvestment(Base):
 
 
 class FixedIncomeMovement(Base):
-    """Dado primário da renda fixa: aplicação e resgate, os dois pelo valor bruto."""
+    """Dado primário da renda fixa: aplicação e resgate. O resgate vem pelo bruto ou,
+    com `net`, pelo líquido que caiu na conta, e o bruto dele é recalculado a cada
+    marcação."""
 
     __tablename__ = "fixed_income_movements"
     __table_args__ = (
@@ -388,6 +390,7 @@ class FixedIncomeMovement(Base):
         _enum_column(FixedIncomeMovementType, "movement_type")
     )
     amount: Mapped[Decimal] = mapped_column(DecimalText)
+    net: Mapped[bool] = mapped_column(default=False, server_default="0")
 
 
 class IndexHistory(Base):

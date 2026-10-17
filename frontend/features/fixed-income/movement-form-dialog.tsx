@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { maskMoney, withMask } from "@/shared/lib/mask";
-import { parseDecimalInput, toDecimalInput } from "@/types/decimal";
+import { parseDecimalInput, toMoneyInput } from "@/types/decimal";
 
 const schema = z
   .object({
@@ -123,11 +123,10 @@ function MovementForm({
   const defaultValues: z.input<typeof schema> = {
     movement_type: movement?.movement_type ?? "application",
     movement_date: movement?.movement_date ?? "",
-    amount: movement ? maskMoney(toDecimalInput(movement.amount)) : "",
-    // O DTO guarda o bruto; editar começa nesse valor e o modo líquido é opcional.
-    net: true,
+    // A edição abre com o valor como foi digitado: o líquido, se o resgate veio por ele
+    amount: movement ? toMoneyInput(movement.amount) : "",
+    net: movement?.net ?? true,
   };
-  if (movement) defaultValues.net = false;
   const form = useForm({ resolver: zodResolver(schema), defaultValues });
   const { errors } = form.formState;
   const [movementType, net] = useWatch({ control: form.control, name: ["movement_type", "net"] });

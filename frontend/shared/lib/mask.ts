@@ -29,11 +29,12 @@ function splitNumber(value: string): [string, string | null] {
 }
 
 /** Dinheiro digitado em centavos, da direita para a esquerda: "123456" vira
-"1.234,56". */
+"1.234,56", e "0" vira "0,00". */
 export function maskMoney(value: string): string {
-  const digits = onlyDigits(value).replace(/^0+/, "");
-  if (!digits) return "";
-  const cents = digits.padStart(3, "0");
+  const digits = onlyDigits(value);
+  // "0,0" é o "0,00" com um dígito apagado: sem a exceção, o campo nunca esvazia
+  if (!digits || value === "0,0") return "";
+  const cents = digits.replace(/^0+/, "").padStart(3, "0");
   return `${groupThousands(cents.slice(0, -2))},${cents.slice(-2)}`;
 }
 
