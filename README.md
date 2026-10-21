@@ -60,6 +60,11 @@ banco real se nenhuma tabela perder linha ou célula preenchida. Pasta e quantid
 snapshots ficam em `[backup]` no `config.toml`. A pasta pode ser a do Google Drive:
 o que se sincroniza é o snapshot, nunca o banco vivo.
 
+Para testar sem o banco vivo, `pnpm db:demo` cria `data/demo.db` com uma carteira
+fictícia (`--reset` recria), e `pnpm dev:demo` sobe o app sobre ele, com o backend na
+porta 8001 e os snapshots em `backups/demo/`. Ele roda ao lado do `pnpm dev`, e o Vite
+pega a próxima porta livre.
+
 ## Alerta diário
 
 O `alert.py` roda sem subir o servidor: atualiza as cotações e as séries e abre uma

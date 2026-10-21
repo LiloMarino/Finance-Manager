@@ -14,6 +14,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    proxy: { "/api": "http://localhost:8000" },
+    // O proxy segue a porta do backend, que o FM_SERVER__PORT também define
+    proxy: { "/api": `http://localhost:${process.env.FM_SERVER__PORT ?? "8000"}` },
   },
 });
