@@ -13,13 +13,14 @@ from backend.core.models.models import (
     Operation,
     Segment,
 )
+from backend.domain.position import Position, current_positions
 from backend.features.assets.dto import (
     AssetDTO,
     AssetInDTO,
     PreviousTickerDTO,
     TickerChangeInDTO,
 )
-from backend.repository.operations import check_positions
+from backend.repository.operations import check_positions, operation_records
 from backend.repository.sectors import Classification, classifications
 from backend.repository.subportfolios import check_subportfolio
 from backend.repository.tickers import (
@@ -42,7 +43,10 @@ class InvalidTickerChangeError(FinanceError):
 
 
 def _to_dto(
-    asset: Asset, history: TickerHistory, classes: dict[int, Classification]
+    asset: Asset,
+    history: TickerHistory,
+    classes: dict[int, Classification],
+    positions: dict[str, Position],
 ) -> AssetDTO:
     classification = (
         classes.get(asset.segment_id) if asset.segment_id is not None else None
@@ -56,6 +60,7 @@ def _to_dto(
         sector=classification.sector if classification else None,
         segment=classification.segment if classification else None,
         subportfolio_id=asset.subportfolio_id,
+        held=positions.get(asset.ticker, Position()).held,
         previous_tickers=[
             PreviousTickerDTO(ticker=entry.ticker, valid_until=entry.valid_until)
             for entry in history.previous(asset.id)
@@ -64,7 +69,12 @@ def _to_dto(
 
 
 def _dto(session: Session, asset: Asset) -> AssetDTO:
-    return _to_dto(asset, ticker_history(session), classifications(session))
+    return _to_dto(
+        asset,
+        ticker_history(session),
+        classifications(session),
+        current_positions(operation_records(session, [asset.ticker])),
+    )
 
 
 def _check_segment(session: Session, segment_id: int | None) -> None:
@@ -82,8 +92,9 @@ def _asset(session: Session, asset_id: int) -> Asset:
 def list_assets(session: Session) -> list[AssetDTO]:
     history = ticker_history(session)
     classes = classifications(session)
+    positions = current_positions(operation_records(session))
     return [
-        _to_dto(asset, history, classes)
+        _to_dto(asset, history, classes, positions)
         for asset in session.scalars(select(Asset).order_by(Asset.ticker))
     ]
 

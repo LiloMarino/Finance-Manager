@@ -48,7 +48,8 @@ class FixedIncomeInDTO(BaseDTO):
 class FixedIncomeDTO(BaseDTO):
     """O título com a marcação em `as_of`: hoje, ou o vencimento se já passou. O
     título vencido (`matured`) foi resgatado para o saldo e vale zero.
-    `subportfolio_id` nulo é título só da carteira geral."""
+    `subportfolio_id` nulo é título só da carteira geral. `held` diz se o título está
+    em carteira hoje, com saldo acima de zero."""
 
     id: int
     label: str
@@ -61,6 +62,7 @@ class FixedIncomeDTO(BaseDTO):
     redemption_order: RedemptionOrder
     tax_exempt: bool
     matured: bool
+    held: bool
     invested: DecimalStr
     gross_value: DecimalStr
     estimated_tax: DecimalStr

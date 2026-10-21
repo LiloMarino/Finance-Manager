@@ -41,6 +41,12 @@ class MarkedInvestment:
     as_of: date
     series_date: date | None
 
+    @property
+    def held(self) -> bool:
+        """O título está em carteira enquanto tem saldo: o resgatado por inteiro e
+        o vencido valem zero."""
+        return self.gross_value > 0
+
 
 def movements_by_investment(
     session: Session, investment_id: int | None = None

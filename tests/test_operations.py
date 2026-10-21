@@ -206,3 +206,19 @@ def test_asset_ticker_is_normalized_and_unique(api: TestClient) -> None:
 
     assert created.json()["ticker"] == "ABCD11"
     assert duplicate.status_code == 409
+
+
+def test_asset_list_tells_which_assets_are_held(api: TestClient) -> None:
+    """O ativo está em carteira enquanto tem quantidade: o vendido por inteiro e o
+    cadastrado sem operação não estão."""
+    held = _asset(api, "ABCD11")
+    sold = _asset(api, "EFGH11")
+    _asset(api, "IJKL11")
+    _operation(api, held, "buy", "10", "10")
+    _operation(api, sold, "buy", "10", "10")
+    _operation(api, sold, "sell", "10", "12", day="2024-02-06")
+
+    listed = {item["ticker"]: item["held"] for item in api.get("/api/assets").json()}
+
+    assert listed == {"ABCD11": True, "EFGH11": False, "IJKL11": False}
+    assert api.get(f"/api/assets/{held}").json()["held"] is True

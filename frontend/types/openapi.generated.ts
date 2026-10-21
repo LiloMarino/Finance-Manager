@@ -1360,6 +1360,7 @@ export interface components {
          * AssetDTO
          * @description `segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
          *     nomes vindos do segmento. `subportfolio_id` nulo é ativo só da carteira geral.
+         *     `held` diz se o ativo está em carteira hoje, com quantidade acima de zero.
          */
         AssetDTO: {
             /** Id */
@@ -1377,6 +1378,8 @@ export interface components {
             segment: string | null;
             /** Subportfolio Id */
             subportfolio_id: number | null;
+            /** Held */
+            held: boolean;
             /** Previous Tickers */
             previous_tickers: components["schemas"]["PreviousTickerDTO"][];
         };
@@ -2125,7 +2128,8 @@ export interface components {
          * FixedIncomeDTO
          * @description O título com a marcação em `as_of`: hoje, ou o vencimento se já passou. O
          *     título vencido (`matured`) foi resgatado para o saldo e vale zero.
-         *     `subportfolio_id` nulo é título só da carteira geral.
+         *     `subportfolio_id` nulo é título só da carteira geral. `held` diz se o título está
+         *     em carteira hoje, com saldo acima de zero.
          */
         FixedIncomeDTO: {
             /** Id */
@@ -2150,6 +2154,8 @@ export interface components {
             tax_exempt: boolean;
             /** Matured */
             matured: boolean;
+            /** Held */
+            held: boolean;
             /**
              * Invested
              * Format: decimal
@@ -2202,6 +2208,8 @@ export interface components {
             tax_exempt: boolean;
             /** Matured */
             matured: boolean;
+            /** Held */
+            held: boolean;
             /**
              * Invested
              * Format: decimal

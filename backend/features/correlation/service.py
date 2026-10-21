@@ -301,7 +301,7 @@ def portfolio_matrix(
         if (scope is None or asset.id in scope.asset_ids)
         and (category is None or PortfolioCategory(asset.asset_class) is category)
         and (position := positions.get(asset.ticker)) is not None
-        and position.quantity != 0
+        and position.held
     ]
     start = window_start(now.date(), window)
     series: list[dict[date, float]] = []

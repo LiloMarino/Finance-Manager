@@ -48,6 +48,11 @@ class Position:
     def total_cost(self) -> Decimal:
         return self.quantity * self.average_price
 
+    @property
+    def held(self) -> bool:
+        """O ativo está em carteira enquanto a quantidade não zerou."""
+        return self.quantity != ZERO
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class OperationRecord:

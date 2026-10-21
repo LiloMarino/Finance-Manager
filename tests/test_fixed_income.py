@@ -411,3 +411,22 @@ def test_editing_an_earlier_redemption_keeps_later_nets(api: TestClient) -> None
 
     assert edited.status_code == 200, edited.text
     assert sorted(_redemptions_in_cash(api)) == [Decimal("400.00"), Decimal("800.00")]
+
+
+def test_fixed_income_list_tells_which_titles_are_held(api: TestClient) -> None:
+    """O título está em carteira enquanto tem saldo: o resgatado por inteiro e o
+    vencido não estão."""
+    _create(api)
+    redeemed = _create(api, label="CDB Resgatado")
+    _move(api, redeemed["id"], "redemption", "2024-01-02", "1000.00")
+    _create(api, label="CDB Vencido", maturity_date="2024-06-03")
+
+    listed = {
+        item["label"]: item["held"] for item in api.get("/api/fixed-income").json()
+    }
+
+    assert listed == {
+        "CDB XYZ 2030": True,
+        "CDB Resgatado": False,
+        "CDB Vencido": False,
+    }

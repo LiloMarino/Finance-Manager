@@ -397,13 +397,12 @@ def portfolio(
         for asset in session.scalars(select(Asset).order_by(Asset.ticker))
         if (scope is None or asset.id in scope.asset_ids)
         and (position := positions.get(asset.ticker)) is not None
-        and position.quantity != 0
+        and position.held
     ]
     investments = [
         investment
         for investment in marked_investments(session, today)
-        if (scope is None or investment.id in scope.investment_ids)
-        and investment.gross_value > 0
+        if (scope is None or investment.id in scope.investment_ids) and investment.held
     ]
 
     # O "hoje" da renda variável é o pregão mais recente entre os ativos em carteira

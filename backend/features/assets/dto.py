@@ -25,7 +25,8 @@ class PreviousTickerDTO(BaseDTO):
 
 class AssetDTO(BaseDTO):
     """`segment_id` nulo é ativo sem classificação; `sector` e `segment` são os
-    nomes vindos do segmento. `subportfolio_id` nulo é ativo só da carteira geral."""
+    nomes vindos do segmento. `subportfolio_id` nulo é ativo só da carteira geral.
+    `held` diz se o ativo está em carteira hoje, com quantidade acima de zero."""
 
     id: int
     ticker: str
@@ -35,6 +36,7 @@ class AssetDTO(BaseDTO):
     sector: str | None
     segment: str | None
     subportfolio_id: int | None
+    held: bool
     previous_tickers: list[PreviousTickerDTO]
 
 
