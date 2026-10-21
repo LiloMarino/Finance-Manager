@@ -2,9 +2,9 @@ import { ListChecks } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
+import { type Members, MembersPicker } from "@/features/subportfolios/members-picker";
 import { useSetMembers } from "@/features/subportfolios/use-subportfolio-mutations";
 import { Button } from "@/shared/components/ui/button";
-import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/shared/components/ui/field";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { type Asset, useAssets } from "@/shared/hooks/use-assets";
 import { type FixedIncome, useFixedIncomeList } from "@/shared/hooks/use-fixed-income-list";
@@ -29,7 +28,7 @@ export function MembersDialog({ subportfolio }: { subportfolio: Subportfolio }) 
         <ListChecks />
         Itens
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Ativos e títulos de {subportfolio.name}</DialogTitle>
         </DialogHeader>
@@ -60,138 +59,64 @@ function MembersBody({ subportfolio, onSaved }: MembersBodyProps) {
       subportfolio={subportfolio}
       assets={assets.data}
       investments={investments.data}
-      names={new Map(subportfolios.data.map((item) => [item.id, item.name]))}
+      subportfolios={subportfolios.data}
       onSaved={onSaved}
     />
   );
 }
 
 interface MembersFormValues {
-  asset_ids: number[];
-  investment_ids: number[];
+  members: Members;
 }
 
 interface MembersFormProps {
   subportfolio: Subportfolio;
   assets: Asset[];
   investments: FixedIncome[];
-  /** O nome de cada subcarteira, para o item que hoje está em outra. */
-  names: Map<number, string>;
+  subportfolios: Subportfolio[];
   onSaved: () => void;
 }
 
-function MembersForm({ subportfolio, assets, investments, names, onSaved }: MembersFormProps) {
+function MembersForm({
+  subportfolio,
+  assets,
+  investments,
+  subportfolios,
+  onSaved,
+}: MembersFormProps) {
   const save = useSetMembers(subportfolio);
   const form = useForm<MembersFormValues>({
     values: {
-      asset_ids: subportfolio.assets.map((asset) => asset.id),
-      investment_ids: subportfolio.fixed_income.map((investment) => investment.id),
+      members: {
+        asset_ids: subportfolio.assets.map((asset) => asset.id),
+        investment_ids: subportfolio.fixed_income.map((investment) => investment.id),
+      },
     },
   });
 
-  // O item que está em outra subcarteira sai dela ao ser marcado aqui
-  const elsewhere = (subportfolioId: number | null) =>
-    subportfolioId !== null && subportfolioId !== subportfolio.id
-      ? names.get(subportfolioId)
-      : undefined;
-
-  const submit = form.handleSubmit((values) => save.mutate(values, { onSuccess: onSaved }));
+  const submit = form.handleSubmit(({ members }) => save.mutate(members, { onSuccess: onSaved }));
 
   return (
-    <form onSubmit={(event) => void submit(event)}>
-      <FieldGroup className="max-h-[60vh] overflow-y-auto">
-        <Controller
-          control={form.control}
-          name="asset_ids"
-          render={({ field }) => (
-            <MemberList
-              legend="Ativos"
-              empty="Nenhum ativo cadastrado."
-              items={assets.map((asset) => ({
-                id: asset.id,
-                label: asset.ticker,
-                elsewhere: elsewhere(asset.subportfolio_id),
-              }))}
-              selected={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-        <Controller
-          control={form.control}
-          name="investment_ids"
-          render={({ field }) => (
-            <MemberList
-              legend="Renda fixa"
-              empty="Nenhum título cadastrado."
-              items={investments.map((investment) => ({
-                id: investment.id,
-                label: investment.label,
-                elsewhere: elsewhere(investment.subportfolio_id),
-              }))}
-              selected={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-      </FieldGroup>
-      <DialogFooter className="mt-6">
+    <form className="flex min-h-0 flex-1 flex-col gap-5" onSubmit={(event) => void submit(event)}>
+      <Controller
+        control={form.control}
+        name="members"
+        render={({ field }) => (
+          <MembersPicker
+            members={field.value}
+            onChange={field.onChange}
+            assets={assets}
+            investments={investments}
+            subportfolios={subportfolios}
+            subportfolioId={subportfolio.id}
+          />
+        )}
+      />
+      <DialogFooter>
         <Button type="submit" disabled={save.isPending}>
           Salvar
         </Button>
       </DialogFooter>
     </form>
-  );
-}
-
-interface MemberItem {
-  id: number;
-  label: string;
-  elsewhere: string | undefined;
-}
-
-interface MemberListProps {
-  legend: string;
-  empty: string;
-  items: MemberItem[];
-  selected: number[];
-  onChange: (selected: number[]) => void;
-}
-
-function MemberList({ legend, empty, items, selected, onChange }: MemberListProps) {
-  return (
-    <FieldSet>
-      <FieldLegend variant="label">{legend}</FieldLegend>
-      {items.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{empty}</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {items.map((item) => {
-            const id = `member-${legend}-${item.id}`;
-            return (
-              <Field key={item.id} orientation="horizontal">
-                <Checkbox
-                  id={id}
-                  checked={selected.includes(item.id)}
-                  onCheckedChange={(checked) =>
-                    onChange(
-                      checked === true
-                        ? [...selected, item.id]
-                        : selected.filter((found) => found !== item.id),
-                    )
-                  }
-                />
-                <FieldLabel htmlFor={id}>
-                  {item.label}
-                  {item.elsewhere && (
-                    <span className="text-muted-foreground text-xs">em {item.elsewhere}</span>
-                  )}
-                </FieldLabel>
-              </Field>
-            );
-          })}
-        </div>
-      )}
-    </FieldSet>
   );
 }

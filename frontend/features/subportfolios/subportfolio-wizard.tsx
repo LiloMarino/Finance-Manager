@@ -1,9 +1,9 @@
 import { type ReactElement, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { type Members, MembersPicker } from "@/features/subportfolios/members-picker";
 import { useCreateSubportfolio } from "@/features/subportfolios/use-subportfolio-mutations";
 import { type Identity, IdentityStep } from "@/features/subportfolios/wizard-identity-step";
-import { type Members, MembersStep } from "@/features/subportfolios/wizard-members-step";
 import { TargetsStep } from "@/features/subportfolios/wizard-targets-step";
 import {
   type TargetsDraft,
@@ -44,7 +44,7 @@ export function SubportfolioWizard({ trigger }: { trigger: ReactElement }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-xl">
         {open && <WizardBody onClose={() => setOpen(false)} />}
       </DialogContent>
     </Dialog>
@@ -96,13 +96,13 @@ function toTargetsInput(targets: TargetsDraft, chosen: Asset[], hasFixedIncome: 
 function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStepsProps) {
   const [step, setStep] = useState<Step>(1);
   const [identity, setIdentity] = useState(initialIdentity);
-  const [members, setMembers] = useState<Members>({ assetIds: [], investmentIds: [] });
+  const [members, setMembers] = useState<Members>({ asset_ids: [], investment_ids: [] });
   const [targets, setTargets] = useState<TargetsDraft>(emptyTargets);
   const create = useCreateSubportfolio();
   const navigate = useNavigate();
 
-  const chosen = assets.filter((asset) => members.assetIds.includes(asset.id));
-  const hasFixedIncome = members.investmentIds.length > 0;
+  const chosen = assets.filter((asset) => members.asset_ids.includes(asset.id));
+  const hasFixedIncome = members.investment_ids.length > 0;
   const name = identity.name.trim();
   const duplicate = subportfolios.some((item) => item.name.toLowerCase() === name.toLowerCase());
   const sum = targetsSum(targets, chosen, hasFixedIncome);
@@ -114,7 +114,7 @@ function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStep
     create.mutate(
       {
         identity: { name, icon: identity.icon, color: identity.color },
-        members: { asset_ids: members.assetIds, investment_ids: members.investmentIds },
+        members,
         targets: withTargets ? toTargetsInput(targets, chosen, hasFixedIncome) : null,
       },
       {
@@ -145,27 +145,29 @@ function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStep
         </div>
       </DialogHeader>
 
-      {step === 1 && <IdentityStep identity={identity} onChange={setIdentity} />}
-      {step === 2 && (
-        <MembersStep
-          members={members}
-          onChange={setMembers}
-          assets={assets}
-          investments={investments}
-          subportfolios={subportfolios}
-        />
-      )}
-      {step === 3 && (
-        <TargetsStep
-          targets={targets}
-          onChange={setTargets}
-          assets={chosen}
-          hasFixedIncome={hasFixedIncome}
-        />
-      )}
-      {step === 1 && duplicate && (
-        <span className="text-destructive text-caption">Já existe a subcarteira {name}.</span>
-      )}
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
+        {step === 1 && <IdentityStep identity={identity} onChange={setIdentity} />}
+        {step === 2 && (
+          <MembersPicker
+            members={members}
+            onChange={setMembers}
+            assets={assets}
+            investments={investments}
+            subportfolios={subportfolios}
+          />
+        )}
+        {step === 3 && (
+          <TargetsStep
+            targets={targets}
+            onChange={setTargets}
+            assets={chosen}
+            hasFixedIncome={hasFixedIncome}
+          />
+        )}
+        {step === 1 && duplicate && (
+          <span className="text-destructive text-caption">Já existe a subcarteira {name}.</span>
+        )}
+      </div>
 
       <DialogFooter className="sm:justify-between">
         {step === 1 ? (
