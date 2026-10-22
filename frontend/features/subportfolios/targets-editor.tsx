@@ -1,9 +1,10 @@
 import { itemColors } from "@/features/subportfolios/item-colors";
 import {
   type TargetsDraft,
+  targetsComplete,
   targetsSum,
   typedPercent,
-} from "@/features/subportfolios/wizard-targets";
+} from "@/features/subportfolios/targets-draft";
 import { ColorSwatch } from "@/shared/components/color-swatch";
 import { Button } from "@/shared/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/shared/components/ui/field";
@@ -21,17 +22,17 @@ interface Row {
   set: (value: string) => void;
 }
 
-interface TargetsStepProps {
+interface TargetsEditorProps {
   targets: TargetsDraft;
   onChange: (targets: TargetsDraft) => void;
-  /** Os ativos escolhidos no passo anterior */
+  /** Os ativos da subcarteira */
   assets: Asset[];
   /** Há título de renda fixa escolhido */
   hasFixedIncome: boolean;
 }
 
-/** Passo 3: quanto cada item deve pesar na subcarteira e os limites do aviso. */
-export function TargetsStep({ targets, onChange, assets, hasFixedIncome }: TargetsStepProps) {
+/** Quanto cada item deve pesar na subcarteira e os limites do aviso. */
+export function TargetsEditor({ targets, onChange, assets, hasFixedIncome }: TargetsEditorProps) {
   const rows: Row[] = [
     ...assets.map((asset) => ({
       key: `asset-${asset.id}`,
@@ -57,7 +58,7 @@ export function TargetsStep({ targets, onChange, assets, hasFixedIncome }: Targe
   ];
   const colors = itemColors(rows);
   const sum = targetsSum(targets, assets, hasFixedIncome);
-  const complete = Math.abs(sum - 100) < 0.005;
+  const complete = targetsComplete(sum);
 
   // Divide 100 entre os itens; o que sobra do arredondamento fica no primeiro
   const split = () => {

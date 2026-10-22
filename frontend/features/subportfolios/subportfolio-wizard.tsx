@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { type Members, MembersPicker } from "@/features/subportfolios/members-picker";
 import { useCreateSubportfolio } from "@/features/subportfolios/use-subportfolio-mutations";
 import { type Identity, IdentityStep } from "@/features/subportfolios/wizard-identity-step";
-import { TargetsStep } from "@/features/subportfolios/wizard-targets-step";
 import {
   type TargetsDraft,
   emptyTargets,
+  targetsComplete,
   targetsSum,
-} from "@/features/subportfolios/wizard-targets";
+  toTargetsInput,
+} from "@/features/subportfolios/targets-draft";
+import { TargetsEditor } from "@/features/subportfolios/targets-editor";
 import { SubportfolioMark } from "@/shared/components/subportfolio-mark";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -25,7 +27,6 @@ import { type Asset, useAssets } from "@/shared/hooks/use-assets";
 import { type FixedIncome, useFixedIncomeList } from "@/shared/hooks/use-fixed-income-list";
 import { type Subportfolio, useSubportfolios } from "@/shared/hooks/use-subportfolios";
 import { getApiErrorMessage } from "@/shared/lib/api";
-import { parseDecimalInput, toDecimalString } from "@/types/decimal";
 
 type Step = 1 | 2 | 3;
 
@@ -77,20 +78,6 @@ interface WizardStepsProps {
   investments: FixedIncome[];
   subportfolios: Subportfolio[];
   onClose: () => void;
-}
-
-/** As metas como o servidor as recebe: o que não foi digitado fica em zero. */
-function toTargetsInput(targets: TargetsDraft, chosen: Asset[], hasFixedIncome: boolean) {
-  const percent = (value: string) => parseDecimalInput(value) ?? toDecimalString("0");
-  return {
-    assets: chosen.map((asset) => ({
-      asset_id: asset.id,
-      target: percent(targets.assets[asset.id] ?? ""),
-    })),
-    fixed_income_target: percent(hasFixedIncome ? targets.fixedIncome : ""),
-    max_item_deviation: percent(targets.maxItem),
-    max_total_deviation: percent(targets.maxTotal),
-  };
 }
 
 function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStepsProps) {
@@ -157,7 +144,7 @@ function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStep
           />
         )}
         {step === 3 && (
-          <TargetsStep
+          <TargetsEditor
             targets={targets}
             onChange={setTargets}
             assets={chosen}
@@ -201,7 +188,7 @@ function WizardSteps({ assets, investments, subportfolios, onClose }: WizardStep
           ) : (
             <Button
               type="button"
-              disabled={create.isPending || (step === 3 && Math.abs(sum - 100) >= 0.005)}
+              disabled={create.isPending || (step === 3 && !targetsComplete(sum))}
               onClick={() => submit(step === 3)}
             >
               Criar subcarteira

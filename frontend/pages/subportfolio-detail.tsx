@@ -5,9 +5,9 @@ import { useCash } from "@/features/cash/use-cash";
 import { CurrentVsTarget } from "@/features/rebalance/current-vs-target";
 import { RebalancePanel } from "@/features/rebalance/rebalance-panel";
 import { RebalancedBar } from "@/features/rebalance/rebalanced-bar";
-import { TargetsDialog } from "@/features/rebalance/targets-dialog";
 import { useRebalance } from "@/features/rebalance/use-rebalance";
 import { MembersDialog } from "@/features/subportfolios/members-dialog";
+import { TargetsDialog } from "@/features/subportfolios/targets-dialog";
 import {
   useDeleteSubportfolio,
   useRenameSubportfolio,
@@ -80,7 +80,7 @@ function Detail({ subportfolio }: { subportfolio: Subportfolio }) {
         actions={
           <>
             <MembersDialog subportfolio={subportfolio} />
-            <TargetsDialog subportfolioId={subportfolio.id} />
+            <TargetsDialog subportfolio={subportfolio} />
             <NameDialog
               title={`Renomear ${subportfolio.name}`}
               initialName={subportfolio.name}
