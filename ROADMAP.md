@@ -25,11 +25,11 @@
 | **N7** | — | Subcarteiras: grupos separados, vistos em todas as visões da carteira | — | [F25](#f25) | — | — | — |
 | **N8** | — | Análises extras: risco × retorno e correlação da carteira | — | [F10](#f10), [F26](#f26), [F39](#f39) | — | — | — |
 | **N9** | — | Avaliar uma decisão financeira antes de tomá-la (comparar renda fixa, correlação de ativo novo, à vista × parcelado) | — | [F27](#f27), [F47](#f47), [F49](#f49), [F55](#f55) | — | — | — |
-| [**F29**](#f29) | feature | Empacotamento desktop | — | — | — | — | 🔍 |
-| [**F31**](#f31) | feature | Hot-reload do backend não reinicia o worker | — | — | — | — | 🔍 |
-| [**F33**](#f33) | feature | Custo da bonificação | M5 | — | Baixo | Bom | 💤 |
-| [**F34**](#f34) | feature | Taxas da nota no resultado | M5 | — | Médio | Médio | 💤 |
-| [**F35**](#f35) | feature | IRRF abatido do DARF | M5 | — | Médio | Médio | 💤 |
+| [**F29**](#f29) | Feature | Empacotamento desktop | — | — | — | — | 🔍 |
+| [**F31**](#f31) | Feature | Hot-reload do backend não reinicia o worker | — | — | — | — | 🔍 |
+| [**F33**](#f33) | Feature | Custo da bonificação | M5 | — | Baixo | Bom | 💤 |
+| [**F34**](#f34) | Feature | Taxas da nota no resultado | M5 | — | Médio | Médio | 💤 |
+| [**F35**](#f35) | Feature | IRRF abatido do DARF | M5 | — | Médio | Médio | 💤 |
 
 <details>
 <summary><strong>Concluído / decidido / descartado (66 itens — clique pra expandir)</strong></summary>
@@ -47,61 +47,61 @@
 | **D11** | — | Tipagem: Pydantic nas bordas, dataclass no domínio, pyright strict | — | [F3](#f3) | — | — | ✅ |
 | **D12** | — | Subcarteira: seletor em toda visão de carteira, cada ativo em uma só | — | [F24](#f24), [F25](#f25), [F54](#f54) | — | — | ✅ |
 | **D13** | — | O estado da tela mora na URL | — | [F25](#f25), [F45](#f45), [F48](#f48) | — | — | ✅ |
-| [**F1**](#f1) | feature | Spike de stack (resolve D1) | M1 | — | — | — | ✅ |
-| [**F2**](#f2) | feature | Scaffold do projeto na stack escolhida | M1 | — | — | — | ✅ |
-| [**F3**](#f3) | feature | Tipagem ponta a ponta | M1 | — | — | — | ✅ |
-| [**F4**](#f4) | feature | Migrations + backup automático do banco | M1 | — | — | — | ✅ |
-| [**F5**](#f5) | feature | Modelo de domínio: ativos, operações e eventos | M1 | — | — | — | ✅ |
-| [**F6**](#f6) | feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | M1 | — | — | — | ✅ |
-| [**F7**](#f7) | feature | Migração dos dados do IR-Helper | M1 | — | — | — | ✅ |
-| [**F8**](#f8) | feature | Engine de posição e preço médio + paridade | M1 | — | — | — | ✅ |
-| [**F9**](#f9) | feature | Telas de operações, ativos e posição atual | M1 | — | — | — | ✅ |
-| [**F10**](#f10) | feature | Provider de dados de mercado + cache de preços | M2 | — | — | — | ✅ |
-| [**F11**](#f11) | feature | Carteira: patrimônio total, por categoria e posição | M2 | — | — | — | ✅ |
-| [**F12**](#f12) | feature | Renda fixa: cadastro e marcação por indexador | M2 | — | — | — | ✅ |
-| [**F13**](#f13) | feature | Caixa e reserva | — | — | — | — | 🚫 |
-| [**F14**](#f14) | feature | Série diária por ativo | M3 | — | — | — | ✅ |
-| [**F15**](#f15) | feature | Desempenho de rentabilidade | M3 | — | — | — | ✅ |
-| [**F16**](#f16) | feature | Benchmarks: CDI, IPCA e IBOV | M3 | — | — | — | ✅ |
-| [**F17**](#f17) | feature | Evolução do patrimônio | M3 | — | — | — | ✅ |
-| [**F18**](#f18) | feature | Comparação ano a ano | M3 | — | — | — | ✅ |
-| [**F19**](#f19) | feature | Spike: proventos no relatório de movimentação da B3 | M4 | — | — | — | ✅ |
-| [**F20**](#f20) | feature | Proventos: registro e histórico | M4 | — | — | — | ✅ |
-| [**F21**](#f21) | feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | — | — | — | ✅ |
-| [**F22**](#f22) | feature | Relatório anual do IRPF | M5 | — | — | — | ✅ |
-| [**F23**](#f23) | feature | Paridade funcional com o IR-Helper | M5 | — | — | — | ✅ |
-| [**F24**](#f24) | feature | Rebalanceamento | M6 | — | — | — | ✅ |
-| [**F25**](#f25) | feature | Subcarteiras | M6 | — | — | — | ✅ |
-| [**F26**](#f26) | feature | Risco × retorno | M7 | — | — | — | ✅ |
-| [**F27**](#f27) | feature | Ferramenta de correlação entre ativos | M7 | — | — | — | ✅ |
-| [**F28**](#f28) | feature | Alerta de rebalanceamento com o app fechado | M6 | — | — | — | ✅ |
-| [**F30**](#f30) | feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | M9 | — | — | — | ✅ |
-| [**F32**](#f32) | feature | Liquidez em três camadas | M6 | — | — | — | ✅ |
-| [**F36**](#f36) | feature | Posição por categoria com variação do dia | M2 | — | — | — | ✅ |
-| [**F37**](#f37) | feature | Setor e segmento cadastrados | M2 | — | — | — | ✅ |
-| [**F38**](#f38) | feature | Desempenho e distribuição dos proventos | M4 | — | — | — | ✅ |
-| [**F39**](#f39) | feature | Correlação da carteira | M7 | — | — | — | ✅ |
-| [**F40**](#f40) | feature | Troca de ticker como renomeação | M8 | — | — | — | ✅ |
-| [**F41**](#f41) | feature | Cache de dados externos idempotente | M8 | — | — | — | ✅ |
-| [**F42**](#f42) | feature | Painel de saúde dos dados | M8 | — | — | — | ✅ |
-| [**F43**](#f43) | feature | Sidebar | M9 | — | — | — | ✅ |
-| [**F44**](#f44) | feature | Carteira: layout, gráfico e cor | M9 | — | — | — | ✅ |
-| [**F45**](#f45) | feature | Operações: filtros e seletor de ativo | M9 | — | — | — | ✅ |
-| [**F46**](#f46) | feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | M2 | — | — | — | ✅ |
-| [**F47**](#f47) | feature | Comparador de renda fixa | M7 | — | — | — | ✅ |
-| [**F48**](#f48) | feature | Fiscal: navegação por mês na URL | M9 | — | — | — | ✅ |
-| [**F49**](#f49) | feature | Simulador: à vista, parcelado ou adiantar a fatura | M7 | — | — | — | ✅ |
-| [**F50**](#f50) | feature | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | — | — | — | ✅ |
-| [**F51**](#f51) | feature | Máscaras nos campos | M9 | — | — | — | ✅ |
-| [**F52**](#f52) | feature | Setor e segmento sugeridos pelo yfinance | M9 | — | — | — | ✅ |
-| [**F53**](#f53) | feature | Simulador: escada de títulos | — | — | — | — | 🚫 |
-| [**F54**](#f54) | feature | Saldo de investimento | M6 | — | — | — | ✅ |
-| [**F55**](#f55) | feature | Sugestão de ticker nos campos livres | M9 | — | — | — | ✅ |
-| [**F56**](#f56) | feature | Design system sobre o Base UI | M9 | — | — | — | ✅ |
-| [**F57**](#f57) | feature | Lint do design system e formatter no front | M9 | — | — | — | ✅ |
-| [**F58**](#f58) | feature | Modo de ocultar valores financeiros | M9 | — | — | — | ✅ |
-| [**F59**](#f59) | feature | Data do último rebalanceamento | M6 | — | — | — | ✅ |
-| [**F60**](#f60) | feature | Classificação de setor em um clique | M9 | — | — | — | ✅ |
+| [**F1**](#f1) | Feature | Spike de stack (resolve D1) | M1 | — | — | — | ✅ |
+| [**F2**](#f2) | Feature | Scaffold do projeto na stack escolhida | M1 | — | — | — | ✅ |
+| [**F3**](#f3) | Feature | Tipagem ponta a ponta | M1 | — | — | — | ✅ |
+| [**F4**](#f4) | Feature | Migrations + backup automático do banco | M1 | — | — | — | ✅ |
+| [**F5**](#f5) | Feature | Modelo de domínio: ativos, operações e eventos | M1 | — | — | — | ✅ |
+| [**F6**](#f6) | Feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | M1 | — | — | — | ✅ |
+| [**F7**](#f7) | Feature | Migração dos dados do IR-Helper | M1 | — | — | — | ✅ |
+| [**F8**](#f8) | Feature | Engine de posição e preço médio + paridade | M1 | — | — | — | ✅ |
+| [**F9**](#f9) | Feature | Telas de operações, ativos e posição atual | M1 | — | — | — | ✅ |
+| [**F10**](#f10) | Feature | Provider de dados de mercado + cache de preços | M2 | — | — | — | ✅ |
+| [**F11**](#f11) | Feature | Carteira: patrimônio total, por categoria e posição | M2 | — | — | — | ✅ |
+| [**F12**](#f12) | Feature | Renda fixa: cadastro e marcação por indexador | M2 | — | — | — | ✅ |
+| [**F13**](#f13) | Feature | Caixa e reserva | — | — | — | — | 🚫 |
+| [**F14**](#f14) | Feature | Série diária por ativo | M3 | — | — | — | ✅ |
+| [**F15**](#f15) | Feature | Desempenho de rentabilidade | M3 | — | — | — | ✅ |
+| [**F16**](#f16) | Feature | Benchmarks: CDI, IPCA e IBOV | M3 | — | — | — | ✅ |
+| [**F17**](#f17) | Feature | Evolução do patrimônio | M3 | — | — | — | ✅ |
+| [**F18**](#f18) | Feature | Comparação ano a ano | M3 | — | — | — | ✅ |
+| [**F19**](#f19) | Feature | Spike: proventos no relatório de movimentação da B3 | M4 | — | — | — | ✅ |
+| [**F20**](#f20) | Feature | Proventos: registro e histórico | M4 | — | — | — | ✅ |
+| [**F21**](#f21) | Feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | M5 | — | — | — | ✅ |
+| [**F22**](#f22) | Feature | Relatório anual do IRPF | M5 | — | — | — | ✅ |
+| [**F23**](#f23) | Feature | Paridade funcional com o IR-Helper | M5 | — | — | — | ✅ |
+| [**F24**](#f24) | Feature | Rebalanceamento | M6 | — | — | — | ✅ |
+| [**F25**](#f25) | Feature | Subcarteiras | M6 | — | — | — | ✅ |
+| [**F26**](#f26) | Feature | Risco × retorno | M7 | — | — | — | ✅ |
+| [**F27**](#f27) | Feature | Ferramenta de correlação entre ativos | M7 | — | — | — | ✅ |
+| [**F28**](#f28) | Feature | Alerta de rebalanceamento com o app fechado | M6 | — | — | — | ✅ |
+| [**F30**](#f30) | Feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | M9 | — | — | — | ✅ |
+| [**F32**](#f32) | Feature | Liquidez em três camadas | M6 | — | — | — | ✅ |
+| [**F36**](#f36) | Feature | Posição por categoria com variação do dia | M2 | — | — | — | ✅ |
+| [**F37**](#f37) | Feature | Setor e segmento cadastrados | M2 | — | — | — | ✅ |
+| [**F38**](#f38) | Feature | Desempenho e distribuição dos proventos | M4 | — | — | — | ✅ |
+| [**F39**](#f39) | Feature | Correlação da carteira | M7 | — | — | — | ✅ |
+| [**F40**](#f40) | Feature | Troca de ticker como renomeação | M8 | — | — | — | ✅ |
+| [**F41**](#f41) | Feature | Cache de dados externos idempotente | M8 | — | — | — | ✅ |
+| [**F42**](#f42) | Feature | Painel de saúde dos dados | M8 | — | — | — | ✅ |
+| [**F43**](#f43) | Feature | Sidebar | M9 | — | — | — | ✅ |
+| [**F44**](#f44) | Feature | Carteira: layout, gráfico e cor | M9 | — | — | — | ✅ |
+| [**F45**](#f45) | Feature | Operações: filtros e seletor de ativo | M9 | — | — | — | ✅ |
+| [**F46**](#f46) | Feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | M2 | — | — | — | ✅ |
+| [**F47**](#f47) | Feature | Comparador de renda fixa | M7 | — | — | — | ✅ |
+| [**F48**](#f48) | Feature | Fiscal: navegação por mês na URL | M9 | — | — | — | ✅ |
+| [**F49**](#f49) | Feature | Simulador: à vista, parcelado ou adiantar a fatura | M7 | — | — | — | ✅ |
+| [**F50**](#f50) | Feature | Tabelas: linha inteira clicável e dica no cabeçalho | M9 | — | — | — | ✅ |
+| [**F51**](#f51) | Feature | Máscaras nos campos | M9 | — | — | — | ✅ |
+| [**F52**](#f52) | Feature | Setor e segmento sugeridos pelo yfinance | M9 | — | — | — | ✅ |
+| [**F53**](#f53) | Feature | Simulador: escada de títulos | — | — | — | — | 🚫 |
+| [**F54**](#f54) | Feature | Saldo de investimento | M6 | — | — | — | ✅ |
+| [**F55**](#f55) | Feature | Sugestão de ticker nos campos livres | M9 | — | — | — | ✅ |
+| [**F56**](#f56) | Feature | Design system sobre o Base UI | M9 | — | — | — | ✅ |
+| [**F57**](#f57) | Feature | Lint do design system e formatter no front | M9 | — | — | — | ✅ |
+| [**F58**](#f58) | Feature | Modo de ocultar valores financeiros | M9 | — | — | — | ✅ |
+| [**F59**](#f59) | Feature | Data do último rebalanceamento | M6 | — | — | — | ✅ |
+| [**F60**](#f60) | Feature | Classificação de setor em um clique | M9 | — | — | — | ✅ |
 
 </details>
 
@@ -113,8 +113,8 @@
 
 | ID | Tipo | Resumo | Marco | Destrava | Esforço | Custo-benefício | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [**F29**](#f29) | feature | Empacotamento desktop | — | 0 | — | — | 🔍 |
-| [**F31**](#f31) | feature | Hot-reload do backend não reinicia o worker | — | 0 | — | — | 🔍 |
+| [**F29**](#f29) | Feature | Empacotamento desktop | — | 0 | — | — | 🔍 |
+| [**F31**](#f31) | Feature | Hot-reload do backend não reinicia o worker | — | 0 | — | — | 🔍 |
 
 ---
 
@@ -130,15 +130,15 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F1**](#f1) | feature | Spike de stack (resolve D1) | — | ✅ Concluído |
-| 2 | [**F2**](#f2) | feature | Scaffold do projeto na stack escolhida | — | ✅ Concluído |
-| 3 | [**F3**](#f3) | feature | Tipagem ponta a ponta | — | ✅ Concluído |
-| 4 | [**F4**](#f4) | feature | Migrations + backup automático do banco | — | ✅ Concluído |
-| 5 | [**F5**](#f5) | feature | Modelo de domínio: ativos, operações e eventos | — | ✅ Concluído |
-| 6 | [**F6**](#f6) | feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ✅ Concluído |
-| 7 | [**F7**](#f7) | feature | Migração dos dados do IR-Helper | — | ✅ Concluído |
-| 8 | [**F8**](#f8) | feature | Engine de posição e preço médio + paridade | — | ✅ Concluído |
-| 9 | [**F9**](#f9) | feature | Telas de operações, ativos e posição atual | — | ✅ Concluído |
+| 1 | [**F1**](#f1) | Feature | Spike de stack (resolve D1) | — | ✅ Concluído |
+| 2 | [**F2**](#f2) | Feature | Scaffold do projeto na stack escolhida | — | ✅ Concluído |
+| 3 | [**F3**](#f3) | Feature | Tipagem ponta a ponta | — | ✅ Concluído |
+| 4 | [**F4**](#f4) | Feature | Migrations + backup automático do banco | — | ✅ Concluído |
+| 5 | [**F5**](#f5) | Feature | Modelo de domínio: ativos, operações e eventos | — | ✅ Concluído |
+| 6 | [**F6**](#f6) | Feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | — | ✅ Concluído |
+| 7 | [**F7**](#f7) | Feature | Migração dos dados do IR-Helper | — | ✅ Concluído |
+| 8 | [**F8**](#f8) | Feature | Engine de posição e preço médio + paridade | — | ✅ Concluído |
+| 9 | [**F9**](#f9) | Feature | Telas de operações, ativos e posição atual | — | ✅ Concluído |
 
 ### M2 — Patrimônio atual
 
@@ -150,12 +150,12 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F10**](#f10) | feature | Provider de dados de mercado + cache de preços | — | ✅ Concluído |
-| 2 | [**F11**](#f11) | feature | Carteira: patrimônio total, por categoria e posição | — | ✅ Concluído |
-| 3 | [**F12**](#f12) | feature | Renda fixa: cadastro e marcação por indexador | — | ✅ Concluído |
-| 4 | [**F36**](#f36) | feature | Posição por categoria com variação do dia | — | ✅ Concluído |
-| 5 | [**F37**](#f37) | feature | Setor e segmento cadastrados | — | ✅ Concluído |
-| 6 | [**F46**](#f46) | feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ Concluído |
+| 1 | [**F10**](#f10) | Feature | Provider de dados de mercado + cache de preços | — | ✅ Concluído |
+| 2 | [**F11**](#f11) | Feature | Carteira: patrimônio total, por categoria e posição | — | ✅ Concluído |
+| 3 | [**F12**](#f12) | Feature | Renda fixa: cadastro e marcação por indexador | — | ✅ Concluído |
+| 4 | [**F36**](#f36) | Feature | Posição por categoria com variação do dia | — | ✅ Concluído |
+| 5 | [**F37**](#f37) | Feature | Setor e segmento cadastrados | — | ✅ Concluído |
+| 6 | [**F46**](#f46) | Feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | — | ✅ Concluído |
 
 ### M3 — Rentabilidade e evolução
 
@@ -167,11 +167,11 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F14**](#f14) | feature | Série diária por ativo | — | ✅ Concluído |
-| 2 | [**F15**](#f15) | feature | Desempenho de rentabilidade | — | ✅ Concluído |
-| 3 | [**F16**](#f16) | feature | Benchmarks: CDI, IPCA e IBOV | — | ✅ Concluído |
-| 4 | [**F17**](#f17) | feature | Evolução do patrimônio | — | ✅ Concluído |
-| 5 | [**F18**](#f18) | feature | Comparação ano a ano | — | ✅ Concluído |
+| 1 | [**F14**](#f14) | Feature | Série diária por ativo | — | ✅ Concluído |
+| 2 | [**F15**](#f15) | Feature | Desempenho de rentabilidade | — | ✅ Concluído |
+| 3 | [**F16**](#f16) | Feature | Benchmarks: CDI, IPCA e IBOV | — | ✅ Concluído |
+| 4 | [**F17**](#f17) | Feature | Evolução do patrimônio | — | ✅ Concluído |
+| 5 | [**F18**](#f18) | Feature | Comparação ano a ano | — | ✅ Concluído |
 
 ### M4 — Proventos
 
@@ -183,9 +183,9 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F19**](#f19) | feature | Spike: proventos no relatório de movimentação da B3 | — | ✅ Concluído |
-| 2 | [**F20**](#f20) | feature | Proventos: registro e histórico | — | ✅ Concluído |
-| 3 | [**F38**](#f38) | feature | Desempenho e distribuição dos proventos | — | ✅ Concluído |
+| 1 | [**F19**](#f19) | Feature | Spike: proventos no relatório de movimentação da B3 | — | ✅ Concluído |
+| 2 | [**F20**](#f20) | Feature | Proventos: registro e histórico | — | ✅ Concluído |
+| 3 | [**F38**](#f38) | Feature | Desempenho e distribuição dos proventos | — | ✅ Concluído |
 
 ### M5 — Fiscal
 
@@ -197,12 +197,12 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F21**](#f21) | feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ Concluído |
-| 2 | [**F22**](#f22) | feature | Relatório anual do IRPF | — | ✅ Concluído |
-| 3 | [**F23**](#f23) | feature | Paridade funcional com o IR-Helper | — | ✅ Concluído |
-| 4 | [**F33**](#f33) | feature | Custo da bonificação | [F21](#f21) | 💤 Sem prioridade |
-| 5 | [**F34**](#f34) | feature | Taxas da nota no resultado | [F21](#f21) | 💤 Sem prioridade |
-| 6 | [**F35**](#f35) | feature | IRRF abatido do DARF | [F21](#f21) | 💤 Sem prioridade |
+| 1 | [**F21**](#f21) | Feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | — | ✅ Concluído |
+| 2 | [**F22**](#f22) | Feature | Relatório anual do IRPF | — | ✅ Concluído |
+| 3 | [**F23**](#f23) | Feature | Paridade funcional com o IR-Helper | — | ✅ Concluído |
+| 4 | [**F33**](#f33) | Feature | Custo da bonificação | [F21](#f21) | 💤 Sem prioridade |
+| 5 | [**F34**](#f34) | Feature | Taxas da nota no resultado | [F21](#f21) | 💤 Sem prioridade |
+| 6 | [**F35**](#f35) | Feature | IRRF abatido do DARF | [F21](#f21) | 💤 Sem prioridade |
 
 ### M6 — Saldo, subcarteiras e rebalanceamento
 
@@ -214,12 +214,12 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F24**](#f24) | feature | Rebalanceamento | — | ✅ Concluído |
-| 2 | [**F25**](#f25) | feature | Subcarteiras | — | ✅ Concluído |
-| 3 | [**F28**](#f28) | feature | Alerta de rebalanceamento com o app fechado | — | ✅ Concluído |
-| 4 | [**F32**](#f32) | feature | Liquidez em três camadas | — | ✅ Concluído |
-| 5 | [**F54**](#f54) | feature | Saldo de investimento | — | ✅ Concluído |
-| 6 | [**F59**](#f59) | feature | Data do último rebalanceamento | — | ✅ Concluído |
+| 1 | [**F24**](#f24) | Feature | Rebalanceamento | — | ✅ Concluído |
+| 2 | [**F25**](#f25) | Feature | Subcarteiras | — | ✅ Concluído |
+| 3 | [**F28**](#f28) | Feature | Alerta de rebalanceamento com o app fechado | — | ✅ Concluído |
+| 4 | [**F32**](#f32) | Feature | Liquidez em três camadas | — | ✅ Concluído |
+| 5 | [**F54**](#f54) | Feature | Saldo de investimento | — | ✅ Concluído |
+| 6 | [**F59**](#f59) | Feature | Data do último rebalanceamento | — | ✅ Concluído |
 
 ### M7 — Análises e ferramentas
 
@@ -231,11 +231,11 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F26**](#f26) | feature | Risco × retorno | — | ✅ Concluído |
-| 2 | [**F27**](#f27) | feature | Ferramenta de correlação entre ativos | — | ✅ Concluído |
-| 3 | [**F39**](#f39) | feature | Correlação da carteira | — | ✅ Concluído |
-| 4 | [**F47**](#f47) | feature | Comparador de renda fixa | — | ✅ Concluído |
-| 5 | [**F49**](#f49) | feature | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ Concluído |
+| 1 | [**F26**](#f26) | Feature | Risco × retorno | — | ✅ Concluído |
+| 2 | [**F27**](#f27) | Feature | Ferramenta de correlação entre ativos | — | ✅ Concluído |
+| 3 | [**F39**](#f39) | Feature | Correlação da carteira | — | ✅ Concluído |
+| 4 | [**F47**](#f47) | Feature | Comparador de renda fixa | — | ✅ Concluído |
+| 5 | [**F49**](#f49) | Feature | Simulador: à vista, parcelado ou adiantar a fatura | — | ✅ Concluído |
 
 ### M8 — Qualidade dos dados
 
@@ -247,9 +247,9 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F40**](#f40) | feature | Troca de ticker como renomeação | — | ✅ Concluído |
-| 2 | [**F41**](#f41) | feature | Cache de dados externos idempotente | — | ✅ Concluído |
-| 3 | [**F42**](#f42) | feature | Painel de saúde dos dados | — | ✅ Concluído |
+| 1 | [**F40**](#f40) | Feature | Troca de ticker como renomeação | — | ✅ Concluído |
+| 2 | [**F41**](#f41) | Feature | Cache de dados externos idempotente | — | ✅ Concluído |
+| 3 | [**F42**](#f42) | Feature | Painel de saúde dos dados | — | ✅ Concluído |
 
 ### M9 — Conforto de uso
 
@@ -261,19 +261,28 @@
 
 | # | ID | Tipo | Resumo | Depende de | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [**F30**](#f30) | feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | ✅ Concluído |
-| 2 | [**F43**](#f43) | feature | Sidebar | — | ✅ Concluído |
-| 3 | [**F44**](#f44) | feature | Carteira: layout, gráfico e cor | — | ✅ Concluído |
-| 4 | [**F45**](#f45) | feature | Operações: filtros e seletor de ativo | — | ✅ Concluído |
-| 5 | [**F48**](#f48) | feature | Fiscal: navegação por mês na URL | — | ✅ Concluído |
-| 6 | [**F50**](#f50) | feature | Tabelas: linha inteira clicável e dica no cabeçalho | — | ✅ Concluído |
-| 7 | [**F51**](#f51) | feature | Máscaras nos campos | — | ✅ Concluído |
-| 8 | [**F52**](#f52) | feature | Setor e segmento sugeridos pelo yfinance | — | ✅ Concluído |
-| 9 | [**F55**](#f55) | feature | Sugestão de ticker nos campos livres | — | ✅ Concluído |
-| 10 | [**F56**](#f56) | feature | Design system sobre o Base UI | — | ✅ Concluído |
-| 11 | [**F57**](#f57) | feature | Lint do design system e formatter no front | — | ✅ Concluído |
-| 12 | [**F58**](#f58) | feature | Modo de ocultar valores financeiros | — | ✅ Concluído |
-| 13 | [**F60**](#f60) | feature | Classificação de setor em um clique | — | ✅ Concluído |
+| 1 | [**F30**](#f30) | Feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | ✅ Concluído |
+| 2 | [**F43**](#f43) | Feature | Sidebar | — | ✅ Concluído |
+| 3 | [**F44**](#f44) | Feature | Carteira: layout, gráfico e cor | — | ✅ Concluído |
+| 4 | [**F45**](#f45) | Feature | Operações: filtros e seletor de ativo | — | ✅ Concluído |
+| 5 | [**F48**](#f48) | Feature | Fiscal: navegação por mês na URL | — | ✅ Concluído |
+| 6 | [**F50**](#f50) | Feature | Tabelas: linha inteira clicável e dica no cabeçalho | — | ✅ Concluído |
+| 7 | [**F51**](#f51) | Feature | Máscaras nos campos | — | ✅ Concluído |
+| 8 | [**F52**](#f52) | Feature | Setor e segmento sugeridos pelo yfinance | — | ✅ Concluído |
+| 9 | [**F55**](#f55) | Feature | Sugestão de ticker nos campos livres | — | ✅ Concluído |
+| 10 | [**F56**](#f56) | Feature | Design system sobre o Base UI | — | ✅ Concluído |
+| 11 | [**F57**](#f57) | Feature | Lint do design system e formatter no front | — | ✅ Concluído |
+| 12 | [**F58**](#f58) | Feature | Modo de ocultar valores financeiros | — | ✅ Concluído |
+| 13 | [**F60**](#f60) | Feature | Classificação de setor em um clique | — | ✅ Concluído |
+
+### Sem marco
+
+> Os itens ⏳ e 🔍 que ainda não entraram em nenhum marco, do que mais destrava trabalho para o que menos ("Destrava" é quantos itens em aberto esperam por aquele). É daqui que sai o próximo marco; os 💤 ficam só no kanban.
+
+| ID | Tipo | Resumo | Serve | Depende de | Destrava | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| [**F29**](#f29) | Feature | Empacotamento desktop | — | [F2](#f2) | 0 | 🔍 Em avaliação |
+| [**F31**](#f31) | Feature | Hot-reload do backend não reinicia o worker | — | [F2](#f2) | 0 | 🔍 Em avaliação |
 
 ---
 
@@ -287,8 +296,8 @@
 
 | ID | Tipo | Resumo | Serve | D# | Marco | Depende de | Falta |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **F29** | feature | Empacotamento desktop | — | — | — | [F2](#f2) | Nenhuma N# direta — conforto de uso |
-| **F31** | feature | Hot-reload do backend não reinicia o worker | — | — | — | [F2](#f2) | Nenhuma N# direta — atrito de desenvolvimento |
+| **F29** | Feature | Empacotamento desktop | — | — | — | [F2](#f2) | Nenhuma N# direta — conforto de uso |
+| **F31** | Feature | Hot-reload do backend não reinicia o worker | — | — | — | [F2](#f2) | Nenhuma N# direta — atrito de desenvolvimento |
 
 <a id="f29"></a>
 **F29 — Empacotamento desktop.** O que falta definir: se vale empacotar (PyInstaller .exe, como no SimuladorFinanceiro, ou Tauri) ou se `pnpm dev` com um atalho basta para o uso diário. Baixa prioridade: vale quando subir o app incomodar no uso real.
@@ -304,9 +313,9 @@ Diagnóstico até aqui: o WatchFiles detecta a mudança e loga `Reloading...`, o
 
 | ID | Tipo | Resumo | Serve | D# | Marco | Depende de | Esforço | Risco | Valor | Custo-benefício |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **F33** | feature | Custo da bonificação | N3, N5 | — | M5 | [F21](#f21) | Baixo | Médio | Médio | Bom |
-| **F34** | feature | Taxas da nota no resultado | N3, N5 | — | M5 | [F21](#f21) | Médio | Médio | Médio | Médio |
-| **F35** | feature | IRRF abatido do DARF | N5 | — | M5 | [F21](#f21) | Médio | Baixo | Médio | Médio |
+| **F33** | Feature | Custo da bonificação | N3, N5 | — | M5 | [F21](#f21) | Baixo | Médio | Médio | Bom |
+| **F34** | Feature | Taxas da nota no resultado | N3, N5 | — | M5 | [F21](#f21) | Médio | Médio | Médio | Médio |
+| **F35** | Feature | IRRF abatido do DARF | N5 | — | M5 | [F21](#f21) | Médio | Baixo | Médio | Médio |
 
 <a id="f33"></a>
 **F33 — Custo da bonificação.** Pela Receita (Perguntas e Respostas IRPF, pergunta 721), a ação recebida em bonificação tem custo: o valor do lucro ou da reserva capitalizado por ação, que a empresa informa no fato relevante. Hoje o CHECK `unit_price_by_type` obriga preço 0 na bonificação, e o motor só dilui o PM.
@@ -353,59 +362,59 @@ Gatilho: o primeiro mês em que o IRRF retido mudar o DARF.
 
 | ID | Tipo | Resumo | Serve | D# | Marco |
 | --- | --- | --- | --- | --- | --- |
-| **F1** | feature | Spike de stack (resolve D1) | N3 | D1, D8 | M1 |
-| **F2** | feature | Scaffold do projeto na stack escolhida | N3 | D1, D10 | M1 |
-| **F3** | feature | Tipagem ponta a ponta | N3 | D11 | M1 |
-| **F4** | feature | Migrations + backup automático do banco | N3 | D3 | M1 |
-| **F5** | feature | Modelo de domínio: ativos, operações e eventos | N3 | D2, D4 | M1 |
-| **F6** | feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 |
-| **F7** | feature | Migração dos dados do IR-Helper | N3 | D8 | M1 |
-| **F8** | feature | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 |
-| **F9** | feature | Telas de operações, ativos e posição atual | N3 | — | M1 |
-| **F10** | feature | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 |
-| **F11** | feature | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 |
-| **F12** | feature | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 |
-| **F14** | feature | Série diária por ativo | N1, N2 | D2, D6 | M3 |
-| **F15** | feature | Desempenho de rentabilidade | N1 | D5 | M3 |
-| **F16** | feature | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 |
-| **F17** | feature | Evolução do patrimônio | N2, N1 | D2 | M3 |
-| **F18** | feature | Comparação ano a ano | N1 | D5 | M3 |
-| **F19** | feature | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 |
-| **F20** | feature | Proventos: registro e histórico | N4, N5 | D2 | M4 |
-| **F21** | feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 |
-| **F22** | feature | Relatório anual do IRPF | N5 | — | M5 |
-| **F23** | feature | Paridade funcional com o IR-Helper | N5 | D8 | M5 |
-| **F24** | feature | Rebalanceamento | N6 | D12 | M6 |
-| **F25** | feature | Subcarteiras | N7 | D12, D13 | M6 |
-| **F26** | feature | Risco × retorno | N8 | D4 | M7 |
-| **F27** | feature | Ferramenta de correlação entre ativos | N9 | — | M7 |
-| **F28** | feature | Alerta de rebalanceamento com o app fechado | N6 | — | M6 |
-| **F30** | feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | — | M9 |
-| **F32** | feature | Liquidez em três camadas | N2, N6 | — | M6 |
-| **F36** | feature | Posição por categoria com variação do dia | N2 | D4 | M2 |
-| **F37** | feature | Setor e segmento cadastrados | N2 | — | M2 |
-| **F38** | feature | Desempenho e distribuição dos proventos | N4 | — | M4 |
-| **F39** | feature | Correlação da carteira | N8 | — | M7 |
-| **F40** | feature | Troca de ticker como renomeação | N3, N2 | — | M8 |
-| **F41** | feature | Cache de dados externos idempotente | N2, N1 | D6 | M8 |
-| **F42** | feature | Painel de saúde dos dados | N3, N2 | — | M8 |
-| **F43** | feature | Sidebar | — | — | M9 |
-| **F44** | feature | Carteira: layout, gráfico e cor | N2 | — | M9 |
-| **F45** | feature | Operações: filtros e seletor de ativo | N3 | D13 | M9 |
-| **F46** | feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 |
-| **F47** | feature | Comparador de renda fixa | N9 | — | M7 |
-| **F48** | feature | Fiscal: navegação por mês na URL | N5 | D13 | M9 |
-| **F49** | feature | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 |
-| **F50** | feature | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 |
-| **F51** | feature | Máscaras nos campos | N3, N5 | — | M9 |
-| **F52** | feature | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 |
-| **F54** | feature | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 |
-| **F55** | feature | Sugestão de ticker nos campos livres | N3, N9 | — | M9 |
-| **F56** | feature | Design system sobre o Base UI | N2 | — | M9 |
-| **F57** | feature | Lint do design system e formatter no front | — | — | M9 |
-| **F58** | feature | Modo de ocultar valores financeiros | — | — | M9 |
-| **F59** | feature | Data do último rebalanceamento | N6 | — | M6 |
-| **F60** | feature | Classificação de setor em um clique | N2 | — | M9 |
+| **F1** | Feature | Spike de stack (resolve D1) | N3 | D1, D8 | M1 |
+| **F2** | Feature | Scaffold do projeto na stack escolhida | N3 | D1, D10 | M1 |
+| **F3** | Feature | Tipagem ponta a ponta | N3 | D11 | M1 |
+| **F4** | Feature | Migrations + backup automático do banco | N3 | D3 | M1 |
+| **F5** | Feature | Modelo de domínio: ativos, operações e eventos | N3 | D2, D4 | M1 |
+| **F6** | Feature | Importadores B3 (xlsx) e notas de corretagem (PDF) | N3 | — | M1 |
+| **F7** | Feature | Migração dos dados do IR-Helper | N3 | D8 | M1 |
+| **F8** | Feature | Engine de posição e preço médio + paridade | N3 | D2, D8 | M1 |
+| **F9** | Feature | Telas de operações, ativos e posição atual | N3 | — | M1 |
+| **F10** | Feature | Provider de dados de mercado + cache de preços | N2, N8 | D6 | M2 |
+| **F11** | Feature | Carteira: patrimônio total, por categoria e posição | N2 | — | M2 |
+| **F12** | Feature | Renda fixa: cadastro e marcação por indexador | N2 | D6 | M2 |
+| **F14** | Feature | Série diária por ativo | N1, N2 | D2, D6 | M3 |
+| **F15** | Feature | Desempenho de rentabilidade | N1 | D5 | M3 |
+| **F16** | Feature | Benchmarks: CDI, IPCA e IBOV | N1 | D6 | M3 |
+| **F17** | Feature | Evolução do patrimônio | N2, N1 | D2 | M3 |
+| **F18** | Feature | Comparação ano a ano | N1 | D5 | M3 |
+| **F19** | Feature | Spike: proventos no relatório de movimentação da B3 | N4 | — | M4 |
+| **F20** | Feature | Proventos: registro e histórico | N4, N5 | D2 | M4 |
+| **F21** | Feature | Motor fiscal: apuração mensal, DARF e prejuízo acumulado | N5 | D8 | M5 |
+| **F22** | Feature | Relatório anual do IRPF | N5 | — | M5 |
+| **F23** | Feature | Paridade funcional com o IR-Helper | N5 | D8 | M5 |
+| **F24** | Feature | Rebalanceamento | N6 | D12 | M6 |
+| **F25** | Feature | Subcarteiras | N7 | D12, D13 | M6 |
+| **F26** | Feature | Risco × retorno | N8 | D4 | M7 |
+| **F27** | Feature | Ferramenta de correlação entre ativos | N9 | — | M7 |
+| **F28** | Feature | Alerta de rebalanceamento com o app fechado | N6 | — | M6 |
+| **F30** | Feature | Redesenho da interface: identidade visual, navegação, telas e gráficos | — | — | M9 |
+| **F32** | Feature | Liquidez em três camadas | N2, N6 | — | M6 |
+| **F36** | Feature | Posição por categoria com variação do dia | N2 | D4 | M2 |
+| **F37** | Feature | Setor e segmento cadastrados | N2 | — | M2 |
+| **F38** | Feature | Desempenho e distribuição dos proventos | N4 | — | M4 |
+| **F39** | Feature | Correlação da carteira | N8 | — | M7 |
+| **F40** | Feature | Troca de ticker como renomeação | N3, N2 | — | M8 |
+| **F41** | Feature | Cache de dados externos idempotente | N2, N1 | D6 | M8 |
+| **F42** | Feature | Painel de saúde dos dados | N3, N2 | — | M8 |
+| **F43** | Feature | Sidebar | — | — | M9 |
+| **F44** | Feature | Carteira: layout, gráfico e cor | N2 | — | M9 |
+| **F45** | Feature | Operações: filtros e seletor de ativo | N3 | D13 | M9 |
+| **F46** | Feature | Renda fixa: tipo do produto, Selic + spread e aplicação no cadastro | N2, N5 | — | M2 |
+| **F47** | Feature | Comparador de renda fixa | N9 | — | M7 |
+| **F48** | Feature | Fiscal: navegação por mês na URL | N5 | D13 | M9 |
+| **F49** | Feature | Simulador: à vista, parcelado ou adiantar a fatura | N9 | — | M7 |
+| **F50** | Feature | Tabelas: linha inteira clicável e dica no cabeçalho | N2, N3 | — | M9 |
+| **F51** | Feature | Máscaras nos campos | N3, N5 | — | M9 |
+| **F52** | Feature | Setor e segmento sugeridos pelo yfinance | N2 | D6 | M9 |
+| **F54** | Feature | Saldo de investimento | N2, N6 | D2, D5, D12 | M6 |
+| **F55** | Feature | Sugestão de ticker nos campos livres | N3, N9 | — | M9 |
+| **F56** | Feature | Design system sobre o Base UI | N2 | — | M9 |
+| **F57** | Feature | Lint do design system e formatter no front | — | — | M9 |
+| **F58** | Feature | Modo de ocultar valores financeiros | — | — | M9 |
+| **F59** | Feature | Data do último rebalanceamento | N6 | — | M6 |
+| **F60** | Feature | Classificação de setor em um clique | N2 | — | M9 |
 
 <a id="f1"></a>
 **F1 — Spike de stack (resolve D1).** Executado como **quatro sondas de DX** em vez de duas fatias verticais: cada uma testa a *fraqueza* de um lado, não tudo dos dois — boilerplate não discrimina. Oráculo `irpf_helper.db` lido somente-leitura o tempo todo (D8), confirmado intocado no fim.
@@ -1184,8 +1193,8 @@ Decisões tomadas durante:
 
 | ID | Tipo | Resumo | Serve |
 | --- | --- | --- | --- |
-| **F13** | feature | Caixa e reserva | N2 |
-| **F53** | feature | Simulador: escada de títulos | N9 |
+| **F13** | Feature | Caixa e reserva | N2 |
+| **F53** | Feature | Simulador: escada de títulos | N9 |
 
 <a id="f13"></a>
 **F13 — Descartado.** 🚫 A reserva e o saldo da conta pessoal ficam fora: o app cobre só o financeiro de investimentos, separado dos gastos pessoais. O dinheiro de investimento que espera ser reinvestido (venda, provento, vencimento) é a F54; o tamanho do aporte sai das operações (F17); e a liquidez virou o card F32. A classe de ativo `cash` saiu do schema: o saldo não é um ativo.
